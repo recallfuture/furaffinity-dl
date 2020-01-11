@@ -3992,6 +3992,24 @@ electron-download@^4.1.0, electron-download@^4.1.1:
     semver "^5.4.1"
     sumchecker "^2.0.2"
 
+electron-is-dev@^0.3.0:
+  version "0.3.0"
+  resolved "http://r.cnpmjs.org/electron-is-dev/download/electron-is-dev-0.3.0.tgz#14e6fda5c68e9e4ecbeff9ccf037cbd7c05c5afe"
+  integrity sha1-FOb9pcaOnk7L7/nM8DfL18BcWv4=
+
+electron-is@^3.0.0:
+  version "3.0.0"
+  resolved "http://r.cnpmjs.org/electron-is/download/electron-is-3.0.0.tgz#bd4c27651fbe03f243f3607c2a098be884f9ed50"
+  integrity sha1-vUwnZR++A/JD82B8KgmL6IT57VA=
+  dependencies:
+    electron-is-dev "^0.3.0"
+    semver "^5.5.0"
+
+electron-log@^4.0.3:
+  version "4.0.3"
+  resolved "http://r.cnpmjs.org/electron-log/download/electron-log-4.0.3.tgz#c998ebf6d4d0c0b017795639d0bc00eb51b39b30"
+  integrity sha1-yZjr9tTQwLAXeVY50LwA61GzmzA=
+
 electron-publish@21.2.0:
   version "21.2.0"
   resolved "https://registry.npm.taobao.org/electron-publish/download/electron-publish-21.2.0.tgz#cc225cb46aa62e74b899f2f7299b396c9802387d"

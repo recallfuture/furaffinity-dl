@@ -1,6 +1,7 @@
 import { app } from "electron";
 import Datastore from "nedb-promises";
 import path from "path";
+import logger from "./logger";
 
 const dbPath: string = app.getPath("userData");
 
@@ -14,6 +15,7 @@ export async function initDatabase() {
     filename: path.join(dbPath, "database.db")
   });
   await db.load();
+  logger.info("Database init");
 }
 
 /**
@@ -56,6 +58,7 @@ export async function getConfig(): Promise<Config> {
   } else {
     config = { ...getDefaultConfig(), ...doc.data } as Config;
   }
+  logger.info("Get config: " + JSON.stringify(config));
 
   return config;
 }
@@ -66,4 +69,5 @@ export async function getConfig(): Promise<Config> {
  */
 export async function setConfig(data: Config) {
   await updateOrAdd({ type: "config" }, { type: "config", data });
+  logger.info("Save config: " + JSON.stringify(data));
 }
