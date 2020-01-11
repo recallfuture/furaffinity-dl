@@ -4010,6 +4010,15 @@ electron-log@^4.0.3:
   resolved "http://r.cnpmjs.org/electron-log/download/electron-log-4.0.3.tgz#c998ebf6d4d0c0b017795639d0bc00eb51b39b30"
   integrity sha1-yZjr9tTQwLAXeVY50LwA61GzmzA=
 
+electron-promise-ipc@^2.0.1:
+  version "2.0.1"
+  resolved "http://r.cnpmjs.org/electron-promise-ipc/download/electron-promise-ipc-2.0.1.tgz#44e3d8d40ee3e900651184f63c520b33330b98a6"
+  integrity sha1-ROPY1A7j6QBlEYT2PFILMzMLmKY=
+  dependencies:
+    is-electron-renderer "^2.0.1"
+    serialize-error "^5.0.0"
+    uuid "^3.0.1"
+
 electron-publish@21.2.0:
   version "21.2.0"
   resolved "https://registry.npm.taobao.org/electron-publish/download/electron-publish-21.2.0.tgz#cc225cb46aa62e74b899f2f7299b396c9802387d"
@@ -5781,6 +5790,11 @@ is-directory@^0.3.1:
   version "0.3.1"
   resolved "https://registry.npm.taobao.org/is-directory/download/is-directory-0.3.1.tgz#61339b6f2475fc772fd9c9d83f5c8575dc154ae1"
   integrity sha1-YTObbyR1/Hcv2cnYP1yFddwVSuE=
+
+is-electron-renderer@^2.0.1:
+  version "2.0.1"
+  resolved "http://r.cnpmjs.org/is-electron-renderer/download/is-electron-renderer-2.0.1.tgz#a469d056f975697c58c98c6023eb0aa79af895a2"
+  integrity sha1-pGnQVvl1aXxYyYxgI+sKp5r4laI=
 
 is-extendable@^0.1.0, is-extendable@^0.1.1:
   version "0.1.1"
@@ -9373,6 +9387,13 @@ send@0.17.1:
     range-parser "~1.2.1"
     statuses "~1.5.0"
 
+serialize-error@^5.0.0:
+  version "5.0.0"
+  resolved "http://r.cnpmjs.org/serialize-error/download/serialize-error-5.0.0.tgz#a7ebbcdb03a5d71a6ed8461ffe0fc1a1afed62ac"
+  integrity sha1-p+u82wOl1xpu2EYf/g/Boa/tYqw=
+  dependencies:
+    type-fest "^0.8.0"
+
 serialize-javascript@^2.1.2:
   version "2.1.2"
   resolved "https://registry.npm.taobao.org/serialize-javascript/download/serialize-javascript-2.1.2.tgz#ecec53b0e0317bdc95ef76ab7074b7384785fa61"
@@ -10507,7 +10528,7 @@ type-fest@^0.6.0:
   resolved "https://registry.npm.taobao.org/type-fest/download/type-fest-0.6.0.tgz#8d2a2370d3df886eb5c90ada1c5bf6188acf838b"
   integrity sha1-jSojcNPfiG61yQraHFv2GIrPg4s=
 
-type-fest@^0.8.1:
+type-fest@^0.8.0, type-fest@^0.8.1:
   version "0.8.1"
   resolved "https://registry.npm.taobao.org/type-fest/download/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha1-CeJJ696FHTseSNJ8EFREZn8XuD0=

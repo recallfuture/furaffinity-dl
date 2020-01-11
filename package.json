@@ -17,6 +17,7 @@
     "core-js": "^3.4.4",
     "electron-is": "^3.0.0",
     "electron-log": "^4.0.3",
+    "electron-promise-ipc": "^2.0.1",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
     "vue": "^2.6.10",
