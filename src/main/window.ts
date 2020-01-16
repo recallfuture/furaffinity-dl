@@ -1,8 +1,5 @@
-import { app, protocol, BrowserWindow } from "electron";
-import {
-  createProtocol,
-  installVueDevtools
-} from "vue-cli-plugin-electron-builder/lib";
+import { BrowserWindow } from "electron";
+import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -11,11 +8,8 @@ export let win: BrowserWindow | null;
 export function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true
-    }
+    width: 1024,
+    height: 768
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
