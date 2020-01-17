@@ -38,7 +38,7 @@ function getStartSh() {
 
   // 获取配置路径和 session 路径
   const confPath = join(basePath, "/aria2/aria2.conf");
-  const sessionPath = app.getPath("userData") + "/session";
+  const sessionPath = app.getPath("userData") + "/aria2.session";
   const sessionIsExist = existsSync(sessionPath);
 
   // 生成命令
