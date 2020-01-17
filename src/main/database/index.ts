@@ -5,6 +5,8 @@ import logger from "../logger";
 import ariaConfig from "./ariaConfig";
 import userConfig from "./userConfig";
 
+export { ariaConfig, userConfig };
+
 const dbPath: string = app.getPath("userData");
 
 let db: Datastore | null = null;

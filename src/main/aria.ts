@@ -5,14 +5,29 @@ import { resolve, join } from "path";
 import { exec, ChildProcess } from "child_process";
 import logger from "./logger";
 import ariaNames from "./config/aria";
+import { ariaConfig, userConfig } from "./database";
 
 // aria2 启动实例
 let instance: ChildProcess | null = null;
 
 /**
+ * 将配置对象转换为命令行参数数组
+ * @param config 配置对象
+ */
+function transformConfig(config: {}): string[] {
+  let result = [];
+  for (const [k, v] of Object.entries(config)) {
+    if (v !== "") {
+      result.push(`--${k}=${v}`);
+    }
+  }
+  return result;
+}
+
+/**
  * 获取 aria2 启动命令
  */
-function getStartSh() {
+async function getStartSh(): Promise<string[]> {
   const { platform } = process;
   let basePath = resolve(app.getAppPath(), "..");
 
@@ -38,14 +53,16 @@ function getStartSh() {
 
   // 获取配置路径和 session 路径
   const confPath = join(basePath, "/aria2/aria2.conf");
-  const sessionPath = app.getPath("userData") + "/aria2.session";
+  const config = await userConfig.get();
+  const sessionPath = config["session-path"];
   const sessionIsExist = existsSync(sessionPath);
 
   // 生成命令
   let result = [
     `${binPath}`,
     `--conf-path=${confPath}`,
-    `--save-session=${sessionPath}`
+    `--save-session=${sessionPath}`,
+    ...transformConfig(await ariaConfig.get())
   ];
   if (sessionIsExist) {
     result = [...result, `--input-file=${sessionPath}`];
@@ -55,8 +72,8 @@ function getStartSh() {
 }
 
 // 启动 aria2
-export function start() {
-  const sh = getStartSh();
+export async function start() {
+  const sh = await getStartSh();
   logger.info("[Furaffinity-dl] Aria2 start sh===>", sh);
   instance = exec(sh.join(" "), (err, stdout, stderr) => {
     if (err) {
@@ -71,7 +88,7 @@ export function start() {
 }
 
 // 关闭 aria2
-export function stop() {
+export async function stop() {
   try {
     logger.info("[Furaffinity-dl] Aria2 stopping===>");
     instance?.kill();
@@ -81,9 +98,9 @@ export function stop() {
 }
 
 // 重启 aria2
-export function restart() {
-  stop();
-  start();
+export async function restart() {
+  await stop();
+  await start();
 }
 
 export default {

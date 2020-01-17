@@ -1,9 +1,11 @@
 import { app } from "electron";
+import path from "path";
 import logger from "../logger";
 import { findOne, updateOrAdd } from "./index";
 
 interface UserConfig {
-  defaultDownloadPath: string;
+  "log-path": string;
+  "session-path": string;
 }
 
 /**
@@ -11,7 +13,8 @@ interface UserConfig {
  */
 export function getDefault(): UserConfig {
   return {
-    defaultDownloadPath: app.getPath("pictures")
+    "log-path": path.join(app.getPath("userData"), "log.log"),
+    "session-path": path.join(app.getPath("userData"), "aria2.session")
   };
 }
 
