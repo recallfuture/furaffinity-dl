@@ -1,25 +1,7 @@
 import { app } from "electron";
 import logger from "../logger";
-import { findOne, updateOrAdd } from "./index";
-
-interface AriaConfig {
-  "all-proxy": string;
-  "allow-overwrite": boolean;
-  "auto-file-renaming": boolean;
-  continue: boolean;
-  dir: string;
-  "max-concurrent-downloads": number;
-  "max-connection-per-server": number;
-  "max-download-limit": number | string;
-  "max-overall-download-limit": number | string;
-  "max-overall-upload-limit": number | string;
-  "min-split-size": string;
-  pause: boolean;
-  "rpc-listen-port": number;
-  "rpc-secret": string;
-  split: number;
-  "user-agent": string;
-}
+import { findOne, updateOrAdd } from "./api";
+import { AriaConfig } from "./interfaces";
 
 /**
  * 获取配置默认值
@@ -27,7 +9,7 @@ interface AriaConfig {
 export function getDefault(): AriaConfig {
   return {
     "all-proxy": "",
-    "allow-overwrite": true,
+    "allow-overwrite": false,
     "auto-file-renaming": false,
     continue: true,
     dir: app.getPath("pictures"),
@@ -37,7 +19,6 @@ export function getDefault(): AriaConfig {
     "max-overall-download-limit": 0,
     "max-overall-upload-limit": 0,
     "min-split-size": "1M",
-    pause: false,
     "rpc-listen-port": 6868,
     "rpc-secret": "",
     split: 16,

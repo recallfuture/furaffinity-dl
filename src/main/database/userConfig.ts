@@ -1,12 +1,8 @@
 import { app } from "electron";
 import path from "path";
 import logger from "../logger";
-import { findOne, updateOrAdd } from "./index";
-
-interface UserConfig {
-  "log-path": string;
-  "session-path": string;
-}
+import { findOne, updateOrAdd } from "./api";
+import { UserConfig } from "./interfaces";
 
 /**
  * 获取配置默认值
