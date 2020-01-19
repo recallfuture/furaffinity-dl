@@ -1,5 +1,5 @@
-import { app } from "electron";
-import logger from "../logger";
+import { getPath } from "../utils";
+import logger from "../../main/logger";
 import { findOne, updateOrAdd } from "./api";
 import { AriaConfig } from "./interfaces";
 
@@ -12,7 +12,7 @@ export function getDefault(): AriaConfig {
     "allow-overwrite": false,
     "auto-file-renaming": false,
     continue: true,
-    dir: app.getPath("pictures"),
+    dir: getPath("pictures"),
     "max-concurrent-downloads": 8,
     "max-connection-per-server": 16,
     "max-download-limit": 0,

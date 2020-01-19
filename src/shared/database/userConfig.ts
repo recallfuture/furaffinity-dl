@@ -1,6 +1,6 @@
-import { app } from "electron";
 import path from "path";
-import logger from "../logger";
+import { getPath } from "../utils";
+import logger from "../../main/logger";
 import { findOne, updateOrAdd } from "./api";
 import { UserConfig } from "./interfaces";
 
@@ -9,8 +9,8 @@ import { UserConfig } from "./interfaces";
  */
 export function getDefault(): UserConfig {
   return {
-    "log-path": path.join(app.getPath("userData"), "log.log"),
-    "session-path": path.join(app.getPath("userData"), "aria2.session")
+    "log-path": path.join(getPath("userData"), "log.log"),
+    "session-path": path.join(getPath("userData"), "aria2.session")
   };
 }
 

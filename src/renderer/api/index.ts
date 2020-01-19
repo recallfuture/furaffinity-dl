@@ -1,34 +1,16 @@
-import is from "electron-is";
 const Aria2 = require("aria2");
+import db from "@/shared/database";
+import { compactUndefined, mergeTaskResult } from "@/shared/utils";
 
 // 客户端
 let client: any = null;
 
 /**
- * 去除数组中的未定义值
- * @param arr 数组
- */
-function compactUndefined(arr: any[] = []): any[] {
-  return arr.filter(value => value !== undefined);
-}
-
-/**
- * 合并任务结果
- * @param response 响应数据
- */
-function mergeTaskResult(response: any[] = []): any[] {
-  let result: any[] = [];
-  for (const res of response) {
-    result = result.concat(...res);
-  }
-  return result;
-}
-
-/**
  * 初始化客户端
  */
 export async function initClient() {
-  const port = 6800;
+  const ariaConfig = await db.ariaConfig.get();
+  const port = ariaConfig["rpc-listen-port"];
   const host = "127.0.0.1";
   client = new Aria2({
     host,

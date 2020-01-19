@@ -8,7 +8,6 @@ import {
   Scraps,
   Submission
 } from "furaffinity-api";
-import db from "@/shared/database";
 
 function onFaClearCookies() {
   session.defaultSession?.cookies.remove(".furaffinity.net", "a");
@@ -33,11 +32,4 @@ export function registerFaIpc() {
   ipc.on("fa.gallery", (id: any, page: any) => Gallery(id, page));
   ipc.on("fa.scraps", (id: any, page: any) => Scraps(id, page));
   ipc.on("fa.submission", (id: any) => Submission(id));
-}
-
-export function registerDbIpc() {
-  ipc.on("db.getUserConfig", db.userConfig.get);
-  ipc.on("db.setUserConfig", (data: any) => db.userConfig.set(data));
-  ipc.on("db.getAriaConfig", db.ariaConfig.get);
-  ipc.on("db.setAriaConfig", (data: any) => db.ariaConfig.set(data));
 }

@@ -1,9 +1,9 @@
-import { app } from "electron";
 import Datastore from "nedb-promises";
 import path from "path";
-import logger from "../logger";
+import { getPath } from "../utils";
+import logger from "../../main/logger";
 
-const dbPath: string = app.getPath("userData");
+const dbPath: string = getPath("userData");
 
 let db: Datastore | null = null;
 
