@@ -1,6 +1,8 @@
 <template lang="pug">
 v-container( fluid )
-  iframe( src="https://www.furaffinity.net/login/?mode=imagecaptcha" width="100%" height="500" )
+  v-btn( @click="reload" block )
+    v-icon mdi-reload
+  iframe( :src="src" width="100%" height="500" )
 </template>
 
 <script>
@@ -12,7 +14,8 @@ export default {
   data() {
     return {
       timer: null,
-      success: false
+      success: false,
+      src: this.getLoginUrl()
     };
   },
 
@@ -26,6 +29,17 @@ export default {
   },
 
   methods: {
+    getLoginUrl() {
+      return (
+        "https://www.furaffinity.net/login/?mode=imagecaptcha&r=" +
+        Math.random()
+      );
+    },
+
+    reload() {
+      this.src = this.getLoginUrl();
+    },
+
     async checkLogin() {
       let a, b;
       const cookies = await getCookies();
