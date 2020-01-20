@@ -1,5 +1,6 @@
 import Vue from "vue";
-import Vuetify from "vuetify";
+// @ts-ignore
+import Vuetify from "vuetify/lib";
 import zhHans from "vuetify/src/locale/zh-Hans";
 
 // @ts-ignore
