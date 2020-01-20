@@ -1,17 +1,11 @@
 <template>
-  <div class="home">
-    <navbar></navbar>
-  </div>
+  <div class="home"></div>
 </template>
 
 <script>
 // @ is an alias to /src
-import Navbar from "@/renderer/components/Navbar";
 
 export default {
-  name: "home",
-  components: {
-    Navbar
-  }
+  name: "home"
 };
 </script>
