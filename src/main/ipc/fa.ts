@@ -10,8 +10,14 @@ import {
 } from "furaffinity-api";
 
 async function onFaClearCookies() {
-  await session.defaultSession?.cookies.remove(".furaffinity.net", "a");
-  await session.defaultSession?.cookies.remove(".furaffinity.net", "b");
+  await session.defaultSession?.cookies.remove(
+    "http://www.furaffinity.net",
+    "a"
+  );
+  await session.defaultSession?.cookies.remove(
+    "http://www.furaffinity.net",
+    "b"
+  );
 }
 
 async function onFaGetCookies() {
