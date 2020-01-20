@@ -9,14 +9,14 @@ import {
   Submission
 } from "furaffinity-api";
 
-function onFaClearCookies() {
-  session.defaultSession?.cookies.remove(".furaffinity.net", "a");
-  session.defaultSession?.cookies.remove(".furaffinity.net", "b");
+async function onFaClearCookies() {
+  await session.defaultSession?.cookies.remove(".furaffinity.net", "a");
+  await session.defaultSession?.cookies.remove(".furaffinity.net", "b");
 }
 
-function onFaGetCookies() {
+async function onFaGetCookies() {
   return session.defaultSession?.cookies.get({
-    url: ".furaffinity.net"
+    domain: ".furaffinity.net"
   });
 }
 
