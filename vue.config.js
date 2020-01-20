@@ -13,34 +13,34 @@ module.exports = {
             releaseType: "draft"
           }
         ],
-        // dmg: {
-        //   contents: [
-        //     {
-        //       x: 410,
-        //       y: 150,
-        //       type: "link",
-        //       path: "/Applications"
-        //     },
-        //     {
-        //       x: 130,
-        //       y: 150,
-        //       type: "file"
-        //     }
-        //   ]
-        // },
-        // mac: {
-        //   target: ["dmg", "zip"],
-        //   type: "distribution",
-        //   extraResources: {
-        //     from: "./extra/darwin/",
-        //     to: "./",
-        //     filter: ["**/*"]
-        //   },
-        //   binaries: [
-        //     "./release/mac/Furaffinity-dl.app/Contents/Resources/engine/aria2c"
-        //   ],
-        //   category: "public.app-category.utilities"
-        // },
+        dmg: {
+          contents: [
+            {
+              x: 410,
+              y: 150,
+              type: "link",
+              path: "/Applications"
+            },
+            {
+              x: 130,
+              y: 150,
+              type: "file"
+            }
+          ]
+        },
+        mac: {
+          target: ["dmg", "zip"],
+          type: "distribution",
+          extraResources: {
+            from: "./extra/darwin/",
+            to: "./",
+            filter: ["**/*"]
+          },
+          binaries: [
+            "./release/mac/Furaffinity-dl.app/Contents/Resources/engine/aria2c"
+          ],
+          category: "public.app-category.utilities"
+        },
         win: {
           target: [
             {
@@ -77,5 +77,6 @@ module.exports = {
         }
       }
     }
-  }
+  },
+  transpileDependencies: ["vuetify"]
 };
