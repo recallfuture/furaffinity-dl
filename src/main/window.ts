@@ -1,9 +1,12 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, Menu } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 export let win: BrowserWindow | null;
+
+// 去掉顶部的窗口菜单
+Menu.setApplicationMenu(null);
 
 export function createWindow() {
   // Create the browser window.
@@ -14,8 +17,6 @@ export function createWindow() {
       nodeIntegration: true
     }
   });
-
-  win.setMenu(null);
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
