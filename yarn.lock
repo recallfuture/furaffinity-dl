@@ -1433,6 +1433,11 @@
   resolved "https://registry.npm.taobao.org/@vue/web-component-wrapper/download/@vue/web-component-wrapper-1.2.0.tgz#bb0e46f1585a7e289b4ee6067dcc5a6ae62f1dd1"
   integrity sha1-uw5G8VhafiibTuYGfcxaauYvHdE=
 
+"@vuetify/cli-plugin-utils@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.npm.taobao.org/@vuetify/cli-plugin-utils/download/@vuetify/cli-plugin-utils-0.0.4.tgz#1c5cc2459b890373acdab65b861e2e754516b08f"
+  integrity sha1-HFzCRZuJA3Os2rZbhh4udUUWsI8=
+
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
   resolved "https://registry.npm.taobao.org/@webassemblyjs/ast/download/@webassemblyjs/ast-1.8.5.tgz#51b1c5fe6576a34953bf4b253df9f0d490d9e359"
@@ -11026,6 +11031,13 @@ vue-cli-plugin-electron-builder@^1.4.4:
     webpack "^4.18.0"
     webpack-chain "^5.0.0"
     yargs "^14.0.0"
+
+vue-cli-plugin-vuetify-preset-rally@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npm.taobao.org/vue-cli-plugin-vuetify-preset-rally/download/vue-cli-plugin-vuetify-preset-rally-1.0.1.tgz#ff136945017b6cb3629cdadd3b508206a70c5c6a"
+  integrity sha1-/xNpRQF7bLNinNrdO1CCBqcMXGo=
+  dependencies:
+    "@vuetify/cli-plugin-utils" "^0.0.4"
 
 vue-cli-plugin-vuetify@^2.0.3:
   version "2.0.3"

@@ -7,7 +7,7 @@ import "roboto-fontface/css/roboto/roboto-fontface.css";
 import "@mdi/font/css/materialdesignicons.css";
 
 // vue2 animate
-require("vue2-animate/dist/vue2-animate.min.css");
+import "vue2-animate/dist/vue2-animate.min.css";
 
 Vue.config.productionTip = false;
 
