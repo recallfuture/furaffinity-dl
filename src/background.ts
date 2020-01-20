@@ -4,6 +4,7 @@ import { app, protocol } from "electron";
 import { win, createWindow } from "./main/window";
 import db from "./shared/database";
 import aria from "./main/aria";
+import { registerFaIpc } from "./main/ipc";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Scheme must be registered before the app is ready
@@ -47,6 +48,7 @@ app.on("ready", async () => {
   }
   await db.initDatabase();
   await aria.start();
+  await registerFaIpc();
   createWindow();
 });
 
