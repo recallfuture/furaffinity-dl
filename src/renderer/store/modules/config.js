@@ -1,24 +1,34 @@
 import db from "@/shared/database";
 
 const state = {
-  userConfig: {},
-  ariaConfig: {}
+  ariaConfig: {},
+  userConfig: {}
 };
 
 const mutations = {
-  SET_USER_CONFIG(state, config) {
-    state.userConfig = config;
+  UPDATE_ARIA_CONFIG(state, config) {
+    state.ariaConfig = { ...state.ariaConfig, ...config };
   },
 
-  SET_ARIA_CONFIG(state, config) {
-    state.ariaConfig = config;
+  UPDATE_USER_CONFIG(state, config) {
+    state.userConfig = { ...state.userConfig, ...config };
   }
 };
 
 const actions = {
-  async initConfig(context) {
-    context.commit("SET_USER_CONFIG", await db.userConfig.get());
-    context.commit("SET_ARIA_CONFIG", await db.ariaConfig.get());
+  async init({ commit }) {
+    commit("UPDATE_ARIA_CONFIG", await db.ariaConfig.get());
+    commit("UPDATE_USER_CONFIG", await db.userConfig.get());
+  },
+
+  async saveAriaConfig({ state, commit }, config) {
+    commit("UPDATE_ARIA_CONFIG", config);
+    await db.ariaConfig.set(state.ariaConfig);
+  },
+
+  async saveUserConfig({ state, commit }, config) {
+    commit("UPDATE_USER_CONFIG", config);
+    await db.userConfig.set(state.userConfig);
   }
 };
 

@@ -10,7 +10,7 @@ async function openFolderDialog(): Promise<string[] | undefined> {
   let result;
   if (win) {
     result = await dialog.showOpenDialog(win, {
-      properties: ["openDirectory"]
+      properties: ["openDirectory", "multiSelections"]
     });
   } else {
     result = await dialog.showOpenDialog({

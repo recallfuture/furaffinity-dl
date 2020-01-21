@@ -12,7 +12,7 @@ import "vue2-animate/dist/vue2-animate.min.css";
 Vue.config.productionTip = false;
 
 store
-  .dispatch("config/initConfig")
+  .dispatch("config/init")
   .then(() => {
     // @ts-ignore
     new Vue({
