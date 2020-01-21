@@ -1,5 +1,5 @@
 <template lang="pug">
-v-container( fluid )
+div
   v-btn( @click="reload" block )
     v-icon mdi-reload
   iframe( :src="src" width="100%" height="500" )
@@ -43,7 +43,6 @@ export default {
     async checkLogin() {
       let a, b;
       const cookies = await getCookies();
-      console.log(cookies);
 
       cookies.forEach((cookie, index) => {
         if (cookie.name === "a") {
@@ -55,6 +54,7 @@ export default {
 
       if (a && b) {
         this.success = true;
+        console.log({ a, b });
         this.$emit("success", { a, b });
       }
     },
