@@ -79,3 +79,8 @@ export async function faSubmission(id: string): Promise<Submission> {
   // @ts-ignore
   return await ipc.send("fa.submission", id);
 }
+
+export async function openFolderDialog(): Promise<string | undefined> {
+  // @ts-ignore
+  return await ipc.send("app.openFolderDialog");
+}
