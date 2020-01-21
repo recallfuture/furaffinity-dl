@@ -18,6 +18,14 @@ export async function getCookies(): Promise<Electron.Cookie[]> {
 }
 
 /**
+ * 通过 cookie 登录
+ */
+export async function faLogin(a: string, b: string) {
+  // @ts-ignore
+  return await ipc.send("fa.login", a, b);
+}
+
+/**
  * 获取当前已登录的用户
  */
 export async function faUser(): Promise<Author | null> {

@@ -1,6 +1,7 @@
 import ipc from "electron-promise-ipc";
 import { session } from "electron";
 import {
+  Login,
   User,
   WatchingList,
   Author,
@@ -32,6 +33,7 @@ export function registerFaIpc() {
   ipc.on("fa.getCookies", onFaGetCookies);
 
   // fa api
+  ipc.on("fa.login", (a: any, b: any) => Login(a, b));
   ipc.on("fa.user", User);
   ipc.on("fa.watchingList", (id: any) => WatchingList(id));
   ipc.on("fa.author", (id: any) => Author(id));
