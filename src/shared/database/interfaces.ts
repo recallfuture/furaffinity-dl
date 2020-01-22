@@ -37,6 +37,8 @@ export interface Subscription {
   galleryTasks: Task[];
   scrapsTasks: Task[];
   dir: string;
+  galleryDir: string;
+  scrapsDir: string;
   log: string[];
   status: string;
   updateOnly: boolean;

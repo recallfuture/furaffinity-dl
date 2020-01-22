@@ -1,5 +1,6 @@
 import { find, findOne, insert, update, remove } from "./api";
 import { Subscription } from "./interfaces";
+import logger from "@/main/logger";
 
 /**
  * 获取一个订阅
@@ -7,17 +8,25 @@ import { Subscription } from "./interfaces";
  */
 export async function get(id: string) {
   const query = {
-    type: "subscription",
+    type: "Subscription",
     "data.author.id": id
   };
-  return await findOne(query);
+  const result = await findOne(query);
+  logger.info("Get one subscription: ", result);
+  return result;
 }
 
 /**
  * 获取所有订阅
  */
 export async function getAll() {
-  return await find({ type: "subscription", "data.deleted": false });
+  const query = {
+    type: "Subscription",
+    "data.deleted": false
+  };
+  const result = await find(query);
+  logger.info("Get all subscription: ", result);
+  return result;
 }
 
 /**
@@ -25,15 +34,10 @@ export async function getAll() {
  * @param id 订阅作者id
  * @param data 订阅
  */
-export async function add(id: string, data: Subscription) {
-  const query = {
-    type: "subscription",
-    "data.author.id": id
-  };
-  if (await find(query)) {
-    return;
-  }
-  return await insert({ type: "subscription", data });
+export async function add(data: Subscription) {
+  const result = await insert({ type: "Subscription", data });
+  logger.info("Add subscription: ", data);
+  return result;
 }
 
 /**
@@ -43,12 +47,12 @@ export async function add(id: string, data: Subscription) {
  */
 export async function set(id: string, data: Subscription) {
   const query = {
-    type: "subscription",
+    type: "Subscription",
     "data.author.id": id
   };
-  if (await find(query)) {
-    return await update(query, data);
-  }
+  const result = await update(query, data);
+  logger.info("Update subscription: ", data);
+  return result;
 }
 
 /**
@@ -57,12 +61,12 @@ export async function set(id: string, data: Subscription) {
  */
 export async function del(id: string) {
   const query = {
-    type: "subscription",
+    type: "Subscription",
     "data.author.id": id
   };
-  if (await find(query)) {
-    return await remove(query);
-  }
+  const result = await remove(query);
+  logger.info("Add subscription: ", id);
+  return result;
 }
 
 export default {

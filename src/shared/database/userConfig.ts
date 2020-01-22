@@ -28,7 +28,7 @@ export async function get(): Promise<UserConfig> {
   } else {
     result = { ...getDefault(), ...doc.data } as UserConfig;
   }
-  logger.info("Get config: " + JSON.stringify(result));
+  logger.info("Get config: ", result);
 
   return result;
 }
@@ -39,7 +39,7 @@ export async function get(): Promise<UserConfig> {
  */
 export async function set(data: UserConfig) {
   await updateOrAdd({ type: "UserConfig" }, { type: "UserConfig", data });
-  logger.info("Save config: " + JSON.stringify(data));
+  logger.info("Save config: ", data);
 }
 
 export default {

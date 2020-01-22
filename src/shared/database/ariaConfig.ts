@@ -40,7 +40,7 @@ export async function get(): Promise<AriaConfig> {
   } else {
     result = { ...getDefault(), ...doc.data } as AriaConfig;
   }
-  logger.info("Get config: " + JSON.stringify(result));
+  logger.info("Get config: ", result);
 
   return result;
 }
@@ -51,7 +51,7 @@ export async function get(): Promise<AriaConfig> {
  */
 export async function set(data: AriaConfig) {
   await updateOrAdd({ type: "AriaConfig" }, { type: "AriaConfig", data });
-  logger.info("Save config: " + JSON.stringify(data));
+  logger.info("Save config: ", data);
 }
 
 export default {

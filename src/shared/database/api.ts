@@ -15,7 +15,6 @@ export async function initDatabase() {
     filename: path.join(dbPath, "database.db")
   });
   await db.load();
-  logger.info("Database init");
 }
 
 /**

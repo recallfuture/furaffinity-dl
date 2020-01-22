@@ -1,5 +1,6 @@
 const state = {
-  guideDialog: false
+  guideDialog: false,
+  addSubscriptionDialog: false
 };
 
 const mutations = {
@@ -8,6 +9,14 @@ const mutations = {
       state.guideDialog = true;
     } else {
       state.guideDialog = false;
+    }
+  },
+
+  TOGGLE_ADD_SUBSCRIPTION_DIALOG(state, status) {
+    if (status) {
+      state.addSubscriptionDialog = true;
+    } else {
+      state.addSubscriptionDialog = false;
     }
   }
 };
