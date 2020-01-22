@@ -1,5 +1,5 @@
 <template lang="pug">
-v-dialog( v-model="$store.state.app.addSubscriptionDialog" width="800" )
+v-dialog( v-model="model" width="800" )
   div( class="gray pa-6" )
     v-tabs( v-model="tab" grow )
       v-tab 添加一个订阅
@@ -27,6 +27,18 @@ export default {
 
   components: {
     AddSingleSubscription
+  },
+
+  computed: {
+    model: {
+      get() {
+        return this.$store.state.app.addSubscriptionDialog;
+      },
+
+      set(value) {
+        this.$store.commit("app/TOGGLE_ADD_SUBSCRIPTION_DIALOG", value);
+      }
+    }
   }
 };
 </script>
