@@ -4,28 +4,26 @@ div
 
   v-stepper-content( :step="step" )
     v-form( v-model="valid" class="d-flex align-center" ref="form" )
-      v-text-field( 
-        v-model="dir" 
-        prepend-icon="mdi-folder" 
-        @click:prepend="openFolderDialog"
-        label="默认存储位置"
-        :rules="[() => checkFolder() || '文件夹不存在']"
-        required
-        validate-on-blur
-      )
+      //- 错误提示
+      v-alert( v-model="alert" dismissible type="error" ) {{ errorMessage }}
+      dir-field( v-model="dir" label="默认下载位置" )
     
     v-btn( @click="save" color="primary" ) 完成
 </template>
 
 <script>
+import DirField from "../Form/DirField";
 import fs from "fs";
-import { openFolderDialog } from "@/renderer/api/ipc";
+import path from "path";
 
 export default {
   name: "GuideStepConfig",
 
   data() {
     return {
+      alert: false,
+      errorMessage: "",
+
       valid: false,
       dir: this.$store.state.config.ariaConfig.dir
     };
@@ -43,24 +41,39 @@ export default {
   },
 
   methods: {
-    async openFolderDialog() {
-      const paths = await openFolderDialog();
-      if (paths && paths[0]) {
-        this.dir = paths[0];
-        this.$refs.form.validate();
-      }
-    },
-
-    checkFolder() {
-      return fs.existsSync(this.dir);
-    },
-
     async save() {
       if (this.valid) {
+        if (!this.craeteFolder(this.dir)) {
+          return;
+        }
+
         await this.$store.dispatch("config/saveAriaConfig", { dir: this.dir });
         this.$emit("next");
       }
+    },
+
+    craeteFolder(dir) {
+      try {
+        if (!path.isAbsolute(dir)) {
+          this.alert = true;
+          this.errorMessage = "请提供绝对路径";
+          return false;
+        }
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir);
+        }
+      } catch (e) {
+        console.log(e);
+        this.alert = true;
+        this.errorMessage = "路径错误，请尝试使用其他路径";
+        return false;
+      }
+      return true;
     }
+  },
+
+  components: {
+    DirField
   }
 };
 </script>
