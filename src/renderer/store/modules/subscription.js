@@ -14,7 +14,7 @@ const actions = {
   async init({ commit }) {
     const subscriptions = await db.subscription.getAll();
     for (const sub of subscriptions) {
-      commit("ADD_SUBSCRIPTION", sub.data);
+      commit("ADD_SUBSCRIPTION", sub);
     }
   },
 
@@ -22,14 +22,14 @@ const actions = {
     // 先看看库里是否已经存在此订阅
     const sub = await db.subscription.get(subscription.author.id);
     // 存在且没被软删除就跳出
-    if (sub && !sub.data.deleted) {
+    if (sub && !sub.deleted) {
       return;
     }
 
-    if (sub && sub.data.deleted) {
+    if (sub && sub.deleted) {
       // 如果是被删掉的，就还原回来
-      subscription.galleryTasks = sub.data.galleryTasks;
-      subscription.scrapsTasks = sub.data.scrapsTasks;
+      subscription.galleryTasks = sub.galleryTasks;
+      subscription.scrapsTasks = sub.scrapsTasks;
       await db.subscription.set(subscription.author.id, subscription);
     } else {
       await db.subscription.add(subscription);

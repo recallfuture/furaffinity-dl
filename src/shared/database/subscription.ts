@@ -11,9 +11,9 @@ export async function get(id: string) {
     type: "Subscription",
     "data.author.id": id
   };
-  const result = await findOne(query);
+  const result: any = await findOne(query);
   logger.info("Get one subscription: ", result);
-  return result;
+  return result.data as Subscription;
 }
 
 /**
@@ -24,9 +24,11 @@ export async function getAll() {
     type: "Subscription",
     "data.deleted": false
   };
-  const result = await find(query);
+  const result: any[] | undefined = await find(query);
   logger.info("Get all subscription: ", result);
-  return result;
+  return result?.map(value => {
+    return value.data;
+  });
 }
 
 /**
