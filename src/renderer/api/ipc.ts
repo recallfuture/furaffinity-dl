@@ -48,7 +48,7 @@ export async function faWatchingList(id: string): Promise<Author[]> {
  */
 export async function faAuthor(id: string): Promise<Author> {
   // @ts-ignore
-  return await ipc.send("fa.Author", id);
+  return await ipc.send("fa.author", id);
 }
 
 /**
