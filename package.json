@@ -20,7 +20,7 @@
     "electron-is": "^3.0.0",
     "electron-log": "^4.0.3",
     "electron-promise-ipc": "^2.0.1",
-    "furaffinity-api": "^3.4.1",
+    "furaffinity-api": "^3.4.3",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
     "roboto-fontface": "*",

@@ -5092,10 +5092,10 @@ functional-red-black-tree@^1.0.1:
   resolved "https://registry.npm.taobao.org/functional-red-black-tree/download/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
   integrity sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
 
-furaffinity-api@^3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/furaffinity-api/-/furaffinity-api-3.4.1.tgz#99d7903075cf97769f8d322d054c292633e35d6d"
-  integrity sha512-XBzIdKFyvq//Nya+AudWBXifvR5raEhboWx/L6ikhi+h4lG62OLHIB4aKgDzl9CHBOiSeOey566HGh8l9d/x0A==
+furaffinity-api@^3.4.3:
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/furaffinity-api/-/furaffinity-api-3.4.3.tgz#b1e99c1f2174e465a032910478f8c76609421999"
+  integrity sha512-fMOF2gHatasf0PLNhAT/C4MsO8F7dZEYNOdz1Okc065IGQ9g1FLCOG22PHJ6b0rRH1BJfC3/CMOkK8isN/CAnA==
   dependencies:
     axios "^0.19.0"
     cheerio "^1.0.0-rc.3"
