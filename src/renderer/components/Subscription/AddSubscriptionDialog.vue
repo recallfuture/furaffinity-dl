@@ -1,7 +1,7 @@
 <template lang="pug">
-v-dialog( v-model="model" width="800" )
-  div( class="gray pa-6" )
-    v-tabs( v-model="tab" grow )
+v-dialog( v-model="model" key="AddSubscriptionDialog" width="800" )
+  div( class="primary" )
+    v-tabs( v-model="tab" v-if="model" grow )
       v-tab 添加一个订阅
       v-tab 从关注列表导入
 
@@ -17,7 +17,7 @@ v-dialog( v-model="model" width="800" )
 import AddSingleSubscription from "./AddSingleSubscription";
 
 export default {
-  name: "AddSubscription",
+  name: "AddSubscriptionDialog",
 
   data() {
     return {

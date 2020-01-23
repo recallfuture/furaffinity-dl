@@ -15,6 +15,7 @@ Vue.config.productionTip = false;
 async function start() {
   try {
     await db.initDatabase();
+    await store.dispatch("app/init");
     await store.dispatch("config/init");
     await store.dispatch("subscription/init");
   } catch (e) {
