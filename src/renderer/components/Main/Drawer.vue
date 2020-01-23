@@ -68,7 +68,9 @@ export default {
   },
 
   methods: {
-    add() {}
+    add() {
+      this.$emit("sub:add");
+    }
   },
 
   watch: {

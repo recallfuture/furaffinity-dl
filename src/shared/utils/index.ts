@@ -28,3 +28,7 @@ export function mergeTaskResult(response: any[] = []): any[] {
   }
   return result;
 }
+
+export function convertNameToId(name: string): string {
+  return name.replace("-", "_").toLowerCase();
+}

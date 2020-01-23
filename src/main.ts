@@ -1,6 +1,5 @@
 import Vue from "vue";
 import App from "@/renderer/App.vue";
-import router from "@/renderer/router";
 import store from "@/renderer/store";
 import vuetify from "@/renderer/plugins/vuetify";
 import "roboto-fontface/css/roboto/roboto-fontface.css";
@@ -24,7 +23,6 @@ async function start() {
 
   // @ts-ignore
   new Vue({
-    router,
     store,
     // @ts-ignore
     vuetify,

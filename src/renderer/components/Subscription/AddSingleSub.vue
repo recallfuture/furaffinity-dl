@@ -1,8 +1,5 @@
 <template lang="pug">
 div( class="pa-4" )
-  //- 错误提示
-  v-alert( v-model="alert" dismissible type="error" ) {{ errorMessage }}
-
   v-window( v-model="window" )
     //- 用户名
     v-window-item
@@ -12,15 +9,17 @@ div( class="pa-4" )
     //- 其他选项
     v-window-item
       v-form( v-model="validOptions" )
-        div( v-if="user" )
-          v-avatar( size="36" tile class="mb-4" )
-            img( :src="user.avatar" )
-          span( class="ml-2" ) {{ user.name }}
+        //- 显示用户
+        v-row( v-if="user" )
+          v-col( cols="12" )
+            user( v-model="user" )
 
+        //- 下载位置
         v-row
           v-col( cols="12" )
-              dir-field( v-model="dir" label="下载位置" )
+            dir-field( v-model="dir" label="下载位置" )
         
+        //- Gallery 和 Scraps 选项
         v-row
           v-col( cols="6" )
             v-switch( v-model="gallery" label="Gallery" )
@@ -34,20 +33,31 @@ div( class="pa-4" )
 </template>
 
 <script>
-import DirField from "../Form/DirField";
-import { faAuthor } from "@/renderer/api";
 import path from "path";
 import fs from "fs";
-import db from "@/shared/database";
+import { convertNameToId } from "@/shared/utils";
+import { faAuthor } from "@/renderer/api";
+import bus from "@/renderer/utils/EventBus";
+import DirField from "../Form/DirField";
+import User from "../Main/User";
 
 export default {
-  name: "AddSingleSubscription",
+  name: "AddSingleSub",
+
+  props: {
+    subs: {
+      type: Object,
+      default: () => ({})
+    },
+
+    config: {
+      type: Object,
+      default: () => ({})
+    }
+  },
 
   data() {
     return {
-      alert: false,
-      errorMessage: "",
-
       window: 0,
       loading: false,
 
@@ -57,7 +67,7 @@ export default {
       username: "",
       user: null,
 
-      dir: this.$store.state.config.ariaConfig.dir,
+      dir: this.config.dir,
       gallery: true,
       scraps: false,
       galleryDir: "",
@@ -66,7 +76,8 @@ export default {
   },
 
   components: {
-    DirField
+    DirField,
+    User
   },
 
   computed: {
@@ -84,9 +95,7 @@ export default {
       return path.join(this.dir, dir);
     },
 
-    convertNameToId(name) {
-      return name.replace("-", "_");
-    },
+    convertNameToId,
 
     craeteFolder(dir) {
       if (!fs.existsSync(dir)) {
@@ -100,24 +109,31 @@ export default {
         return;
       }
 
-      try {
-        // 开始获取用户信息
-        this.loading = true;
-        this.user = await faAuthor(this.convertNameToId(this.username));
-        console.log(this.user);
+      // 开始获取用户信息
+      this.loading = true;
+      const user = await faAuthor(this.convertNameToId(this.username));
+      console.log(user);
 
-        // 使用用户 id 作为主文件夹
-        this.dir = path.join(this.dir, this.user.id);
-        this.window++;
-      } catch (e) {
-        console.log(e);
-
-        // 显示错误信息
-        this.alert = true;
-        this.errorMessage = "获取用户信息失败";
-      } finally {
+      if (!user) {
+        bus.$emit("snackbar", { type: "error", message: "用户信息获取失败" });
         this.loading = false;
+        return;
       }
+
+      console.log(user.id);
+      console.log(this.subs);
+      if (user.id in this.subs) {
+        bus.$emit("snackbar", { type: "error", message: "用户已存在" });
+        this.loading = false;
+        return;
+      }
+
+      this.user = user;
+      this.loading = false;
+      // 使用用户 id 作为主文件夹
+      this.dir = path.join(this.dir, user.id);
+      // 切换到其他选项填写页
+      this.window++;
     },
 
     // 验证其他选项
@@ -127,7 +143,7 @@ export default {
       }
 
       this.loading = true;
-      const subscription = {
+      const sub = {
         author: this.user,
         gallery: this.gallery,
         scraps: this.scraps,
@@ -142,18 +158,9 @@ export default {
         createAt: Date.parse(new Date()),
         deleted: false
       };
-      console.log(subscription);
-      // 存入数据库
-      try {
-        await this.$store.dispatch("subscription/add", subscription);
-        this.$store.commit("app/TOGGLE_ADD_SUBSCRIPTION_DIALOG", false);
-      } catch (e) {
-        console.log(e);
-        this.alert = true;
-        this.errorMessage = `保存失败：${e.message}`;
-      } finally {
-        this.loading = false;
-      }
+      console.log(sub);
+      this.$emit("new:sub", sub);
+      this.loading = false;
     },
 
     next() {
