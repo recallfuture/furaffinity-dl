@@ -13,7 +13,7 @@ export async function get(id: string) {
   };
   const result: any = await findOne(query);
   logger.info("Get one subscription: ", result);
-  return result.data as Subscription;
+  return result?.data as Subscription;
 }
 
 /**
