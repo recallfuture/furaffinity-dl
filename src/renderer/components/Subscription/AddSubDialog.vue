@@ -6,7 +6,6 @@ v-dialog( v-model="model" width="800" )
       v-tab 从关注列表导入
 
       v-tab-item
-        //- TODO: 参数
         add-single-sub( :config="config" :subs="subs" @sub:new="newSub" )
       v-tab-item
         v-container
@@ -56,7 +55,8 @@ export default {
 
   methods: {
     newSub(sub) {
-      this.$emit("addSub:open", [sub]);
+      this.$emit("subs:new", [sub]);
+      this.model = false;
     }
   },
 

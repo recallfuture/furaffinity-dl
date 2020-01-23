@@ -1,7 +1,7 @@
 <template lang="pug">
   //- 用户信息不为空就展示出来
   div( v-if="user" )
-    v-avatar( size="36" class="mx-2" )
+    v-avatar( size="36" class="mr-2" )
       img( :src="user.avatar" )
     span( class="mr-2" ) {{ user.name }}
 
@@ -16,14 +16,10 @@
 
 <script>
 import Login from "../Login/Login";
+import bus from "@/renderer/utils/EventBus";
 
 export default {
   name: "User",
-
-  model: {
-    prop: "user",
-    event: "change"
-  },
 
   props: {
     user: {
@@ -44,7 +40,7 @@ export default {
 
   methods: {
     loginSuccess(user) {
-      this.$emit("change", user);
+      bus.$emit("login", user);
       this.dialog = false;
     }
   }

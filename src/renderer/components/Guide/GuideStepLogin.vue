@@ -1,10 +1,8 @@
 <template lang="pug">
 div
   v-stepper-step( :complete="complete" :step="step" :editable="editable" )
-    div( v-if="user && user.name" ) 
-      v-avatar( size="36" class="mr-2"  )
-        v-img( :src="user.avatar" )
-      span {{  user.name }} 已登录
+    div( v-if="user" )
+      user(  :user="user" )
     span( v-else ) 登录
   
   v-stepper-content( :step="step" )
@@ -16,8 +14,10 @@ div
 </template>
 
 <script>
-import Login from "../Login/Login";
 import { mapState } from "vuex";
+import Login from "../Login/Login";
+import User from "../Main/User";
+import bus from "@/renderer/utils/EventBus";
 
 export default {
   name: "GuideStepLogin",
@@ -32,7 +32,7 @@ export default {
   mounted() {
     if (this.user) {
       this.editable = false;
-      this.$emit("success", this.user);
+      this.$emit("next");
     }
   },
 
@@ -41,27 +41,28 @@ export default {
       type: Boolean,
       required: true
     },
+
     step: {
       type: String,
       required: true
+    },
+
+    user: {
+      type: Object,
+      default: null
     }
   },
 
-  computed: {
-    ...mapState("app/", {
-      user: state => state.user
-    })
-  },
-
   components: {
-    Login
+    Login,
+    User
   },
 
   methods: {
     async loginSuccess(user) {
-      this.$store.commit("app/SET_USER", user);
       this.editable = false;
-      this.$emit("success", user);
+      this.$emit("next");
+      bus.$emit("login", user);
     }
   }
 };

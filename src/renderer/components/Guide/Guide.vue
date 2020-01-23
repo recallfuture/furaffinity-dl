@@ -2,9 +2,9 @@
 v-dialog( v-model="model" persistent width="800" )
   v-card( color="primary" )
     v-card-title 初次使用向导
-    v-stepper( v-model="index" vertical )
-      guide-step-login( :complete="index > 1" step="1" @success="next" @next="next" )
-      guide-step-config( :complete="index > 2" step="2" @next="finish" )
+    v-stepper( v-model="step" vertical )
+      guide-step-login( :complete="step > 1" step="1" :user="user" @next="finishLogin" )
+      guide-step-config( :complete="step > 2" step="2" :config="config" @next="finishConfig" )
 </template>
 
 <script>
@@ -12,9 +12,32 @@ import GuideStepLogin from "./GuideStepLogin";
 import GuideStepConfig from "./GuideStepConfig";
 
 export default {
+  model: {
+    prop: "dialog",
+    event: "change"
+  },
+
+  props: {
+    dialog: {
+      type: Boolean,
+      default: false
+    },
+
+    user: {
+      type: Object,
+      default: null
+    },
+
+    config: {
+      type: Object,
+      default: () => ({})
+    }
+  },
+
   data() {
     return {
-      index: 1
+      model: this.dialog,
+      step: 1
     };
   },
 
@@ -23,24 +46,32 @@ export default {
     GuideStepConfig
   },
 
-  computed: {
-    model: {
-      get() {
-        return this.$store.state.app.guideDialog;
-      },
-      set(value) {
-        this.$store.commit("app/TOGGLE_GUIDE_DIALOG", value);
+  methods: {
+    finishLogin(user) {
+      if (user) {
+        this.$emit("user:login", user);
       }
+      this.step++;
+    },
+
+    finishConfig(config) {
+      this.$emit("config:update", config);
+      this.finishGuide();
+    },
+
+    finishGuide() {
+      localStorage.setItem("first_time", JSON.stringify(false));
+      this.model = false;
     }
   },
 
-  methods: {
-    next() {
-      this.index++;
+  watch: {
+    model(value) {
+      this.$emit("change", value);
     },
 
-    finish() {
-      this.model = false;
+    dialog(value) {
+      this.model = value;
     }
   }
 };

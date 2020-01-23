@@ -12,7 +12,7 @@ div( class="pa-4" )
         //- 显示用户
         v-row( v-if="user" )
           v-col( cols="12" )
-            user( v-model="user" )
+            user( :user="user" )
 
         //- 下载位置
         v-row

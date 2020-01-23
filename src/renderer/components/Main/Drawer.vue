@@ -69,7 +69,7 @@ export default {
 
   methods: {
     add() {
-      this.$emit("sub:add");
+      this.$emit("addSub:open");
     }
   },
 

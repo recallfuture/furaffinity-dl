@@ -1,24 +1,30 @@
 <template lang="pug">
-v-app( v-if="!loading" )
-  //- 错误提示
-  v-snackbar( v-model="alert" top :color="alertType" )
-    span {{ alertMessage }}
-    v-btn( @click="alert = false" icon color="pink" )
-      v-icon mdi-close
+  v-app( v-if="!loading" )
+    //- 错误提示
+    v-snackbar( v-model="alert" top :color="alertType" )
+      span {{ alertMessage }}
+      v-btn( @click="alert = false" icon )
+        v-icon mdi-close
 
-  //- 全局使用的组件
-  guide
-  add-sub-dialog( v-model="addSubDialog" :config="config" :subs="subs" @subs:new="addSubs" )
+    //- 全局使用的组件
+    guide(
+      v-model="guide"
+      :config="config"
+      :user="user"
+      @user:login="login"
+      @config:update="updateConfig"
+    )
+    add-sub-dialog( v-model="addSubDialog" :config="config" :subs="subs" @subs:new="addSubs" )
 
-  //- 订阅抽屉栏
-  Drawer( v-model="drawer" title="订阅" :subs="subList" @addSub:open="addSubDialog = true" )
+    //- 订阅抽屉栏
+    Drawer( v-model="drawer" title="订阅" :subs="subList" @addSub:open="addSubDialog = true" )
 
-  //- 订阅详情控制栏
-  v-app-bar( app )
-    v-app-bar-nav-icon( @click="drawer = !drawer" )
-    v-toolbar-title Furaffinity-dl
-    v-spacer
-    user( v-model="user" )
+    //- 订阅详情控制栏
+    v-app-bar( app )
+      v-app-bar-nav-icon( @click="drawer = !drawer" )
+      v-toolbar-title Furaffinity-dl
+      v-spacer
+      user( :user="user" )
 </template>
 
 <script>
@@ -44,17 +50,20 @@ export default {
       alertType: "info",
       alertMessage: "",
 
-      user: null,
       drawer: true,
       guide: false,
       addSubDialog: false,
 
+      user: null,
       subs: {},
       config: {}
     };
   },
 
   async mounted() {
+    // 初始化数据库
+    await db.initDatabase();
+
     // 初始化用户信息
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
@@ -75,7 +84,15 @@ export default {
       ...(await db.userConfig.get())
     };
 
+    // 初始化向导
+    const firstTime = JSON.parse(localStorage.getItem("first_time"));
+    if (firstTime === null) {
+      this.guide = true;
+    }
+
+    // 全局事件绑定
     bus.$on("snackbar", this.showSnackBar);
+    bus.$on("login", this.login);
 
     this.loading = false;
   },
@@ -109,6 +126,14 @@ export default {
         this.$set(this.subs, sub.author.id, sub);
         await db.subscription.add(sub);
       }
+    },
+
+    login(user) {
+      this.user = user;
+    },
+
+    updateConfig(config) {
+      // TODO: 更新设置
     }
   },
 
