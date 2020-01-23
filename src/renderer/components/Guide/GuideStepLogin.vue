@@ -1,7 +1,10 @@
 <template lang="pug">
 div
   v-stepper-step( :complete="complete" :step="step" :editable="editable" )
-    span( v-if="user && user.name" ) {{  user.name }} 已登录
+    div( v-if="user && user.name" ) 
+      v-avatar( size="36" class="mr-2"  )
+        v-img( :src="user.avatar" )
+      span {{  user.name }} 已登录
     span( v-else ) 登录
   
   v-stepper-content( :step="step" )
@@ -15,6 +18,7 @@ div
 <script>
 import Login from "../Login/Login";
 import { faLogin, faUser } from "@/renderer/api/index";
+import { mapState } from "vuex";
 
 export default {
   name: "GuideStepLogin",
@@ -22,9 +26,15 @@ export default {
   data() {
     return {
       title: "登录",
-      user: null,
       editable: true
     };
+  },
+
+  mounted() {
+    if (this.user) {
+      this.editable = false;
+      this.$emit("success", this.user);
+    }
   },
 
   props: {
@@ -38,6 +48,12 @@ export default {
     }
   },
 
+  computed: {
+    ...mapState("app/", {
+      user: state => state.user
+    })
+  },
+
   components: {
     Login
   },
@@ -46,11 +62,11 @@ export default {
     async loginSuccess({ a, b }) {
       await faLogin(a, b);
       const user = await faUser();
-      console.log(user);
-
-      this.user = user;
+      user.a = a;
+      user.b = b;
+      this.$store.commit("app/SET_USER", user);
       this.editable = false;
-      this.$emit("success", { user, a, b });
+      this.$emit("success", user);
     }
   }
 };

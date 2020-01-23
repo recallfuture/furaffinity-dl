@@ -1,9 +1,10 @@
 <template lang="pug">
 v-dialog( v-model="model" persistent width="800" )
-  h2 初次使用向导
-  v-stepper( v-model="index" vertical )
-    guide-step-login( :complete="index > 1" step="1" @success="next" @next="next" )
-    guide-step-config( :complete="index > 2" step="2" @next="finish" )
+  v-card( color="primary" )
+    v-card-title 初次使用向导
+    v-stepper( v-model="index" vertical )
+      guide-step-login( :complete="index > 1" step="1" @success="next" @next="next" )
+      guide-step-config( :complete="index > 2" step="2" @next="finish" )
 </template>
 
 <script>
