@@ -5,33 +5,75 @@ v-app
   add-subscription-dialog
 
   //- 订阅抽屉栏
-  Drawer
+  Drawer( v-model="drawer" title="订阅" :subs="subList")
 
   //- 订阅详情控制栏
-  app-bar
-  v-content( class="grey lighten-5" )
+  v-app-bar( app )
+    v-app-bar-nav-icon( @click="drawer = !drawer" )
+    v-toolbar-title Furaffinity-dl
+    v-spacer
+    user( v-model="user" )
 </template>
 
 <script>
 // @ is an alias to /src
 import Guide from "@/renderer/components/Guide/Guide";
 import AddSubscriptionDialog from "@/renderer/components/Subscription/AddSubscriptionDialog";
-import AppBar from "@/renderer/components/Main/AppBar";
+import User from "@/renderer/components/Main/User";
 import Drawer from "@/renderer/components/Main/Drawer";
-import { app } from "electron";
+import { faLogin } from "@/renderer/api";
+import db from "@/shared/database";
 
 export default {
   name: "home",
 
   data() {
-    return {};
+    return {
+      user: null,
+      drawer: true,
+      guide: false,
+      addSub: false,
+
+      subs: {}
+    };
+  },
+
+  async mounted() {
+    // 初始化用户信息
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      this.user = user;
+      await faLogin(user.a, user.b);
+    }
+
+    // 初始化订阅信息
+    const result = await db.subscription.getAll();
+    for (const sub of result) {
+      // 使用作者id作为索引
+      this.$set(this.subs, sub.author.id, sub);
+    }
+  },
+
+  computed: {
+    subList() {
+      return Object.values(this.subs);
+    }
   },
 
   components: {
     Guide,
     AddSubscriptionDialog,
-    AppBar,
+    User,
     Drawer
+  },
+
+  watch: {
+    user(value) {
+      // 用户信息更新就写入本地存储
+      if (value) {
+        localStorage.setItem("user", JSON.stringify(value));
+      }
+    }
   }
 };
 </script>
