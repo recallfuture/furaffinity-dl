@@ -17,7 +17,6 @@ div
 
 <script>
 import Login from "../Login/Login";
-import { faLogin, faUser } from "@/renderer/api/index";
 import { mapState } from "vuex";
 
 export default {
@@ -59,11 +58,7 @@ export default {
   },
 
   methods: {
-    async loginSuccess({ a, b }) {
-      await faLogin(a, b);
-      const user = await faUser();
-      user.a = a;
-      user.b = b;
+    async loginSuccess(user) {
       this.$store.commit("app/SET_USER", user);
       this.editable = false;
       this.$emit("success", user);

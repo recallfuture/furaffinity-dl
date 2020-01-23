@@ -1,3 +1,5 @@
+import { faLogin } from "../../api";
+
 const state = {
   guideDialog: false,
   addSubscriptionDialog: false,
@@ -26,7 +28,11 @@ const mutations = {
 
 const actions = {
   async init({ commit }) {
-    commit("SET_USER", JSON.parse(localStorage.getItem("user")));
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      commit("SET_USER", user);
+      await faLogin(user.a, user.b);
+    }
   }
 };
 

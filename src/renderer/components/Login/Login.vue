@@ -6,7 +6,7 @@ div
 </template>
 
 <script>
-import { clearCookies, getCookies } from "@/renderer/api";
+import { clearCookies, getCookies, faLogin, faUser } from "@/renderer/api";
 
 export default {
   name: "Login",
@@ -53,9 +53,18 @@ export default {
       });
 
       if (a && b) {
+        await faLogin(a, b);
+        const user = await faUser();
+        if (!user) {
+          return;
+        }
+
+        user.a = a;
+        user.b = b;
+        console.log(user);
+
         this.success = true;
-        console.log({ a, b });
-        this.$emit("success", { a, b });
+        this.$emit("success", user);
       }
     },
 

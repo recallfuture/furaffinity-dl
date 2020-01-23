@@ -12,16 +12,28 @@ v-app-bar( app )
       img( :src="$store.state.app.user.avatar" )
     span( class="mr-2" ) {{ $store.state.app.user.name }}
   div( v-else )
-    v-btn( @click="login" text ) 登录
+    v-dialog( v-model="dialog" width="800" )
+      template( v-slot:activator="{ on }" )
+        v-btn( @click="dialog = true" text ) 登录
+      login( v-if="dialog" @success="loginSuccess" )
+        
       
 </template>
 
 <script>
+import Login from "../Login/Login";
+
 export default {
   name: "AppBar",
 
   data() {
-    return {};
+    return {
+      dialog: false
+    };
+  },
+
+  components: {
+    Login
   },
 
   methods: {
@@ -33,11 +45,14 @@ export default {
       this.$store.commit("app/TOGGLE_ADD_SUBSCRIPTION_DIALOG", true);
     },
 
-    login() {},
+    openGuideDialog() {
+      this.$store.commit("app/TOGGLE_GUIDE_DIALOG", true);
+    },
 
-    startAll() {},
-
-    stopAll() {}
+    async loginSuccess(user) {
+      this.$store.commit("app/SET_USER", user);
+      this.dialog = false;
+    }
   }
 };
 </script>
