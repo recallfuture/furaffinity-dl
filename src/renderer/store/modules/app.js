@@ -1,5 +1,3 @@
-import db from "@/shared/database";
-
 const state = {
   guideDialog: false,
   addSubscriptionDialog: false,
@@ -10,6 +8,7 @@ const state = {
 const mutations = {
   SET_USER(state, user) {
     state.user = user;
+    localStorage.setItem("user", JSON.stringify(user));
   },
 
   TOGGLE_GUIDE_DIALOG(state, status) {
@@ -27,7 +26,7 @@ const mutations = {
 
 const actions = {
   async init({ commit }) {
-    commit("SET_USER", await db.user.get());
+    commit("SET_USER", JSON.parse(localStorage.getItem("user")));
   }
 };
 
