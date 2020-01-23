@@ -159,7 +159,7 @@ export default {
         deleted: false
       };
       console.log(sub);
-      this.$emit("new:sub", sub);
+      this.$emit("sub:new", sub);
       this.loading = false;
     },
 

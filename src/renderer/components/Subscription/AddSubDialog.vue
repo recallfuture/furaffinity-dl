@@ -7,7 +7,7 @@ v-dialog( v-model="model" width="800" )
 
       v-tab-item
         //- TODO: 参数
-        add-single-sub( :config="config" :subs="subs" @new:sub="newSub" )
+        add-single-sub( :config="config" :subs="subs" @sub:new="newSub" )
       v-tab-item
         v-container
           h2 敬请期待
@@ -56,7 +56,7 @@ export default {
 
   methods: {
     newSub(sub) {
-      this.$emit("new:subs", [sub]);
+      this.$emit("addSub:open", [sub]);
     }
   },
 

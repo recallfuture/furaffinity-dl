@@ -8,10 +8,10 @@ v-app( v-if="!loading" )
 
   //- 全局使用的组件
   guide
-  add-sub-dialog( v-model="addSubDialog" :config="config" :subs="subs" @new:subs="newSubs" )
+  add-sub-dialog( v-model="addSubDialog" :config="config" :subs="subs" @subs:new="addSubs" )
 
   //- 订阅抽屉栏
-  Drawer( v-model="drawer" title="订阅" :subs="subList" @sub:add="addSubDialog = true" )
+  Drawer( v-model="drawer" title="订阅" :subs="subList" @addSub:open="addSubDialog = true" )
 
   //- 订阅详情控制栏
   v-app-bar( app )
@@ -100,7 +100,7 @@ export default {
       this.alertMessage = message;
     },
 
-    async newSubs(subs) {
+    async addSubs(subs) {
       for (const sub of subs) {
         if (sub.author.id in this.subs) {
           continue;
