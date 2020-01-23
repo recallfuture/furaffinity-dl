@@ -18,7 +18,7 @@ v-app-bar( app )
 
 <script>
 export default {
-  name: "Control",
+  name: "AppBar",
 
   data() {
     return {};
