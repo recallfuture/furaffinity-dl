@@ -32,6 +32,7 @@
 import { faLogin } from "@/renderer/api";
 import db from "@/shared/database";
 import bus from "./utils/EventBus";
+import cache from "./utils/Cache";
 
 // 组件
 import Guide from "@/renderer/components/Guide/Guide";
@@ -65,7 +66,7 @@ export default {
     await db.initDatabase();
 
     // 初始化用户信息
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = cache.get("user");
     if (user) {
       this.user = user;
       await faLogin(user.a, user.b);
@@ -85,9 +86,10 @@ export default {
     };
 
     // 初始化向导
-    const firstTime = JSON.parse(localStorage.getItem("first_time"));
+    const firstTime = cache.get("first_time");
     if (firstTime === null) {
-      this.guide = true;
+      // 一秒后弹出向导对话框
+      setTimeout(() => (this.guide = true), 1000);
     }
 
     // 全局事件绑定
@@ -130,19 +132,11 @@ export default {
 
     login(user) {
       this.user = user;
+      cache.set("user", user);
     },
 
     updateConfig(config) {
       // TODO: 更新设置
-    }
-  },
-
-  watch: {
-    user(value) {
-      // 用户信息更新就写入本地存储
-      if (value) {
-        localStorage.setItem("user", JSON.stringify(value));
-      }
     }
   }
 };

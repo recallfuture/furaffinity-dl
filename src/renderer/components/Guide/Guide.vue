@@ -10,6 +10,7 @@ v-dialog( v-model="model" persistent width="800" )
 <script>
 import GuideStepLogin from "./GuideStepLogin";
 import GuideStepConfig from "./GuideStepConfig";
+import cache from "@/renderer/utils/Cache";
 
 export default {
   model: {
@@ -60,7 +61,7 @@ export default {
     },
 
     finishGuide() {
-      localStorage.setItem("first_time", JSON.stringify(false));
+      cache.set("first_time", false);
       this.model = false;
     }
   },
