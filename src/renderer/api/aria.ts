@@ -1,5 +1,6 @@
 import db from "@/shared/database";
 import { compactUndefined, mergeTaskResult } from "@/shared/utils";
+import logger from "@/shared/logger";
 
 // 没有 types 声明，所以使用 require 导入
 const Aria2 = require("aria2");
@@ -97,11 +98,11 @@ export async function fetchDownloadingTaskList(params: any = {}) {
       ["aria2.tellActive", ...compactUndefined([keys])],
       ["aria2.tellWaiting", ...compactUndefined([offset, num, keys])]
     ]);
-    console.log("fetchDownloadingTaskList data", data);
+    logger.info("fetchDownloadingTaskList data", data);
     const result = mergeTaskResult(data);
     return result;
   } catch (e) {
-    console.log("fetchDownloadingTaskList fail===>", e);
+    logger.error("fetchDownloadingTaskList fail===>", e);
   }
 }
 

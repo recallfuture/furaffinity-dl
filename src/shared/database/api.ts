@@ -1,7 +1,6 @@
 import Datastore from "nedb-promises";
 import path from "path";
 import { getPath } from "../utils";
-import logger from "../../main/logger";
 
 const dbPath: string = getPath("userData");
 

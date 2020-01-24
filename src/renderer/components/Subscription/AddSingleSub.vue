@@ -40,6 +40,7 @@ import { faAuthor } from "@/renderer/api";
 import bus from "@/renderer/utils/EventBus";
 import DirField from "../Form/DirField";
 import User from "../Main/User";
+import logger from "@/shared/logger";
 
 export default {
   name: "AddSingleSub",
@@ -112,7 +113,7 @@ export default {
       // 开始获取用户信息
       this.loading = true;
       const user = await faAuthor(this.convertNameToId(this.username));
-      console.log(user);
+      logger.log(user);
 
       if (!user) {
         bus.$emit("snackbar", { type: "error", message: "用户信息获取失败" });
@@ -120,8 +121,6 @@ export default {
         return;
       }
 
-      console.log(user.id);
-      console.log(this.subs);
       if (user.id in this.subs) {
         bus.$emit("snackbar", { type: "error", message: "用户已存在" });
         this.loading = false;
@@ -158,7 +157,7 @@ export default {
         createAt: Date.parse(new Date()),
         deleted: false
       };
-      console.log(sub);
+      logger.log(sub);
       this.$emit("sub:new", sub);
       this.loading = false;
     },

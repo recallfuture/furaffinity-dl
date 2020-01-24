@@ -1,6 +1,6 @@
 import { find, findOne, insert, update, remove } from "./api";
 import { Subscription } from "./interfaces";
-import logger from "@/main/logger";
+import logger from "@/shared/logger";
 
 /**
  * 获取一个订阅

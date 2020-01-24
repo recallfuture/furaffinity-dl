@@ -1,5 +1,5 @@
 import { getPath } from "../utils";
-import logger from "../../main/logger";
+import logger from "../logger";
 import { findOne, updateOrAdd } from "./api";
 import { AriaConfig } from "./interfaces";
 

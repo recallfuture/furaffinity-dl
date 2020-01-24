@@ -7,6 +7,7 @@ div
 
 <script>
 import { clearCookies, getCookies, faLogin, faUser } from "@/renderer/api";
+import logger from "@/shared/logger";
 
 export default {
   name: "Login",
@@ -61,7 +62,7 @@ export default {
 
         user.a = a;
         user.b = b;
-        console.log(user);
+        logger.log(user);
 
         this.success = true;
         this.$emit("success", user);

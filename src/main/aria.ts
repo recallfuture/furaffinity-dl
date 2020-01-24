@@ -3,7 +3,7 @@ import is from "electron-is";
 import { existsSync } from "fs";
 import { resolve, join } from "path";
 import { exec, ChildProcess } from "child_process";
-import logger from "./logger";
+import logger from "../shared/logger";
 import ariaNames from "./config/aria";
 import db from "@/shared/database";
 
