@@ -5,8 +5,10 @@ v-navigation-drawer( app v-model="model" width="300" mobile-break-point="0" )
     v-spacer
 
     //- 全部开始/停止
-    v-btn( @click="add" icon ) 
+    v-btn( v-if="!downloading" @click="startAll" icon ) 
       v-icon mdi-play
+    v-btn( v-else @click="pauseAll" icon )
+      v-icon mdi-pause
     v-spacer
     
     //- 添加订阅
@@ -21,7 +23,9 @@ v-navigation-drawer( app v-model="model" width="300" mobile-break-point="0" )
           v-img( :src="s.author.avatar" )
         //- 作者名
         v-list-item-content
-          v-list-item-title {{ s.author.name }}
+          v-list-item-title
+            span {{ s.author.name }}
+            span( v-show="s.status === 'active'" ) 下载中...
         //- Gallery 和 Scraps 的标签
         v-list-item-action
           div
@@ -57,6 +61,11 @@ export default {
     subs: {
       type: Array,
       default: () => []
+    },
+
+    downloading: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -70,6 +79,14 @@ export default {
   methods: {
     add() {
       this.$emit("addSub:open");
+    },
+
+    startAll() {
+      this.$emit("sub:startAll");
+    },
+
+    pauseAll() {
+      this.$emit("sub:pauseAll");
     }
   },
 

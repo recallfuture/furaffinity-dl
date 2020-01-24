@@ -30,6 +30,12 @@ export interface Task {
   submission: Submission;
 }
 
+export interface Log {
+  type: "log" | "info" | "warning" | "error";
+  text: string;
+  timestamp: number;
+}
+
 export interface Subscription {
   author: Author;
   gallery: boolean;
@@ -39,7 +45,7 @@ export interface Subscription {
   dir: string;
   galleryDir: string;
   scrapsDir: string;
-  log: string[];
+  log: Log[];
   status: string;
   updateOnly: boolean;
   createAt: number;

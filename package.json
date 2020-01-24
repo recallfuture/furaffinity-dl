@@ -20,7 +20,7 @@
     "electron-is": "^3.0.0",
     "electron-log": "^4.0.3",
     "electron-promise-ipc": "^2.0.1",
-    "furaffinity-api": "^3.4.3",
+    "furaffinity-api": "^3.4.4",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
     "roboto-fontface": "*",
@@ -31,6 +31,7 @@
     "vuex": "^3.1.2"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.8.3",
     "@types/jest": "^24.0.19",
     "@vue/cli-plugin-babel": "^4.1.0",
     "@vue/cli-plugin-eslint": "^4.1.0",

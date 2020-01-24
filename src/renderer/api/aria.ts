@@ -1,19 +1,38 @@
-import db from "@/shared/database";
 import { compactUndefined, mergeTaskResult } from "@/shared/utils";
+import { AriaConfig, UserConfig } from "@/shared/database/interfaces";
 import logger from "@/shared/logger";
-
-// 没有 types 声明，所以使用 require 导入
-const Aria2 = require("aria2");
+// @ts-ignore
+import Aria2 from "aria2";
 
 // 客户端
 let client: any = null;
 
+// aria2 通知事件订阅
+export function onDownloadStart(callback: Function) {
+  client?.on("onDownloadStart", callback);
+}
+
+export function onDownloadPause(callback: Function) {
+  client?.on("onDownloadPause", callback);
+}
+
+export function onDownloadStop(callback: Function) {
+  client?.on("onDownloadStop", callback);
+}
+
+export function onDownloadComplete(callback: Function) {
+  client?.on("onDownloadComplete", callback);
+}
+
+export function onDownloadError(callback: Function) {
+  client?.on("onDownloadError", callback);
+}
+
 /**
  * 初始化客户端
  */
-export async function initClient() {
-  const ariaConfig = await db.ariaConfig.get();
-  const port = ariaConfig["rpc-listen-port"];
+export async function initClient(config: AriaConfig & UserConfig) {
+  const port = config["rpc-listen-port"];
   const host = "127.0.0.1";
   client = new Aria2({
     host,

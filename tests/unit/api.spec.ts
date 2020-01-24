@@ -6,10 +6,16 @@ import {
   getGlobalStat,
   fetchTaskList
 } from "../../src/renderer/api";
+import db from "../../src/shared/database";
 
 describe("renderer/api", () => {
   it("should open success", async () => {
-    await initClient();
+    await db.initDatabase();
+    const config = {
+      ...(await db.ariaConfig.get()),
+      ...(await db.userConfig.get())
+    };
+    await initClient(config);
   });
 
   it("should get version success", async () => {

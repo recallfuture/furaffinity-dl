@@ -52,7 +52,7 @@ export async function set(id: string, data: Subscription) {
     type: "Subscription",
     "data.author.id": id
   };
-  const result = await update(query, data);
+  const result = await update(query, { type: "Subscription", data });
   logger.info("Update subscription: ", data);
   return result;
 }

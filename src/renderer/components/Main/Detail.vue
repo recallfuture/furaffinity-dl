@@ -20,12 +20,12 @@
               span 作者主页：{{ sub.author.url }}
             v-list-item
               span 本地目录：{{ sub.dir }}
-            v-list-item( v-if="sub.gallery" )
-              span( class="text-no-wrap" ) Gallery下载进度：
-              v-progress-linear( :value="sub.galleryTasks.length" )
-            v-list-item( v-if="sub.scraps" )
-              span( class="text-no-wrap" ) Scraps下载进度：
-              v-progress-linear( :value="sub.scrapsTasks.length" )
+            //- v-list-item( v-if="sub.gallery" )
+            //-   span( class="text-no-wrap" ) Gallery下载进度：
+            //-   v-progress-linear( :value="sub.galleryTasks.length" )
+            //- v-list-item( v-if="sub.scraps" )
+            //-   span( class="text-no-wrap" ) Scraps下载进度：
+            //-   v-progress-linear( :value="sub.scrapsTasks.length" )
 
       //- 下载详情
       v-tab-item
@@ -36,30 +36,44 @@
 
           v-container( fluid )
             v-row
-              v-card(
+              v-tooltip(
+                top
                 v-for="task in sub.galleryTasks"
                 :key="task.submission.id"
-                :color="statusToColor(task.status)"
-                width="20"
-                height="20"
-                class="ma-1"
               )
+                template( v-slot:activator="{ on }" )
+                  v-card(
+                    v-on="on"
+                    :color="statusToColor(task.status)"
+                    width="20"
+                    height="20"
+                    class="ma-1"
+                  )
+                p 作品标题：{{ task.submission.title }}
+                p 状态：{{ task.status }}
 
         v-card( v-if="sub.scraps" )
-          v-card-title Gallery
+          v-card-title Scraps
           
           v-divider( light)
 
           v-container( fluid )
             v-row
-              v-card(
+              v-tooltip(
+                top
                 v-for="task in sub.scrapsTasks"
                 :key="task.submission.id"
-                :color="statusToColor(task.status)"
-                width="20"
-                height="20"
-                class="ma-1"
               )
+                template( v-slot:activator="{ on }" )
+                  v-card(
+                    v-on="on"
+                    :color="statusToColor(task.status)"
+                    width="20"
+                    height="20"
+                    class="ma-1"
+                  )
+                p 作品标题：{{ task.submission.title }}
+                p 状态：{{ task.status }}
               
       //- 日志
       v-tab-item
@@ -72,6 +86,7 @@
 
 <script>
 import User from "@/renderer/components/Main/User";
+import logger from "@/shared/logger";
 
 export default {
   name: "Detail",
@@ -91,10 +106,16 @@ export default {
     statusToColor(status) {
       switch (status) {
         case "active": {
-          return "info";
+          return "accent";
         }
         case "complete": {
           return "primary";
+        }
+        case "paused": {
+          return "info";
+        }
+        case "error": {
+          return "error";
         }
         default: {
           return "white";
