@@ -17,7 +17,7 @@
     add-sub-dialog( v-model="addSubDialog" :config="config" :subs="subs" @subs:new="addSubs" )
 
     //- 订阅抽屉栏
-    Drawer( v-model="drawer" title="订阅" :subs="subList" @addSub:open="addSubDialog = true" )
+    Drawer( v-model="drawer" title="订阅" :subs="subList" @addSub:open="addSubDialog = true" @sub:select="selectSub" )
 
     //- 订阅详情控制栏
     v-app-bar( app )
@@ -25,6 +25,12 @@
       v-toolbar-title Furaffinity-dl
       v-spacer
       user( :user="user" )
+    
+    v-content(  )
+      Detail( v-if="subSelected in subList" :sub="subList[subSelected]" )
+      h2( v-else ) 未选中订阅
+          
+      
 </template>
 
 <script>
@@ -33,12 +39,14 @@ import { faLogin } from "@/renderer/api";
 import db from "@/shared/database";
 import bus from "./utils/EventBus";
 import cache from "./utils/Cache";
+import logger from "@/shared/logger";
 
 // 组件
 import Guide from "@/renderer/components/Guide/Guide";
 import AddSubDialog from "@/renderer/components/Subscription/AddSubDialog";
 import User from "@/renderer/components/Main/User";
 import Drawer from "@/renderer/components/Main/Drawer";
+import Detail from "@/renderer/components/Main/Detail";
 
 export default {
   name: "App",
@@ -57,6 +65,7 @@ export default {
 
       user: null,
       subs: {},
+      subSelected: -1,
       config: {}
     };
   },
@@ -109,7 +118,8 @@ export default {
     Guide,
     AddSubDialog,
     User,
-    Drawer
+    Drawer,
+    Detail
   },
 
   methods: {
@@ -128,6 +138,10 @@ export default {
         this.$set(this.subs, sub.author.id, sub);
         await db.subscription.add(sub);
       }
+    },
+
+    selectSub(value) {
+      this.subSelected = value;
     },
 
     login(user) {

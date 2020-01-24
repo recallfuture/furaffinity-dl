@@ -80,6 +80,10 @@ export default {
 
     drawer(value) {
       this.model = value;
+    },
+
+    item(value) {
+      this.$emit("sub:select", value);
     }
   }
 };
