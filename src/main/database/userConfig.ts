@@ -1,5 +1,5 @@
 import path from "path";
-import { getPath } from "../utils";
+import { getPath } from "@/shared/utils";
 import logger from "@/shared/logger";
 import { findOne, updateOrAdd } from "./api";
 import { UserConfig } from "./interfaces";

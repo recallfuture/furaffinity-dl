@@ -1,5 +1,5 @@
-import { getPath } from "../utils";
-import logger from "../logger";
+import { getPath } from "@/shared/utils";
+import logger from "@/shared/logger";
 import { findOne, updateOrAdd } from "./api";
 import { AriaConfig } from "./interfaces";
 

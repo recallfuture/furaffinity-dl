@@ -6,7 +6,7 @@ import {
   getGlobalStat,
   fetchTaskList
 } from "../../src/renderer/api";
-import db from "../../src/shared/database";
+import db from "../../src/main/database";
 
 describe("renderer/api", () => {
   it("should open success", async () => {

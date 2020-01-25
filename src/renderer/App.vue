@@ -65,10 +65,12 @@ import {
   onDownloadComplete,
   onDownloadError
 } from "@/renderer/api";
-import db from "@/shared/database";
+import { remote } from "electron";
 import bus from "./utils/EventBus";
 import cache from "./utils/Cache";
 import logger from "@/shared/logger";
+
+const db = remote.getGlobal("db");
 
 // 组件
 import Guide from "@/renderer/components/Guide/Guide";
@@ -110,7 +112,7 @@ export default {
 
   async mounted() {
     // 初始化数据库
-    await db.initDatabase();
+    // await db.initDatabase();
 
     // 初始化用户信息
     const user = cache.get("user");

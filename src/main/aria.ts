@@ -5,7 +5,7 @@ import { resolve, join } from "path";
 import { exec, ChildProcess } from "child_process";
 import logger from "../shared/logger";
 import ariaNames from "./config/aria";
-import db from "@/shared/database";
+import db from "./database";
 
 // aria2 启动实例
 let instance: ChildProcess | null = null;

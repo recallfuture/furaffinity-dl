@@ -2,10 +2,13 @@
 
 import { app, protocol } from "electron";
 import { win, createWindow } from "./main/window";
-import db from "./shared/database";
+import db from "./main/database";
 import aria from "./main/aria";
 import { registerFaIpc, registerAppIpc } from "./main/ipc";
 const isDevelopment = process.env.NODE_ENV !== "production";
+
+// @ts-ignore
+global.db = db;
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
