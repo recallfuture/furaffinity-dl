@@ -26,7 +26,7 @@
       v-model="drawer"
       title="订阅"
       :subs="subs"
-      :downloading="downloading"
+      :downloading="fetching"
       @addSub:open="addSubDialog = true"
       @sub:select="selectSub"
       @sub:startAll="startAll"
@@ -63,12 +63,15 @@ import {
   onDownloadPause,
   onDownloadStop,
   onDownloadComplete,
-  onDownloadError
+  onDownloadError,
+  resumeTask
 } from "@/renderer/api";
 import { remote } from "electron";
 import bus from "./utils/EventBus";
 import cache from "./utils/Cache";
 import logger from "@/shared/logger";
+import fs from "fs";
+import _ from "lodash";
 
 const db = remote.getGlobal("db");
 
@@ -103,64 +106,17 @@ export default {
       tasksHash: {},
       submissionsHash: {},
 
-      pause: false,
-      downloading: false,
-      downloadingList: [],
-      downloadingItem: null
+      fetching: false,
+      fetchingList: []
     };
   },
 
   async mounted() {
-    // 初始化数据库
-    // await db.initDatabase();
-
-    // 初始化用户信息
-    const user = cache.get("user");
-    if (user) {
-      this.user = user;
-      await faLogin(user.a, user.b);
-    }
-
-    // 初始化订阅信息
-    const subs = await db.subscription.getAll();
-    this.subs = subs;
-    for (const sub of subs) {
-      // 缓存订阅信息
-      this.$set(this.subsHash, sub.author.id, sub);
-
-      // 缓存下载任务和作品
-      const tasks = [...sub.galleryTasks, ...sub.scrapsTasks];
-      for (const task of tasks) {
-        if (task.gid) {
-          this.$set(this.tasksHash, task.gid, task);
-        }
-        if (task.submission) {
-          this.$set(this.submissionsHash, task.submission.id, task);
-        }
-      }
-    }
-
-    // 初始化配置信息
-    this.config = {
-      ...(await db.ariaConfig.get()),
-      ...(await db.userConfig.get())
-    };
-
-    // 初始化向导
-    const firstTime = cache.get("first_time");
-    if (firstTime === null) {
-      // 一秒后弹出向导对话框
-      setTimeout(() => (this.guide = true), 1000);
-    }
-
-    // 初始化 aria2
-    await initClient(this.config);
-
-    onDownloadStart(this.onDownloadStart);
-    onDownloadStop(this.onDownloadStop);
-    onDownloadPause(this.onDownloadPause);
-    onDownloadComplete(this.onDownloadComplete);
-    onDownloadError(this.onDownloadError);
+    await this.initUser();
+    await this.initSubs();
+    await this.initConfig();
+    await this.initGuide();
+    await this.initAria();
 
     // 全局事件绑定
     bus.$on("snackbar", this.showSnackBar);
@@ -178,15 +134,80 @@ export default {
   },
 
   methods: {
+    // 初始化用户信息
+    async initUser() {
+      const user = cache.get("user");
+      if (user) {
+        this.user = user;
+        await faLogin(user.a, user.b);
+      }
+    },
+
+    // 初始化订阅信息
+    async initSubs() {
+      // 获取数据库中所有的订阅
+      // FIX: 使用深克隆修复数据无法更改的问题
+      const subs = _.cloneDeep(await db.subscription.getAll());
+
+      for (const sub of subs) {
+        this.subs.push(sub);
+
+        // 缓存订阅信息
+        this.$set(this.subsHash, sub.author.id, sub);
+
+        // 缓存下载任务和作品
+        const tasks = [...sub.galleryTasks, ...sub.scrapsTasks];
+        for (const task of tasks) {
+          if (task.gid) {
+            this.$set(this.tasksHash, task.gid, task);
+          }
+          if (task.id) {
+            this.$set(this.submissionsHash, task.id, task);
+          }
+        }
+      }
+    },
+
+    // 初始化配置信息
+    async initConfig() {
+      this.config = {
+        ...(await db.ariaConfig.get()),
+        ...(await db.userConfig.get())
+      };
+    },
+
+    // 初始化向导
+    async initGuide() {
+      const firstTime = cache.get("first_time");
+      if (firstTime === null) {
+        // 一秒后弹出向导对话框
+        setTimeout(() => (this.guide = true), 1000);
+      }
+    },
+
+    // 初始化 aria
+    async initAria() {
+      await initClient(this.config);
+
+      // 绑定回调
+      onDownloadStart(this.onDownloadStart);
+      onDownloadStop(this.onDownloadStop);
+      onDownloadPause(this.onDownloadPause);
+      onDownloadComplete(this.onDownloadComplete);
+      onDownloadError(this.onDownloadError);
+    },
+
+    // 显示提示
     showSnackBar({ type = "info", message = "" }) {
       this.alert = true;
       this.alertType = type;
       this.alertMessage = message;
     },
 
+    // 添加订阅
     async addSubs(subs) {
       for (const sub of subs) {
-        if (sub.author.id in this.subs) {
+        if (sub.author.id in this.subsHash) {
           continue;
         }
 
@@ -196,18 +217,29 @@ export default {
       }
     },
 
+    // 选中某个订阅
     selectSub(value) {
       this.subSelected = value;
     },
 
+    // 登录
     login(user) {
       this.user = user;
       cache.set("user", user);
     },
 
+    // 注销
+    logout() {
+      this.user = null;
+      cache.set("user", null);
+    },
+
+    // 更新设置
     async updateConfig(config) {
-      // 更新设置
+      // 更新本地设置
       this.config = { ...this.config, ...config };
+
+      // 获取数据库中的设置
       const ariaConfig = await db.ariaConfig.get();
       const userConfig = await db.userConfig.get();
       for (const key in config) {
@@ -217,12 +249,14 @@ export default {
           userConfig[key] = config[key];
         }
       }
+      // 更新数据库中的设置
       await db.ariaConfig.set(ariaConfig);
       await db.userConfig.set(userConfig);
     },
 
+    // 开始
     async startAll() {
-      if (this.downloading) {
+      if (this.fetching) {
         return;
       }
 
@@ -230,120 +264,170 @@ export default {
         return;
       }
 
-      this.pause = false;
-      this.downloading = true;
+      // 开始获取
+      this.fetching = true;
+      this.fetchingList = this.subs;
+
+      // 开始获取并下载
       await resumeAllTask();
-      this.downloadingList = this.subs;
+      await this.mapSubs(this.fetchingList);
 
-      // 遍历所有的订阅
-      for (
-        this.downloadingItem = 0;
-        this.downloadingItem < this.downloadingList.length && !this.pause;
-        this.downloadingItem++
-      ) {
-        // 获取当前订阅
-        const sub = this.downloadingList[this.downloadingItem];
-        sub.status = "active";
+      // 结束获取
+      this.fetching = false;
+    },
 
+    // 暂停
+    async pauseAll() {
+      this.fetching = false;
+      await pauseAllTask();
+    },
+
+    // 遍历订阅下载列表
+    async mapSubs(subs) {
+      // 获取当前订阅
+      for (const sub of subs) {
         // 下载的图集
         const types = { gallery: sub.gallery, scraps: sub.scraps };
-
         for (const type in types) {
           if (!types[type]) {
-            break;
+            continue;
           }
+          // 下载此图集的所有图片
+          await this.mapPages(type, { sub });
+        }
+      }
+    },
 
-          // 遍历所有页
-          for (let page = 1; !this.pause; page++) {
-            let result = null;
+    // 遍历所有页
+    async mapPages(type, { sub } = {}) {
+      for (let page = 1; this.fetching; page++) {
+        let result = null;
 
-            if (type === "gallery") {
-              result = await faGallery(sub.author.id, page);
-            } else {
-              result = await faScraps(sub.author.id, page);
-            }
+        if (type === "gallery") {
+          result = await faGallery(sub.author.id, page);
+        } else {
+          result = await faScraps(sub.author.id, page);
+        }
 
-            if (result === null) {
-              // 下载失败
-              logger.error("下载失败", type, page, sub);
-              this.pause = true;
-              break;
-            }
+        if (result === null) {
+          logger.error("获取作品列表失败", sub.author, type, page);
+          this.fetching = false;
+          break;
+        }
 
-            if (result.length === 0) {
-              // 页数到头了
-              logger.info("页数到头了", type, page, sub);
-              break;
-            }
+        if (result.length === 0) {
+          logger.log("页数到头了", sub.author, type, page);
+          break;
+        }
 
-            // 遍历此页上的所有项目
-            for (let index = 0; index < result.length && !this.pause; index++) {
-              const item = result[index];
-              let submission;
+        await this.mapSubmissions(result, { sub, type, page });
+      }
+    },
 
-              // 先判断缓存中有没有
-              if (item.id in this.submissionsHash) {
-                const task = this.submissionsHash[item.id];
-                const skipList = ["active", "paused", "complete"];
-                // 如果状态是活动中、暂停中或者已完成，就跳过此下载
-                if (skipList.indexOf(task.status) !== -1) {
-                  // TODO: 如果是已完成，应该查询本地是否有此文件
-                  // 如果是已暂停，应该继续此任务
-                  continue;
-                }
-              } else {
-                // 没有的话再从网络下载
-                submission = await faSubmission(item.id);
-                if (submission === null) {
-                  // 下载失败
-                  logger.error("下载失败", type, page, index, sub);
-                  this.pause = true;
-                  break;
-                }
+    // 遍历作品列表
+    async mapSubmissions(submissions, { sub, type, page } = {}) {
+      for (
+        let index = 0;
+        index < submissions.length && this.fetching;
+        index++
+      ) {
+        // 获取当前作品
+        const submission = submissions[index];
 
-                logger.info("新作品", type, page, index, submission);
-              }
-
-              // 添加下载任务
-              const gid = await addUri({
-                uris: [submission.downloadUrl],
-                options: {
-                  dir: sub[type + "Dir"]
-                }
-              });
-
-              // 存储当前任务
-              const task = { gid, submission };
-              sub[type + "Tasks"].push(task);
-              this.$set(this.tasksHash, gid, task);
-              this.$set(this.submissionsHash, task.submission.id, task);
-            }
+        // 先判断缓存中有没有
+        if (submission.id in this.submissionsHash) {
+          // 获取缓存内的任务
+          const task = this.submissionsHash[submission.id];
+          // 检查是否需要添加此任务
+          if (await this.checkTask(task)) {
+            logger.log("跳过此作品", sub.author, type, page, index);
+            continue;
           }
         }
 
-        sub.status = "";
+        // 从网络获取作品详情
+        const submissionDetail = await faSubmission(submission.id);
+        if (submissionDetail === null) {
+          // 下载失败
+          logger.error("作品详情获取失败", sub.author, type, page, index);
+          this.fetching = false;
+          break;
+        }
+
+        logger.log("作品详情", sub.author, type, page, index);
+
+        // 添加下载任务
+        const url = submissionDetail.downloadUrl;
+        const dir = sub[type + "Dir"];
+        const gid = await this.addTask(url, dir);
+
+        // 缓存当前任务
+        const task = { gid, ...submissionDetail };
+        this.saveTask({ sub, type, task });
+      }
+    },
+
+    // 检查任务是否需要添加
+    // 返回 true 意为不需要添加
+    async checkTask(task) {
+      if (!task.gid || !task.status) {
+        return false;
       }
 
-      await pauseAllTask();
-      this.pause = false;
-      this.downloading = false;
+      try {
+        switch (task.status) {
+          case "active": {
+            return true;
+          }
+          case "paused": {
+            // 暂停的任务就开始
+            await resumeTask({ gid });
+            return true;
+          }
+          case "stopped": {
+            return false;
+          }
+          case "complete": {
+            if (task.path) {
+              return fs.existsSync(task.path);
+            } else {
+              return false;
+            }
+          }
+          case "error": {
+            return false;
+          }
+        }
+      } catch (e) {
+        logger.log("任务已失效", e);
+        // 此任务已经失效
+        return false;
+      }
     },
 
-    pauseAll() {
-      this.pause = true;
+    // 添加任务到 aria2
+    async addTask(url, dir) {
+      return await addUri({
+        uris: [url],
+        options: { dir }
+      });
     },
 
-    async saveSub(sub) {
-      logger.log("保存", sub);
-      await db.subscription.set(sub.author.id, sub);
-    },
-
-    async refreshTask(gid) {
-      const item = await fetchTaskItem({ gid });
-      if (gid in this.tasksHash) {
-        const task = this.tasksHash[gid];
-        this.$set(task, "status", item.status);
-        await this.saveSub(this.subsHash[task.submission.author.id]);
+    // 缓存任务
+    saveTask({ sub, type, task }) {
+      if (task.id in this.submissionsHash) {
+        logger.log("命中缓存，修改任务", task);
+        this.$set(this.submissionsHash[task.id], "gid", task.gid);
+        this.$set(this.tasksHash, task.gid, this.submissionsHash[task.id]);
+      } else {
+        logger.log(
+          "未命中缓存，直接添加任务",
+          task,
+          sub[type + "Tasks"].length
+        );
+        sub[type + "Tasks"].push(task);
+        this.$set(this.submissionsHash, task.id, task);
+        this.$set(this.tasksHash, task.gid, task);
       }
     },
 
@@ -375,6 +459,32 @@ export default {
       const [{ gid }] = event;
       logger.log("任务失败", gid);
       await this.refreshTask(gid);
+    },
+
+    // 更新任务信息
+    async refreshTask(gid) {
+      // 获取任务信息
+      const item = await fetchTaskItem({ gid });
+      // 通过 gid 获取到缓存中对应的任务
+      if (gid in this.tasksHash) {
+        const task = this.tasksHash[gid];
+        // 覆盖任务状态
+        this.$set(task, "status", item.status);
+        // 覆盖文件位置
+        // 任务完成后可以或得到文件位置
+        if (item.status === "complete") {
+          logger.log("文件下载到", item.files[0].path);
+          this.$set(task, "path", item.files[0].path);
+        }
+        // 保存到数据库
+        await this.saveSub(this.subsHash[task.author.id]);
+      }
+    },
+
+    // 保存订阅信息到数据库
+    async saveSub(sub) {
+      logger.log("保存", sub.author.id);
+      await db.subscription.set(sub.author.id, sub);
     }
   }
 };

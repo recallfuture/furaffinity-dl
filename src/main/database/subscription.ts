@@ -12,7 +12,6 @@ export async function get(id: string) {
     "data.author.id": id
   };
   const result: any = await findOne(query);
-  logger.info("Get one subscription: ", result);
   return result?.data as Subscription;
 }
 
@@ -25,7 +24,6 @@ export async function getAll() {
     "data.deleted": false
   };
   const result: any[] | undefined = await find(query);
-  logger.info("Get all subscription: ", result);
   return result?.map(value => {
     return value.data;
   });
@@ -38,7 +36,6 @@ export async function getAll() {
  */
 export async function add(data: Subscription) {
   const result = await insert({ type: "Subscription", data });
-  logger.info("Add subscription: ", data);
   return result;
 }
 
@@ -53,7 +50,6 @@ export async function set(id: string, data: Subscription) {
     "data.author.id": id
   };
   const result = await update(query, { type: "Subscription", data });
-  logger.info("Update subscription: ", data);
   return result;
 }
 
@@ -67,7 +63,6 @@ export async function del(id: string) {
     "data.author.id": id
   };
   const result = await remove(query);
-  logger.info("Add subscription: ", id);
   return result;
 }
 

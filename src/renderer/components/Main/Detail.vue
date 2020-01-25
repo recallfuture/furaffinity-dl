@@ -39,7 +39,7 @@
               v-tooltip(
                 top
                 v-for="task in sub.galleryTasks"
-                :key="task.submission.id"
+                :key="task.id"
               )
                 template( v-slot:activator="{ on }" )
                   v-card(
@@ -49,7 +49,7 @@
                     height="20"
                     class="ma-1"
                   )
-                p 作品标题：{{ task.submission.title }}
+                p 作品标题：{{ task.title }}
                 p 状态：{{ task.status }}
 
         v-card( v-if="sub.scraps" )
@@ -62,7 +62,7 @@
               v-tooltip(
                 top
                 v-for="task in sub.scrapsTasks"
-                :key="task.submission.id"
+                :key="task.id"
               )
                 template( v-slot:activator="{ on }" )
                   v-card(
@@ -72,7 +72,7 @@
                     height="20"
                     class="ma-1"
                   )
-                p 作品标题：{{ task.submission.title }}
+                p 作品标题：{{ task.title }}
                 p 状态：{{ task.status }}
               
       //- 日志

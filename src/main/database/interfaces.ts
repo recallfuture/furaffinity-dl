@@ -23,11 +23,10 @@ export interface UserConfig {
   "session-path": string;
 }
 
-export interface Task {
+export interface Task extends Submission {
   gid?: string;
   path?: string;
   status: string;
-  submission: Submission;
 }
 
 export interface Log {

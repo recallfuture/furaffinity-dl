@@ -4,18 +4,21 @@ import {
   getVersion,
   getGlobalOption,
   getGlobalStat,
-  fetchTaskList
+  fetchTaskList,
+  fetchTaskItem
 } from "../../src/renderer/api";
 import db from "../../src/main/database";
 
 describe("renderer/api", () => {
   it("should open success", async () => {
-    await db.initDatabase();
     const config = {
-      ...(await db.ariaConfig.get()),
-      ...(await db.userConfig.get())
+      "rpc-listen-port": 6868
     };
-    await initClient(config);
+    await initClient(config as any);
+  });
+
+  it("should fetch fail", async () => {
+    console.log(await fetchTaskItem({ gid: "123" }));
   });
 
   it("should get version success", async () => {
