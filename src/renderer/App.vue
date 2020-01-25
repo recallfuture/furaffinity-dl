@@ -191,7 +191,7 @@ export default {
         }
 
         this.subs.push(sub);
-        this.$set(this.subs, sub.author.id, sub);
+        this.$set(this.subsHash, sub.author.id, sub);
         await db.subscription.add(sub);
       }
     },
