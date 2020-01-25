@@ -206,7 +206,8 @@ export default {
     },
 
     async updateConfig(config) {
-      // TODO: 更新设置
+      // 更新设置
+      this.config = { ...this.config, ...config };
       const ariaConfig = await db.ariaConfig.get();
       const userConfig = await db.userConfig.get();
       for (const key in config) {
