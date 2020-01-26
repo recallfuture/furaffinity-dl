@@ -49,8 +49,8 @@
         
     
     v-content(  )
-      v-lazy( v-for="(sub, index) in subs" :key="sub.author.id" style="position: absolute; width: 100%;" )
-        Detail( v-show="index === subSelected" :sub="sub" )
+      v-lazy( v-for="(sub, index) in subs" :key="sub.author.id")
+        Detail( v-show="index === subSelected" :sub="sub"  style="position: absolute; width: 100%; height: 100%" )
       v-fade-transition
         h2( align="center" v-if="!(subSelected in subs)" ) 未选择订阅
 </template>
@@ -80,6 +80,7 @@ import cache from "./utils/Cache";
 import logger from "@/shared/logger";
 import fs from "fs";
 import _ from "lodash";
+import sleep from "sleep-promise";
 
 const db = remote.getGlobal("db");
 
@@ -118,6 +119,7 @@ export default {
       tasksHash: {},
       submissionsHash: {},
 
+      retry: 3,
       fetching: false,
       fetchingList: []
     };
@@ -165,6 +167,8 @@ export default {
       const subs = _.cloneDeep(await db.subscription.getAll());
 
       for (const sub of subs) {
+        // 复位下载状态
+        sub.status = "";
         this.subs.push(sub);
 
         // 缓存订阅信息
@@ -302,7 +306,12 @@ export default {
 
       // 开始获取
       this.fetching = true;
-      this.fetchingList = [...this.subs];
+      // 从选中处开始下载
+      if (this.subSelected in this.subs) {
+        this.fetchingList = this.subs.slice(this.subSelected);
+      } else {
+        this.fetchingList = [...this.subs];
+      }
 
       // 开始获取并下载
       await resumeAllTask();
@@ -318,19 +327,37 @@ export default {
       await pauseAllTask();
     },
 
+    // 添加任务日志
+    addSubLog(sub, { type = "info", text = "" }) {
+      sub.log.push({ type, text, timestamp: new Date().getTime() });
+      db.subscription.set(sub.author.id, sub);
+    },
+
     // 遍历订阅下载列表
     async mapSubs(subs) {
       // 获取当前订阅
       for (const sub of subs) {
         this.$set(sub, "status", "active");
+
         // 下载的图集
         const types = { gallery: sub.gallery, scraps: sub.scraps };
         for (const type in types) {
           if (!types[type]) {
             continue;
           }
-          // 下载此图集的所有图片
-          await this.mapPages(type, { sub });
+
+          try {
+            // 下载此图集的所有图片
+            this.addSubLog(sub, { text: `开始获取${type}` });
+            await this.mapPages(type, { sub });
+          } catch (e) {
+            this.addSubLog(sub, {
+              type: "error",
+              text: `[${type}] 出现错误，停止获取：${e.message}`
+            });
+            logger.error(e);
+            this.$set(sub, "status", "error");
+          }
         }
         this.$set(sub, "status", "");
       }
@@ -339,21 +366,34 @@ export default {
     // 遍历所有页
     async mapPages(type, { sub } = {}) {
       for (let page = 1; this.fetching; page++) {
+        let times = 0;
         let result = null;
 
-        if (type === "gallery") {
-          result = await faGallery(sub.author.id, page);
-        } else {
-          result = await faScraps(sub.author.id, page);
+        while (times++ < this.retry) {
+          if (type === "gallery") {
+            result = await faGallery(sub.author.id, page);
+          } else {
+            result = await faScraps(sub.author.id, page);
+          }
+
+          if (result === null) {
+            this.addSubLog(sub, {
+              type: "error",
+              text: `[${type}/${page}] 获取失败，1秒后进行第${times}次重试`
+            });
+            logger.error("获取作品列表失败", sub.author, type, page);
+            await sleep(1000);
+          } else {
+            break;
+          }
         }
 
         if (result === null) {
-          logger.error("获取作品列表失败", sub.author, type, page);
-          this.fetching = false;
-          break;
+          throw new Error("获取作品列表失败");
         }
 
         if (result.length === 0) {
+          this.addSubLog(sub, { text: `[${type}]获取结束` });
           logger.log("页数到头了", sub.author, type, page);
           break;
         }
@@ -378,18 +418,32 @@ export default {
           const task = this.submissionsHash[submission.id];
           // 检查是否需要添加此任务
           if (await this.checkTask(task)) {
+            this.addSubLog(sub, { text: `[${type}/${page}/${index}] 跳过` });
             logger.log("跳过此作品", sub.author, type, page, index);
             continue;
           }
         }
 
-        // 从网络获取作品详情
-        const submissionDetail = await faSubmission(submission.id);
+        let times = 0;
+        let submissionDetail = null;
+
+        while (times++ < this.retry) {
+          // 从网络获取作品详情
+          submissionDetail = await faSubmission(submission.id);
+          if (submissionDetail === null) {
+            this.addSubLog(sub, {
+              type: "error",
+              text: `[${type}/${page}/${index}] 作品详情获取失败，1秒后进行第${times}次重试`
+            });
+            logger.error("作品详情获取失败", sub.author, type, page, index);
+            await sleep(1000);
+          } else {
+            break;
+          }
+        }
+
         if (submissionDetail === null) {
-          // 下载失败
-          logger.error("作品详情获取失败", sub.author, type, page, index);
-          this.fetching = false;
-          break;
+          throw new Error("作品详情获取失败");
         }
 
         logger.log("作品详情", sub.author, type, page, index);

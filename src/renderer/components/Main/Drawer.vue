@@ -39,6 +39,7 @@ v-navigation-drawer( app v-model="model" color="#2d323c" width="400" mobile-brea
         v-list-item-content
           v-list-item-title {{ s.author.name }}
           v-list-item-subtitle( v-if="itemFetching(s)" ) 获取中
+          v-list-item-subtitle( v-else-if="itemError(s)" color="error" ) 获取失败
           v-list-item-subtitle( v-if="itemDownloading(s)" ) 下载中
 
         //- Gallery 和 Scraps 的标签
@@ -97,6 +98,10 @@ export default {
   methods: {
     itemFetching(sub) {
       return sub.status === "active";
+    },
+
+    itemError(sub) {
+      return sub.status === "error";
     },
 
     itemDownloading(sub) {
