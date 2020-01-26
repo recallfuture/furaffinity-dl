@@ -15,7 +15,7 @@ div
 
 <script>
 import { mapState } from "vuex";
-import Login from "../Login/Login";
+import Login from "../Form/Login";
 import User from "../Main/User";
 import bus from "@/renderer/utils/EventBus";
 

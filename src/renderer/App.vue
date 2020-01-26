@@ -38,7 +38,14 @@
       v-app-bar-nav-icon( @click="drawer = !drawer" )
       v-toolbar-title Furaffinity-dl
       v-spacer
-      user( :user="user" )
+      //- 登录前
+      v-btn( v-if="!user" @click="loginDialog = true" text ) 登录
+      user-login( v-model="loginDialog" )
+      //- 登录后
+      user( v-if="user" :user="user" )
+      v-btn( v-if="user" @click="logoutDialog = true" text ) 注销
+      user-logout( v-model="logoutDialog" )
+        
     
     v-content(  )
       v-lazy( v-for="(sub, index) in subs" :key="sub.author.id" style="position: absolute; width: 100%;" )
@@ -79,6 +86,8 @@ const db = remote.getGlobal("db");
 import Guide from "@/renderer/components/Guide/Guide";
 import AddSubDialog from "@/renderer/components/Subscription/AddSubDialog";
 import User from "@/renderer/components/Main/User";
+import UserLogin from "@/renderer/components/Main/UserLogin";
+import UserLogout from "@/renderer/components/Main/UserLogout";
 import Drawer from "@/renderer/components/Main/Drawer";
 import Detail from "@/renderer/components/Main/Detail";
 
@@ -96,6 +105,8 @@ export default {
       drawer: true,
       guide: false,
       addSubDialog: false,
+      loginDialog: false,
+      logoutDialog: false,
 
       user: null,
       subs: [],
@@ -121,6 +132,7 @@ export default {
     // 全局事件绑定
     bus.$on("snackbar", this.showSnackBar);
     bus.$on("login", this.login);
+    bus.$on("logout", this.logout);
 
     this.loading = false;
   },
@@ -129,6 +141,8 @@ export default {
     Guide,
     AddSubDialog,
     User,
+    UserLogin,
+    UserLogout,
     Drawer,
     Detail
   },

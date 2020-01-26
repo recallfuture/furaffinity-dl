@@ -1,7 +1,7 @@
 <template lang="pug">
 div
   v-btn( @click="reload" block )
-    v-icon mdi-reload
+    span 点我回到验证码登录页
   iframe( :src="src" width="100%" height="500" )
 </template>
 
