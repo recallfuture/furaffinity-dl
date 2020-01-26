@@ -1,6 +1,6 @@
 <template lang="pug">
-v-navigation-drawer( app v-model="model" width="400" mobile-break-point="0" )
-  v-toolbar
+v-navigation-drawer( app v-model="model" color="#2d323c" width="400" mobile-break-point="0" )
+  v-toolbar( color="#2d323c" )
     v-toolbar-title {{ title }}
     v-spacer
 

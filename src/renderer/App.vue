@@ -41,10 +41,10 @@
       user( :user="user" )
     
     v-content(  )
-      Detail( v-if="subSelected in subs" :sub="subs[subSelected]" )
-      h2( v-else ) 未选中订阅
-          
-      
+      v-lazy( v-for="(sub, index) in subs" :key="sub.author.id" style="position: absolute; width: 100%;" )
+        Detail( v-show="index === subSelected" :sub="sub" )
+      v-fade-transition
+        h2( align="center" v-if="!(subSelected in subs)" ) 未选择订阅
 </template>
 
 <script>
@@ -99,7 +99,7 @@ export default {
 
       user: null,
       subs: [],
-      subSelected: -1,
+      subSelected: undefined,
       config: {},
 
       subsHash: {},
@@ -166,6 +166,11 @@ export default {
           }
         }
       }
+
+      // 按添加时间排序
+      this.subs = this.subs.sort((a, b) => {
+        return b.createAt - a.createAt;
+      });
     },
 
     // 初始化配置信息
