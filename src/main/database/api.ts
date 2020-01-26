@@ -14,6 +14,9 @@ export async function initDatabase() {
     filename: path.join(dbPath, "database.db")
   });
   await db.load();
+  // 设定数据库每隔30秒自动压缩
+  // @ts-ignore
+  await db.persistence.setAutocompactionInterval(30000);
 }
 
 /**
