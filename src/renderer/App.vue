@@ -266,7 +266,7 @@ export default {
 
       // 开始获取
       this.fetching = true;
-      this.fetchingList = this.subs;
+      this.fetchingList = [...this.subs];
 
       // 开始获取并下载
       await resumeAllTask();
