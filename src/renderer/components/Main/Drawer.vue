@@ -47,9 +47,9 @@ v-navigation-drawer( app v-model="model" color="#2d323c" width="400" mobile-brea
           div
             v-chip( v-show="s.gallery" class="mr-2" color="info" ) G {{ s.galleryTasks.length }}
             v-chip( v-show="s.scraps" class="mr-2" color="warning" ) S {{ s.scrapsTasks.length }}
-      
-
-      
+      v-list-item( v-if="subs.length === 0" )
+        v-list-item-content
+          v-list-item-title 暂无订阅，请点击上方添加订阅
 </template>
 
 <script>
