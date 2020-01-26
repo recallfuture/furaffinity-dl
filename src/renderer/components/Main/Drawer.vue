@@ -1,11 +1,11 @@
 <template lang="pug">
-v-navigation-drawer( app v-model="model" width="300" mobile-break-point="0" )
+v-navigation-drawer( app v-model="model" width="400" mobile-break-point="0" )
   v-toolbar
     v-toolbar-title {{ title }}
     v-spacer
 
     //- 全部开始/停止
-    v-btn( v-if="!downloading" @click="startAll" icon ) 
+    v-btn( v-if="!fetching" @click="startAll" icon ) 
       v-icon mdi-play
     v-btn( v-else @click="pauseAll" icon )
       v-icon mdi-pause
@@ -21,16 +21,18 @@ v-navigation-drawer( app v-model="model" width="300" mobile-break-point="0" )
         //- 作者头像
         v-list-item-avatar
           v-img( :src="s.author.avatar" )
-        //- 作者名
+
+        //- 作者名和状态
         v-list-item-content
-          v-list-item-title
-            span {{ s.author.name }}
-            span( v-show="s.status === 'active'" ) 下载中...
+          v-list-item-title {{ s.author.name }}
+          v-list-item-subtitle( v-if="itemFetching(s)" ) 获取中
+          v-list-item-subtitle( v-if="itemDownloading(s)" ) 下载中
+
         //- Gallery 和 Scraps 的标签
         v-list-item-action
           div
-            v-chip( v-show="s.gallery" class="mr-2" color="info" ) G
-            v-chip( v-show="s.scraps" class="mr-2" color="warning" ) S
+            v-chip( v-show="s.gallery" class="mr-2" color="info" ) G {{ s.galleryTasks.length }}
+            v-chip( v-show="s.scraps" class="mr-2" color="warning" ) S {{ s.scrapsTasks.length }}
       
 
       
@@ -63,7 +65,7 @@ export default {
       default: () => []
     },
 
-    downloading: {
+    fetching: {
       type: Boolean,
       default: false
     }
@@ -77,6 +79,24 @@ export default {
   },
 
   methods: {
+    itemFetching(sub) {
+      return sub.status === "active";
+    },
+
+    itemDownloading(sub) {
+      for (const task of sub.galleryTasks) {
+        if (task.status === "active") {
+          return true;
+        }
+      }
+      for (const task of sub.scrapsTasks) {
+        if (task.status === "active") {
+          return true;
+        }
+      }
+      return false;
+    },
+
     add() {
       this.$emit("addSub:open");
     },

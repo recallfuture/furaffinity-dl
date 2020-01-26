@@ -26,7 +26,7 @@
       v-model="drawer"
       title="订阅"
       :subs="subs"
-      :downloading="fetching"
+      :fetching="fetching"
       @addSub:open="addSubDialog = true"
       @sub:select="selectSub"
       @sub:startAll="startAll"
@@ -286,6 +286,7 @@ export default {
     async mapSubs(subs) {
       // 获取当前订阅
       for (const sub of subs) {
+        this.$set(sub, "status", "active");
         // 下载的图集
         const types = { gallery: sub.gallery, scraps: sub.scraps };
         for (const type in types) {
@@ -295,6 +296,7 @@ export default {
           // 下载此图集的所有图片
           await this.mapPages(type, { sub });
         }
+        this.$set(sub, "status", "");
       }
     },
 
