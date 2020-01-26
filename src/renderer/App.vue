@@ -230,7 +230,7 @@ export default {
           continue;
         }
 
-        this.subs.push(sub);
+        this.subs.unshift(sub);
         this.$set(this.subsHash, sub.author.id, sub);
         await db.subscription.add(sub);
       }

@@ -1,4 +1,4 @@
-import { Author, Submission } from "furaffinity-api/dist/interfaces";
+import { Author } from "furaffinity-api/dist/interfaces";
 
 export interface AriaConfig {
   "all-proxy": string;
@@ -23,10 +23,17 @@ export interface UserConfig {
   "session-path": string;
 }
 
-export interface Task extends Submission {
+export interface Task {
   gid?: string;
   path?: string;
   status: string;
+
+  id: string;
+  url: string;
+  title: string;
+  posted: number;
+  author: Author;
+  downloadUrl: string;
 }
 
 export interface Log {

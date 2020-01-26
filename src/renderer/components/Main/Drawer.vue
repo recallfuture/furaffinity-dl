@@ -5,19 +5,19 @@ v-navigation-drawer( app v-model="model" color="#2d323c" width="400" mobile-brea
     v-spacer
 
     //- 全部开始/停止
-    v-btn( v-if="!fetching" @click="startAll" icon ) 
+    v-btn( @click="startAll" icon ) 
       v-icon mdi-play
-    v-btn( v-else @click="pauseAll" icon )
+    v-btn( @click="pauseAll" icon )
       v-icon mdi-pause
+
     v-spacer
-    
     //- 添加订阅
     v-btn( @click="add" color="primary" rounded ) 添加订阅
 
   //- 订阅列表
   v-list( rounded )
     v-list-item-group( v-model="item" color="primary" )
-      v-list-item( v-for="s in subs" :key="s.author.id"  )
+      v-list-item( v-for="(s, index) in subs" :key="index" )
         //- 作者头像
         v-list-item-avatar
           v-img( :src="s.author.avatar" )
