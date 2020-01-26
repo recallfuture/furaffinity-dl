@@ -31,6 +31,7 @@
       @sub:select="selectSub"
       @sub:startAll="startAll"
       @sub:pauseAll="pauseAll"
+      @sub:delete="deleteSub"
     )
 
     //- 应用栏
@@ -233,6 +234,22 @@ export default {
         this.subs.unshift(sub);
         this.$set(this.subsHash, sub.author.id, sub);
         await db.subscription.add(sub);
+      }
+    },
+
+    async deleteSub(index, { deleteFiles }) {
+      await this.pauseAll();
+
+      if (index in this.subs) {
+        // 移除订阅
+        const sub = this.subs[index];
+        this.subs.splice(index, 1);
+        db.subscription.del(sub.author.id);
+        if (deleteFiles) {
+          if (fs.existsSync(sub.dir)) {
+            fs.rmdirSync(sub.dir, { recursive: true });
+          }
+        }
       }
     },
 

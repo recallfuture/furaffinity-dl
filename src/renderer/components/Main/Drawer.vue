@@ -8,7 +8,20 @@ v-navigation-drawer( app v-model="model" color="#2d323c" width="400" mobile-brea
     v-btn( @click="startAll" icon ) 
       v-icon mdi-play
     v-btn( @click="pauseAll" icon )
-      v-icon mdi-pause
+      v-icon mdi-stop
+    v-btn( @click="openDeleteSubDialog" icon )
+      v-icon mdi-close
+
+    v-dialog( v-model="deleteSubDialog" width="400" )
+      v-card(  )
+        v-card-title 删除订阅
+        v-card-text 
+          h3 确定删除 {{ item in subs ? subs[item].author.name : "" }} 的订阅?
+          v-checkbox( v-model="deleteFiles" :label="`同时删除订阅文件夹（${item in subs ? subs[item].dir : ''}）`" )
+        v-card-actions
+          v-spacer
+          v-btn( @click="deleteOne" color="error" text ) 确定
+          v-btn( @click="deleteSubDialog = false" color="primary" text ) 取消
 
     v-spacer
     //- 添加订阅
@@ -40,6 +53,7 @@ v-navigation-drawer( app v-model="model" color="#2d323c" width="400" mobile-brea
 
 <script>
 import { mapState } from "vuex";
+import bus from "@/renderer/utils/EventBus";
 
 export default {
   name: "Drawer",
@@ -74,7 +88,9 @@ export default {
   data() {
     return {
       model: this.drawer,
-      item: -1
+      item: -1,
+      deleteSubDialog: false,
+      deleteFiles: false
     };
   },
 
@@ -107,6 +123,22 @@ export default {
 
     pauseAll() {
       this.$emit("sub:pauseAll");
+    },
+
+    openDeleteSubDialog() {
+      if (this.item in this.subs) {
+        this.deleteSubDialog = true;
+      } else {
+        bus.$emit("snackbar", {
+          type: "warning",
+          message: "请先选中一个订阅"
+        });
+      }
+    },
+
+    deleteOne() {
+      this.$emit("sub:delete", this.item, { deleteFiles: this.deleteFiles });
+      this.deleteSubDialog = false;
     }
   },
 
