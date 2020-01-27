@@ -165,8 +165,8 @@ export default {
     // 初始化订阅信息
     async initSubs() {
       // 获取数据库中所有的订阅
-      // FIX: 使用深克隆修复数据无法更改的问题
-      const subs = _.cloneDeep(await db.subscription.getAll());
+      // FIX: 修复层级过深的对象解析时间过长的问题
+      const subs = JSON.parse(await db.subscription.getAll());
 
       for (const sub of subs) {
         // 复位下载状态

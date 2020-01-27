@@ -24,9 +24,12 @@ export async function getAll() {
     "data.deleted": false
   };
   const result: any[] | undefined = await find(query);
-  return result?.map(value => {
-    return value.data;
-  });
+  // FIX: 修复层级过深的对象解析时间过长的问题
+  return JSON.stringify(
+    result?.map(value => {
+      return value.data;
+    })
+  );
 }
 
 /**
