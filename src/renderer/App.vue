@@ -127,6 +127,7 @@ export default {
       submissionsHash: {},
 
       retry: 3,
+      maxLogLines: 1000,
       fetching: false,
       fetchingList: []
     };
@@ -337,6 +338,9 @@ export default {
     // 添加任务日志
     addSubLog(sub, { type = "info", text = "" }) {
       sub.log.push({ type, text, timestamp: new Date().getTime() });
+      if (sub.log.length > this.maxLogLines) {
+        sub.log = sub.log.slice(sub.log.length - this.maxLogLines);
+      }
       db.subscription.set(sub.author.id, sub);
     },
 
