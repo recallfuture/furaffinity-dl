@@ -79,10 +79,12 @@ import bus from "./utils/EventBus";
 import cache from "./utils/Cache";
 import logger from "@/shared/logger";
 import fs from "fs";
+import { promisify } from "util";
 import _ from "lodash";
 import sleep from "sleep-promise";
 
 const db = remote.getGlobal("db");
+const existsAsync = promisify(fs.exists);
 
 // 组件
 import Guide from "@/renderer/components/Guide/Guide";
@@ -250,7 +252,7 @@ export default {
         this.subs.splice(index, 1);
         db.subscription.del(sub.author.id);
         if (deleteFiles) {
-          if (fs.existsSync(sub.dir)) {
+          if (await existsAsync(sub.dir)) {
             fs.rmdirSync(sub.dir, { recursive: true });
           }
         }
@@ -348,7 +350,7 @@ export default {
 
           try {
             // 下载此图集的所有图片
-            this.addSubLog(sub, { text: `开始获取${type}` });
+            this.addSubLog(sub, { text: `[${type}] 开始获取` });
             await this.mapPages(type, { sub });
           } catch (e) {
             this.addSubLog(sub, {
@@ -393,7 +395,7 @@ export default {
         }
 
         if (result.length === 0) {
-          this.addSubLog(sub, { text: `[${type}]获取结束` });
+          this.addSubLog(sub, { text: `[${type}] 获取结束` });
           logger.log("页数到头了", sub.author, type, page);
           break;
         }
@@ -481,7 +483,7 @@ export default {
           }
           case "complete": {
             if (task.path) {
-              return fs.existsSync(task.path);
+              return await existsAsync(task.path);
             } else {
               return false;
             }
