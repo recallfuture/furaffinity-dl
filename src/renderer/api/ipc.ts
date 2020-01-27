@@ -84,3 +84,8 @@ export async function openFolderDialog(): Promise<string | undefined> {
   // @ts-ignore
   return await ipc.send("app.openFolderDialog");
 }
+
+export async function existsPaths(paths: string[]): Promise<boolean[]> {
+  // @ts-ignore
+  return await ipc.send("app.existsPaths", paths);
+}

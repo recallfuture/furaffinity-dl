@@ -36,12 +36,10 @@
 
           v-container( fluid )
             v-row
-              v-card(
+              div(
                 v-for="task in sub.galleryTasks"
                 :key="task.id"
-                :color="statusToColor(task.status)"
-                width="20"
-                height="20"
+                :class="statusToColor(task.status)"
                 class="ma-1 card"
               )
                 div( class="tip" )
@@ -55,12 +53,10 @@
 
           v-container( fluid )
             v-row
-              v-card(
+              div(
                 v-for="task in sub.scrapsTasks"
                 :key="task.id"
                 :color="statusToColor(task.status)"
-                width="20"
-                height="20"
                 class="ma-1 card"
               )
                 div( class="tip" )
@@ -165,6 +161,12 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.card {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
 .card .tip {
   position: absolute;
   bottom: 100%;

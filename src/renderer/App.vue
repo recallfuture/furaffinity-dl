@@ -49,15 +49,14 @@
         
     
     v-content(  )
-      v-lazy( v-for="(sub, index) in subs" :key="sub.author.id")
+      v-fade-transition
         Detail(
-          v-show="index === subSelected"
-          :sub="sub"
+          v-if="subSelected in subs"
+          :sub="subs[subSelected]"
           @clearLog="clearSubLog"
           style="position: absolute; width: 100%; height: 100%"
         )
-      v-fade-transition
-        h2( align="center" v-if="!(subSelected in subs)" ) 未选择订阅
+        h2( v-else align="center" ) 未选择订阅
 </template>
 
 <script>
@@ -89,6 +88,18 @@ import _ from "lodash";
 import sleep from "sleep-promise";
 
 const db = remote.getGlobal("db");
+
+function toPromise(fun) {
+  return () =>
+    new Promise((resolve, reject) => {
+      try {
+        resolve(fun(...arguments));
+      } catch (e) {
+        reject(e);
+      }
+    });
+}
+
 const existsAsync = promisify(fs.exists);
 
 // 组件
@@ -172,7 +183,7 @@ export default {
     async initSubs() {
       // 获取数据库中所有的订阅
       // FIX: 修复层级过深的对象解析时间过长的问题
-      const subs = JSON.parse(await db.subscription.getAll());
+      const subs = JSON.parse(await toPromise(db.subscription.getAll)());
 
       for (const sub of subs) {
         // 复位下载状态
@@ -245,7 +256,7 @@ export default {
 
         this.subs.unshift(sub);
         this.$set(this.subsHash, sub.author.id, sub);
-        await db.subscription.add(sub);
+        await toPromise(db.subscription.add)(sub);
       }
     },
 
@@ -256,7 +267,7 @@ export default {
         // 移除订阅
         const sub = this.subs[index];
         this.subs.splice(index, 1);
-        db.subscription.del(sub.author.id);
+        await toPromise(db.subscription.del)(sub.author.id);
         if (deleteFiles) {
           if (await existsAsync(sub.dir)) {
             fs.rmdirSync(sub.dir, { recursive: true });
@@ -288,8 +299,8 @@ export default {
       this.config = { ...this.config, ...config };
 
       // 获取数据库中的设置
-      const ariaConfig = await db.ariaConfig.get();
-      const userConfig = await db.userConfig.get();
+      const ariaConfig = await toPromise(db.ariaConfig.get)();
+      const userConfig = await toPromise(db.userConfig.get)();
       for (const key in config) {
         if (key in ariaConfig) {
           ariaConfig[key] = config[key];
@@ -298,8 +309,8 @@ export default {
         }
       }
       // 更新数据库中的设置
-      await db.ariaConfig.set(ariaConfig);
-      await db.userConfig.set(userConfig);
+      await toPromise(db.ariaConfig.set)(ariaConfig);
+      await toPromise(db.userConfig.set)(userConfig);
     },
 
     // 开始
@@ -341,13 +352,13 @@ export default {
       if (sub.log.length > this.maxLogLines) {
         sub.log = sub.log.slice(sub.log.length - this.maxLogLines);
       }
-      db.subscription.set(sub.author.id, sub);
+      toPromise(db.subscription.set)(sub.author.id, sub);
     },
 
     // 清空任务日志
     clearSubLog(sub) {
       sub.log = [];
-      db.subscription.set(sub.author.id, sub);
+      toPromise(db.subscription.set)(sub.author.id, sub);
     },
 
     // 遍历订阅下载列表
@@ -359,7 +370,7 @@ export default {
         // 下载的图集
         const types = { gallery: sub.gallery, scraps: sub.scraps };
         for (const type in types) {
-          if (!types[type]) {
+          if (!types[type] || !this.fetching) {
             continue;
           }
 
@@ -435,8 +446,10 @@ export default {
           const task = this.submissionsHash[submission.id];
           // 检查是否需要添加此任务
           if (await this.checkTask(task)) {
-            this.addSubLog(sub, { text: `[${type}/${page}/${index}] 跳过` });
-            logger.log("跳过此作品", sub.author, type, page, index);
+            this.addSubLog(sub, {
+              text: `[${type}/${page}/${index + 1}] 跳过`
+            });
+            logger.log("跳过此作品", sub.author, type, page, index + 1);
             continue;
           }
         }
@@ -450,9 +463,10 @@ export default {
           if (submissionDetail === null) {
             this.addSubLog(sub, {
               type: "error",
-              text: `[${type}/${page}/${index}] 作品详情获取失败，1秒后进行第${times}次重试`
+              text: `[${type}/${page}/${index +
+                1}] 作品详情获取失败，1秒后进行第${times}次重试`
             });
-            logger.error("作品详情获取失败", sub.author, type, page, index);
+            logger.error("作品详情获取失败", sub.author, type, page, index + 1);
             await sleep(1000);
           } else {
             break;
@@ -463,7 +477,8 @@ export default {
           throw new Error("作品详情获取失败");
         }
 
-        logger.log("作品详情", sub.author, type, page, index);
+        this.addSubLog(sub, { text: `[${type}/${page}/${index + 1}] 开始` });
+        logger.log("作品详情", sub.author, type, page, index + 1);
 
         // 添加下载任务
         const url = submissionDetail.downloadUrl;
@@ -504,6 +519,9 @@ export default {
             }
           }
           case "error": {
+            return false;
+          }
+          default: {
             return false;
           }
         }
@@ -586,14 +604,14 @@ export default {
           this.$set(task, "path", item.files[0].path);
         }
         // 保存到数据库
-        await this.saveSub(this.subsHash[task.author.id]);
+        this.saveSub(this.subsHash[task.author.id]);
       }
     },
 
     // 保存订阅信息到数据库
-    async saveSub(sub) {
+    saveSub(sub) {
       logger.log("保存", sub.author.id);
-      await db.subscription.set(sub.author.id, sub);
+      toPromise(db.subscription.set)(sub.author.id, sub);
     }
   }
 };
