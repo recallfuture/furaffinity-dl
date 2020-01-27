@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-container( style="height: 100%; overflow-y: auto;" )
+  v-container( style="height: 100%; overflow-y: auto; overflow-x: hidden;" )
     v-tabs( centered )
       v-tab 基本信息
       v-tab 下载详情
@@ -36,22 +36,17 @@
 
           v-container( fluid )
             v-row
-              v-tooltip(
-                top
+              v-card(
                 v-for="task in sub.galleryTasks"
                 :key="task.id"
+                :color="statusToColor(task.status)"
+                width="20"
+                height="20"
+                class="ma-1 card"
               )
-                template( v-slot:activator="{ on }" )
-                  v-card(
-                    v-on="on"
-                    :color="statusToColor(task.status)"
-                    width="20"
-                    height="20"
-                    class="ma-1"
-                  )
-                p 作品标题：{{ task.title }}
-                p 文件路径：{{ task.path }}
-                p 状态：{{ task.status }}
+                div( class="tip" )
+                  div( class="text-no-wrap" ) 作品地址：{{ task.url }}
+                  div( v-if="task.status === 'complete'" class="text-no-wrap" ) 作品路径：{{ task.path }}
 
         v-card( v-if="sub.scraps" )
           v-card-title Scraps
@@ -60,28 +55,20 @@
 
           v-container( fluid )
             v-row
-              v-tooltip(
-                top
+              v-card(
                 v-for="task in sub.scrapsTasks"
                 :key="task.id"
+                :color="statusToColor(task.status)"
+                width="20"
+                height="20"
+                class="ma-1"
               )
-                template( v-slot:activator="{ on }" )
-                  v-card(
-                    v-on="on"
-                    :color="statusToColor(task.status)"
-                    width="20"
-                    height="20"
-                    class="ma-1"
-                  )
-                p 作品标题：{{ task.title }}
-                p 文件路径：{{ task.path }}
-                p 状态：{{ task.status }}
               
       //- 日志
       v-tab-item
         v-container
           template( v-if="sub.log.length > 0" )
-            v-row( class="flex-column-reverse"  )
+            v-row( class="flex-column-reverse" dense )
               v-col( cols="12" v-for="(log, index) in sub.log" :key="index" :class="typeToColor(log.type) + '--text'" )
                 span {{ formatLog(log) }}
           h2( v-else ) 暂无日志
@@ -167,3 +154,23 @@ export default {
   }
 };
 </script>
+
+<style lang="stylus" scoped>
+.card .tip {
+  position: absolute;
+  bottom: 100%;
+  padding: 4px;
+  background-color: #444;
+  border: 1px #999 solid;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.4s;
+  transform: translateX(-50%);
+  visibility: hidden;
+}
+
+.card:hover .tip {
+  opacity: 1;
+  visibility: visible;
+}
+</style>
