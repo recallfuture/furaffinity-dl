@@ -61,12 +61,17 @@
                 :color="statusToColor(task.status)"
                 width="20"
                 height="20"
-                class="ma-1"
+                class="ma-1 card"
               )
+                div( class="tip" )
+                  div( class="text-no-wrap" ) 作品地址：{{ task.url }}
+                  div( v-if="task.status === 'complete'" class="text-no-wrap" ) 作品路径：{{ task.path }}
               
       //- 日志
       v-tab-item
         v-container
+          v-btn( @click="clearLog" text block ) 清空日志
+            
           template( v-if="sub.log.length > 0" )
             v-row( class="flex-column-reverse" dense )
               v-col( cols="12" v-for="(log, index) in sub.log" :key="index" :class="typeToColor(log.type) + '--text'" )
@@ -146,6 +151,10 @@ export default {
 
       const time = [hour, min, sec].join(":");
       return `[${time}] ${text}`;
+    },
+
+    clearLog() {
+      this.$emit("clearLog", this.sub);
     }
   },
 

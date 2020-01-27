@@ -50,7 +50,12 @@
     
     v-content(  )
       v-lazy( v-for="(sub, index) in subs" :key="sub.author.id")
-        Detail( v-show="index === subSelected" :sub="sub"  style="position: absolute; width: 100%; height: 100%" )
+        Detail(
+          v-show="index === subSelected"
+          :sub="sub"
+          @clearLog="clearSubLog"
+          style="position: absolute; width: 100%; height: 100%"
+        )
       v-fade-transition
         h2( align="center" v-if="!(subSelected in subs)" ) 未选择订阅
 </template>
@@ -332,6 +337,12 @@ export default {
     // 添加任务日志
     addSubLog(sub, { type = "info", text = "" }) {
       sub.log.push({ type, text, timestamp: new Date().getTime() });
+      db.subscription.set(sub.author.id, sub);
+    },
+
+    // 清空任务日志
+    clearSubLog(sub) {
+      sub.log = [];
       db.subscription.set(sub.author.id, sub);
     },
 
