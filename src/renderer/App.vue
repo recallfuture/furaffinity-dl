@@ -53,7 +53,6 @@
         Detail(
           v-if="subSelected in subs"
           :sub="subs[subSelected]"
-          @clearLog="clearSubLog"
           style="position: absolute; width: 100%; height: 100%"
         )
         h2( v-else align="center" ) 未选择订阅
@@ -109,7 +108,7 @@ import User from "@/renderer/components/Main/User";
 import UserLogin from "@/renderer/components/Main/UserLogin";
 import UserLogout from "@/renderer/components/Main/UserLogout";
 import Drawer from "@/renderer/components/Main/Drawer";
-import Detail from "@/renderer/components/Main/Detail";
+import Detail from "@/renderer/components/Detail/Detail";
 
 export default {
   name: "App",
@@ -138,7 +137,7 @@ export default {
       submissionsHash: {},
 
       retry: 3,
-      maxLogLines: 1000,
+      maxLogLines: 100,
       fetching: false,
       fetchingList: []
     };
@@ -155,6 +154,7 @@ export default {
     bus.$on("snackbar", this.showSnackBar);
     bus.$on("login", this.login);
     bus.$on("logout", this.logout);
+    bus.$on("clearLog", this.clearSubLog);
 
     this.loading = false;
   },
@@ -494,18 +494,22 @@ export default {
     // 检查任务是否需要添加
     // 返回 true 意为不需要添加
     async checkTask(task) {
-      if (!task.gid || !task.status) {
+      const { gid, status } = task;
+      if (!gid || !status) {
         return false;
       }
 
       try {
         switch (task.status) {
           case "active": {
+            const item = await fetchTaskItem({ gid });
+            this.$set(task, "status", item.status);
             return true;
           }
           case "paused": {
             // 暂停的任务就开始
-            await resumeTask({ gid });
+            const item = await fetchTaskItem({ gid });
+            this.$set(task, "status", item.status);
             return true;
           }
           case "stopped": {
