@@ -6,16 +6,17 @@ v-dialog( v-model="model" width="800" )
       v-tab 从关注列表导入
 
       v-tab-item
-        add-single-sub( :config="config" :subs="subs" @sub:new="newSub" )
+        add-single-sub( :config="config" :subs="subs" @sub:new="newSubs" )
       v-tab-item
-        v-container
-          h2 敬请期待
+        add-sub-from-watching-list( :config="config" @sub:new="newSubs" )
     
 </template>
 
 <script>
 import AddSingleSub from "./AddSingleSub";
+import AddSubFromWatchingList from "./AddSubFromWatchingList";
 import bus from "@/renderer/utils/EventBus";
+import logger from "../../../shared/logger";
 
 export default {
   name: "AddSubDialog",
@@ -50,12 +51,13 @@ export default {
   },
 
   components: {
-    AddSingleSub
+    AddSingleSub,
+    AddSubFromWatchingList
   },
 
   methods: {
-    newSub(sub) {
-      this.$emit("subs:new", [sub]);
+    newSubs(subs) {
+      this.$emit("subs:new", subs);
       this.model = false;
     }
   },

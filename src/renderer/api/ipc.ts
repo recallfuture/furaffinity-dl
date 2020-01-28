@@ -35,11 +35,10 @@ export async function faUser(): Promise<Author | null> {
 
 /**
  * 获取用户的关注列表
- * @param id 用户id
  */
-export async function faWatchingList(id: string): Promise<Author[]> {
+export async function faWatchingList(): Promise<Author[]> {
   // @ts-ignore
-  return await ipc.send("fa.watchingList", id);
+  return await ipc.send("fa.watchingList");
 }
 
 /**

@@ -3,7 +3,7 @@ import { session } from "electron";
 import {
   Login,
   User,
-  WatchingList,
+  MyWatchingList,
   Author,
   Gallery,
   Scraps,
@@ -35,7 +35,7 @@ export function registerFaIpc() {
   // fa api
   ipc.on("fa.login", (a: any, b: any) => Login(a, b));
   ipc.on("fa.user", User);
-  ipc.on("fa.watchingList", (id: any) => WatchingList(id));
+  ipc.on("fa.watchingList", MyWatchingList);
   ipc.on("fa.author", (id: any) => Author(id));
   ipc.on("fa.gallery", (id: any, page: any) => Gallery(id, page));
   ipc.on("fa.scraps", (id: any, page: any) => Scraps(id, page));

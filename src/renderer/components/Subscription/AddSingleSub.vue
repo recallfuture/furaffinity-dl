@@ -158,7 +158,7 @@ export default {
         deleted: false
       };
       logger.log(sub);
-      this.$emit("sub:new", sub);
+      this.$emit("sub:new", [sub]);
       this.loading = false;
     },
 

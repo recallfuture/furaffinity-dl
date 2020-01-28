@@ -89,10 +89,10 @@ import sleep from "sleep-promise";
 const db = remote.getGlobal("db");
 
 function toPromise(fun) {
-  return () =>
+  return (...args) =>
     new Promise((resolve, reject) => {
       try {
-        resolve(fun(...arguments));
+        resolve(fun(...args));
       } catch (e) {
         reject(e);
       }
@@ -248,15 +248,21 @@ export default {
     },
 
     // 添加订阅
-    async addSubs(subs) {
+    addSubs(subs) {
+      let num = 0;
       for (const sub of subs) {
         if (sub.author.id in this.subsHash) {
           continue;
         }
 
+        num++;
         this.subs.unshift(sub);
         this.$set(this.subsHash, sub.author.id, sub);
-        await toPromise(db.subscription.add)(sub);
+        toPromise(db.subscription.add)(sub);
+      }
+
+      if (num > 0) {
+        this.showSnackBar({ message: `成功添加${num}个订阅` });
       }
     },
 
