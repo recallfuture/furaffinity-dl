@@ -54,19 +54,13 @@ async function getStartSh(): Promise<string[]> {
   // 获取配置路径和 session 路径
   const confPath = join(basePath, "/aria2/aria2.conf");
   const config = await db.userConfig.get();
-  const sessionPath = config["session-path"];
-  const sessionIsExist = existsSync(sessionPath);
 
   // 生成命令
   let result = [
     `${binPath}`,
     `--conf-path=${confPath}`,
-    `--save-session=${sessionPath}`,
     ...transformConfig(await db.ariaConfig.get())
   ];
-  if (sessionIsExist) {
-    result = [...result, `--input-file=${sessionPath}`];
-  }
 
   return result;
 }
@@ -91,7 +85,7 @@ export async function start() {
 export async function stop() {
   try {
     logger.info("[Furaffinity-dl] Aria2 stopping===>");
-    instance?.kill();
+    instance?.kill("SIGINT");
   } catch (err) {
     logger.error("[Furaffinity-dl] Aria2 stop fail===>", err.message);
   }
