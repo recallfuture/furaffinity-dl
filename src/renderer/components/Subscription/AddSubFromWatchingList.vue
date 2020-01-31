@@ -81,7 +81,7 @@ export default {
       const users = await faWatchingList();
 
       const subs = users.map(user => {
-        const baseDir = path.join("this.dir", user.id);
+        const baseDir = path.join(this.dir, user.id);
         const galleryDir = baseDir;
         const scrapsDir = path.join(baseDir, "scraps");
 
