@@ -24,7 +24,7 @@ export interface UserConfig {
 }
 
 export interface Task {
-  gid?: string;
+  gid: string;
   path?: string;
   status: string;
 
