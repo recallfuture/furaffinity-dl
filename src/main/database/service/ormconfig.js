@@ -7,6 +7,7 @@ const { Init1580536212346 } = require("../migration/1580536212346-Init");
 const {
   addConfig1580541830560
 } = require("../migration/1580541830560-add-config");
+const { modSub1580551797171 } = require("../migration/1580551797171-mod-sub");
 
 const basePath =
   process.env.NODE_ENV === "production"
@@ -22,7 +23,7 @@ module.exports = {
   database: path.join(basePath, "database.db"),
 
   entities: [Config, Log, Subscription, Task],
-  migrations: [Init1580536212346, addConfig1580541830560],
+  migrations: [Init1580536212346, addConfig1580541830560, modSub1580551797171],
   migrationsRun: true,
 
   cli: {

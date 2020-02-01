@@ -8,6 +8,8 @@ export class Subscription {
   id: string = "";
   @Column("varchar")
   name: string = "";
+  @Column("varchar")
+  url: string = "";
   @Column("varchar", { nullable: true })
   avatar: string | undefined;
 
@@ -15,6 +17,8 @@ export class Subscription {
   gallery: boolean = true;
   @Column("varchar")
   galleryDir: string = "";
+  @Column("int")
+  galleryTaskNum: number = 0;
   @Column("boolean")
   galleryUpdateOnly: boolean = false;
 
@@ -22,6 +26,8 @@ export class Subscription {
   scraps: boolean = false;
   @Column("varchar")
   scrapsDir: string = "";
+  @Column("int")
+  scrapsTaskNum: number = 0;
   @Column("boolean")
   scrapsUpdateOnly: boolean = false;
 

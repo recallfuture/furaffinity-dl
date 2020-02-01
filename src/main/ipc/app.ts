@@ -54,11 +54,8 @@ async function isNeedMigrate(): Promise<Boolean> {
  * 迁移数据库
  */
 export async function migrate() {
-  // 移走旧数据库并读取
-  const newPath = path.join(app.getPath("temp"), "database.db");
-  fs.renameSync(dbPath, newPath);
-  await _db.initDatabase(newPath);
-
+  // 读取旧数据库
+  await _db.initDatabase(dbPath);
   // 获取所有的订阅数据
   const subs = await _db.subscription.getAll();
   console.log(subs.length);
@@ -69,13 +66,16 @@ export async function migrate() {
       const s = new Subscription();
       s.id = sub.author.id;
       s.name = sub.author.name;
+      s.url = sub.author.url;
       s.avatar = sub.author.avatar;
       s.dir = sub.dir;
       s.createAt = sub.createAt;
       s.gallery = sub.gallery;
       s.galleryDir = sub.galleryDir;
+      s.galleryTaskNum = sub.galleryTasks.length;
       s.scraps = sub.scraps;
       s.scrapsDir = sub.scrapsDir;
+      s.scrapsTaskNum = sub.scrapsTasks.length;
       s.status = sub.status;
       await db.addSub(s);
       logger.log("添加新订阅", s.id, `${index++}/${subs.length}`);
@@ -124,7 +124,6 @@ export async function migrate() {
       });
     }
   }
-  await _db.clearDatabase();
 }
 
 export function registerAppIpc() {
