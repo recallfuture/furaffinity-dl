@@ -16,9 +16,9 @@
         v-dialog( v-model="deleteSubDialog" width="400" )
           v-card(  )
             v-card-title 删除订阅
-            v-card-text 
-              h3 确定删除 {{ item in subs ? subs[item].author.name : "" }} 的订阅?
-              v-checkbox( v-model="deleteFiles" :label="`同时删除订阅文件夹（${item in subs ? subs[item].dir : ''}）`" )
+            v-card-text( v-if="deleteSubDialog" )
+              h3 确定删除 {{ subs[item].name }} 的订阅?
+              v-checkbox( v-model="deleteFiles" :label="`同时删除订阅文件夹（${subs[item].dir}）`" )
             v-card-actions
               v-spacer
               v-btn( @click="deleteOne" color="error" text ) 确定
@@ -34,20 +34,20 @@
           v-list-item( v-for="(s, index) in subs" :key="index" )
             //- 作者头像
             v-list-item-avatar
-              v-img( :src="s.author.avatar" )
+              v-img( :src="s.avatar" )
 
             //- 作者名和状态
             v-list-item-content
-              v-list-item-title {{ s.author.name }}
+              v-list-item-title {{ s.name }}
               v-list-item-subtitle( v-if="itemFetching(s)" ) 获取中
               v-list-item-subtitle( v-else-if="itemError(s)" color="error" ) 获取失败
-              v-list-item-subtitle( v-if="itemDownloading(s)" ) 下载中
+              //- v-list-item-subtitle( v-if="itemDownloading(s)" ) 下载中
 
             //- Gallery 和 Scraps 的标签
             v-list-item-action
               div
-                v-chip( v-show="s.gallery" class="mr-2" color="info" ) G {{ s.galleryTasks.length }}
-                v-chip( v-show="s.scraps" class="mr-2" color="warning" ) S {{ s.scrapsTasks.length }}
+                v-chip( v-show="s.gallery" class="mr-2" color="info" ) G {{ s.galleryTaskNum }}
+                v-chip( v-show="s.scraps" class="mr-2" color="warning" ) S {{ s.scrapsTaskNum }}
           v-list-item( v-if="subs.length === 0" )
             v-list-item-content
               v-list-item-title 暂无订阅，请点击上方添加订阅
@@ -90,7 +90,7 @@ export default {
   data() {
     return {
       model: this.drawer,
-      item: -1,
+      item: undefined,
       deleteSubDialog: false,
       deleteFiles: false
     };
@@ -103,20 +103,6 @@ export default {
 
     itemError(sub) {
       return sub.status === "error";
-    },
-
-    itemDownloading(sub) {
-      for (const task of sub.galleryTasks) {
-        if (task.status === "active") {
-          return true;
-        }
-      }
-      for (const task of sub.scrapsTasks) {
-        if (task.status === "active") {
-          return true;
-        }
-      }
-      return false;
     },
 
     add() {
