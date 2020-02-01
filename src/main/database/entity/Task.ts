@@ -31,7 +31,10 @@ export class Task {
 
   @ManyToOne(
     type => Subscription,
-    sub => sub.tasks
+    sub => sub.tasks,
+    {
+      eager: true
+    }
   )
   @JoinColumn()
   sub: Subscription | undefined;

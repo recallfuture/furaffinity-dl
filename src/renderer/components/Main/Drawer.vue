@@ -30,8 +30,8 @@
 
       //- 订阅列表
       v-list( rounded style="height: 100%; overflow-y: auto;" )
-        v-list-item-group( v-model="item" color="primary" )
-          v-list-item( v-for="(s, index) in subs" :key="index" )
+          //- v-list-item-group( v-model="item" color="primary" )
+          v-list-item( v-for="(s, index) in subs" :key="s.id" @click="select(index)" )
             //- 作者头像
             v-list-item-avatar
               v-img( :src="s.avatar" )
@@ -103,6 +103,10 @@ export default {
 
     itemError(sub) {
       return sub.status === "error";
+    },
+
+    select(index) {
+      this.item = index;
     },
 
     add() {

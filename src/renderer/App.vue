@@ -17,7 +17,6 @@
     add-sub-dialog(
       v-model="addSubDialog"
       :config="config"
-      :subs="subsHash"
       @subs:new="addSubs"
     )
 
@@ -51,15 +50,25 @@
     v-content(  )
       v-fade-transition
         Detail(
-          v-if="subSelected in subs"
-          :sub="subs[subSelected]"
+          v-if="currentSub"
+          :sub="currentSub"
+          :galleryTasks="galleryTasks"
+          :scrapsTasks="scrapsTasks"
+          :logs="currentSubLogs"
           style="position: absolute; width: 100%; height: 100%"
         )
         h2( v-else align="center" ) 未选择订阅
 </template>
 
 <script>
-// @ is an alias to /src
+// 外部库
+import { remote } from "electron";
+import fs from "fs";
+import { promisify } from "util";
+import _ from "lodash";
+import sleep from "sleep-promise";
+
+// 内部库
 import {
   faLogin,
   faGallery,
@@ -77,29 +86,11 @@ import {
   onDownloadError,
   resumeTask
 } from "@/renderer/api";
-import { remote } from "electron";
 import bus from "./utils/EventBus";
 import cache from "./utils/Cache";
 import logger from "@/shared/logger";
-import fs from "fs";
-import { promisify } from "util";
-import _ from "lodash";
-import sleep from "sleep-promise";
-
-const db = remote.getGlobal("db");
-
-function toPromise(fun) {
-  return (...args) =>
-    new Promise((resolve, reject) => {
-      try {
-        resolve(fun(...args));
-      } catch (e) {
-        reject(e);
-      }
-    });
-}
-
-const existsAsync = promisify(fs.exists);
+import * as db from "./api/database";
+import { Log, Task, TaskType } from "../main/database/entity";
 
 // 组件
 import Guide from "@/renderer/components/Guide/Guide";
@@ -109,6 +100,8 @@ import UserLogin from "@/renderer/components/Main/UserLogin";
 import UserLogout from "@/renderer/components/Main/UserLogout";
 import Drawer from "@/renderer/components/Main/Drawer";
 import Detail from "@/renderer/components/Detail/Detail";
+
+const existsAsync = promisify(fs.exists);
 
 export default {
   name: "App",
@@ -130,11 +123,10 @@ export default {
       user: null,
       subs: [],
       subSelected: undefined,
+      currentSub: null,
+      currentSubTasks: [],
+      currentSubLogs: [],
       config: {},
-
-      subsHash: {},
-      tasksHash: {},
-      submissionsHash: {},
 
       retry: 3,
       maxLogLines: 100,
@@ -169,6 +161,16 @@ export default {
     Detail
   },
 
+  computed: {
+    galleryTasks() {
+      return this.currentSubTasks.filter(task => task.type === "gallery");
+    },
+
+    scrapsTasks() {
+      return this.currentSubTasks.filter(task => task.type === "scraps");
+    }
+  },
+
   methods: {
     // 初始化用户信息
     async initUser() {
@@ -182,41 +184,23 @@ export default {
     // 初始化订阅信息
     async initSubs() {
       // 获取数据库中所有的订阅
-      // FIX: 修复层级过深的对象解析时间过长的问题
-      const subs = JSON.parse(await toPromise(db.subscription.getAll)());
+      const subs = await db.getSubs();
 
       for (const sub of subs) {
         // 复位下载状态
         sub.status = "";
         this.subs.push(sub);
-
-        // 缓存订阅信息
-        this.$set(this.subsHash, sub.author.id, sub);
-
-        // 缓存下载任务和作品
-        const tasks = [...sub.galleryTasks, ...sub.scrapsTasks];
-        for (const task of tasks) {
-          if (task.gid) {
-            this.$set(this.tasksHash, task.gid, task);
-          }
-          if (task.id) {
-            this.$set(this.submissionsHash, task.id, task);
-          }
-        }
       }
 
-      // 按添加时间排序
+      // 排序
       this.subs = this.subs.sort((a, b) => {
-        return b.createAt - a.createAt;
+        return b.id - a.id;
       });
     },
 
     // 初始化配置信息
     async initConfig() {
-      this.config = {
-        ...(await db.ariaConfig.get()),
-        ...(await db.userConfig.get())
-      };
+      this.config = await db.getAriaConfig();
     },
 
     // 初始化向导
@@ -248,20 +232,18 @@ export default {
     },
 
     // 添加订阅
-    addSubs(subs) {
+    async addSubs(subs) {
       let num = 0;
       for (const sub of subs) {
-        if (sub.author.id in this.subsHash) {
-          continue;
+        const s = await db.getSub(sub.id);
+        if (!s) {
+          num++;
+          await db.addSub(sub);
         }
-
-        num++;
-        this.subs.unshift(sub);
-        this.$set(this.subsHash, sub.author.id, sub);
-        toPromise(db.subscription.add)(sub);
       }
 
       if (num > 0) {
+        this.subs = await db.getSubs();
         this.showSnackBar({ message: `成功添加${num}个订阅` });
       }
     },
@@ -272,8 +254,8 @@ export default {
       if (index in this.subs) {
         // 移除订阅
         const sub = this.subs[index];
-        this.subs.splice(index, 1);
-        await toPromise(db.subscription.del)(sub.author.id);
+        await db.removeSub(sub.id);
+        this.subs = await db.getSubs();
         if (deleteFiles) {
           if (await existsAsync(sub.dir)) {
             fs.rmdirSync(sub.dir, { recursive: true });
@@ -283,8 +265,15 @@ export default {
     },
 
     // 选中某个订阅
-    selectSub(value) {
+    async selectSub(value) {
       this.subSelected = value;
+      if (typeof value !== "undefined") {
+        this.currentSub = this.subs[value];
+        this.currentSubTasks = await db.getTasks(this.currentSub.id);
+        this.currentSubLogs = await db.getLogs(this.currentSub.id);
+      } else {
+        this.currentSub = null;
+      }
     },
 
     // 登录
@@ -303,20 +292,7 @@ export default {
     async updateConfig(config) {
       // 更新本地设置
       this.config = { ...this.config, ...config };
-
-      // 获取数据库中的设置
-      const ariaConfig = await toPromise(db.ariaConfig.get)();
-      const userConfig = await toPromise(db.userConfig.get)();
-      for (const key in config) {
-        if (key in ariaConfig) {
-          ariaConfig[key] = config[key];
-        } else if (key in userConfig) {
-          userConfig[key] = config[key];
-        }
-      }
-      // 更新数据库中的设置
-      await toPromise(db.ariaConfig.set)(ariaConfig);
-      await toPromise(db.userConfig.set)(userConfig);
+      await db.saveAriaConfig(this.config);
     },
 
     // 开始
@@ -353,18 +329,21 @@ export default {
     },
 
     // 添加任务日志
-    addSubLog(sub, { type = "info", text = "" }) {
-      sub.log.push({ type, text, timestamp: new Date().getTime() });
-      if (sub.log.length > this.maxLogLines) {
-        sub.log = sub.log.slice(sub.log.length - this.maxLogLines);
+    async addSubLog(sub, { type = "info", message = "" }) {
+      const log = { type, message, createAt: new Date().getTime(), sub: sub };
+      if (this.currentSub && this.currentSub.id === sub.id) {
+        this.currentSubLogs.push(log);
       }
-      toPromise(db.subscription.set)(sub.author.id, sub);
+      // TODO: 删除多出来的log
+      await db.addLog(log);
     },
 
     // 清空任务日志
-    clearSubLog(sub) {
-      sub.log = [];
-      toPromise(db.subscription.set)(sub.author.id, sub);
+    async clearSubLog(sub) {
+      if (this.currentSub && this.currentSub.id === sub.id) {
+        this.currentSubLogs = [];
+      }
+      await db.clearLogs(sub.id);
     },
 
     // 遍历订阅下载列表
@@ -382,12 +361,12 @@ export default {
 
           try {
             // 下载此图集的所有图片
-            this.addSubLog(sub, { text: `[${type}] 开始获取` });
+            this.addSubLog(sub, { message: `[${type}] 开始获取` });
             await this.mapPages(type, { sub });
           } catch (e) {
             this.addSubLog(sub, {
               type: "error",
-              text: `[${type}] 出现错误，停止获取：${e.message}`
+              message: `[${type}] 出现错误，停止获取：${e.message}`
             });
             logger.error(e);
             this.$set(sub, "status", "error");
@@ -405,17 +384,17 @@ export default {
 
         while (times++ < this.retry) {
           if (type === "gallery") {
-            result = await faGallery(sub.author.id, page);
+            result = await faGallery(sub.id, page);
           } else {
-            result = await faScraps(sub.author.id, page);
+            result = await faScraps(sub.id, page);
           }
 
           if (result === null) {
             this.addSubLog(sub, {
               type: "error",
-              text: `[${type}/${page}] 获取失败，1秒后进行第${times}次重试`
+              message: `[${type}/${page}] 获取失败，1秒后进行第${times}次重试`
             });
-            logger.error("获取作品列表失败", sub.author, type, page);
+            logger.error("获取作品列表失败", sub, type, page);
             await sleep(1000);
           } else {
             break;
@@ -427,8 +406,8 @@ export default {
         }
 
         if (result.length === 0) {
-          this.addSubLog(sub, { text: `[${type}] 获取结束` });
-          logger.log("页数到头了", sub.author, type, page);
+          this.addSubLog(sub, { message: `[${type}] 获取结束` });
+          logger.log("页数到头了", sub, type, page);
           break;
         }
 
@@ -446,16 +425,15 @@ export default {
         // 获取当前作品
         const submission = submissions[index];
 
-        // 先判断缓存中有没有
-        if (submission.id in this.submissionsHash) {
-          // 获取缓存内的任务
-          const task = this.submissionsHash[submission.id];
+        // 先判断数据库中有没有
+        let task = await db.getTask(submission.id);
+        if (task) {
           // 检查是否需要添加此任务
           if (await this.checkTask(task)) {
             this.addSubLog(sub, {
-              text: `[${type}/${page}/${index + 1}] 跳过`
+              message: `[${type}/${page}/${index + 1}] 跳过`
             });
-            logger.log("跳过此作品", sub.author, type, page, index + 1);
+            logger.log("跳过此作品", sub, type, page, index + 1);
             continue;
           }
         }
@@ -469,10 +447,10 @@ export default {
           if (submissionDetail === null) {
             this.addSubLog(sub, {
               type: "error",
-              text: `[${type}/${page}/${index +
+              message: `[${type}/${page}/${index +
                 1}] 作品详情获取失败，1秒后进行第${times}次重试`
             });
-            logger.error("作品详情获取失败", sub.author, type, page, index + 1);
+            logger.error("作品详情获取失败", sub, type, page, index + 1);
             await sleep(1000);
           } else {
             break;
@@ -483,7 +461,7 @@ export default {
           throw new Error("作品详情获取失败");
         }
 
-        this.addSubLog(sub, { text: `[${type}/${page}/${index + 1}] 开始` });
+        this.addSubLog(sub, { message: `[${type}/${page}/${index + 1}] 开始` });
         logger.log("作品详情", sub.author, type, page, index + 1);
 
         // 添加下载任务
@@ -492,7 +470,13 @@ export default {
         const gid = await this.addTask(url, dir);
 
         // 缓存当前任务
-        const task = { gid, ...submissionDetail };
+        task = new Task();
+        task.gid = gid;
+        task.id = submissionDetail.id;
+        task.url = submissionDetail.url;
+        task.downloadUrl = submissionDetail.downloadUrl;
+        task.type = type;
+        task.sub = sub;
         this.saveTask({ sub, type, task });
       }
     },
@@ -506,34 +490,24 @@ export default {
       }
 
       try {
-        switch (task.status) {
-          case "active": {
-            const item = await fetchTaskItem({ gid });
-            this.$set(task, "status", item.status);
-            return true;
-          }
-          case "paused": {
-            // 暂停的任务就开始
-            const item = await fetchTaskItem({ gid });
-            this.$set(task, "status", item.status);
-            return true;
-          }
-          case "stopped": {
+        // 如果已完成且文件存在就返回true
+        if (status === "complete") {
+          if (task.path) {
+            return await existsAsync(task.path);
+          } else {
             return false;
           }
-          case "complete": {
-            if (task.path) {
-              return await existsAsync(task.path);
-            } else {
-              return false;
-            }
-          }
-          case "error": {
-            return false;
-          }
-          default: {
-            return false;
-          }
+        }
+
+        // 如果未完成就检查是否正在下载
+        const item = await fetchTaskItem({ gid });
+        if (item.status === "active") {
+          return true;
+        } else if (item.status === "pause") {
+          await resumeTask({ gid });
+          return true;
+        } else {
+          return false;
         }
       } catch (e) {
         logger.log("任务已失效", e);
@@ -551,21 +525,17 @@ export default {
     },
 
     // 缓存任务
-    saveTask({ sub, type, task }) {
-      if (task.id in this.submissionsHash) {
-        logger.log("命中缓存，修改任务", task);
-        this.$set(this.submissionsHash[task.id], "gid", task.gid);
-        this.$set(this.tasksHash, task.gid, this.submissionsHash[task.id]);
-      } else {
-        logger.log(
-          "未命中缓存，直接添加任务",
-          task,
-          sub[type + "Tasks"].length
-        );
-        sub[type + "Tasks"].push(task);
-        this.$set(this.submissionsHash, task.id, task);
-        this.$set(this.tasksHash, task.gid, task);
+    async saveTask({ sub, type, task }) {
+      if (this.currentSub && this.currentSub.id === sub.id) {
+        this.currentSubTasks.push(task);
       }
+      await db.saveTask(task);
+      if (task.type === TaskType.Gallery) {
+        sub.galleryTaskNum++;
+      } else {
+        sub.scrapsTaskNum++;
+      }
+      await db.saveSub(sub);
     },
 
     async onDownloadStart(event) {
@@ -602,26 +572,24 @@ export default {
     async refreshTask(gid) {
       // 获取任务信息
       const item = await fetchTaskItem({ gid });
-      // 通过 gid 获取到缓存中对应的任务
-      if (gid in this.tasksHash) {
-        const task = this.tasksHash[gid];
+      const task = await db.getTaskByGid(gid);
+      if (task) {
         // 覆盖任务状态
-        this.$set(task, "status", item.status);
+        task.status = item.status;
         // 覆盖文件位置
         // 任务完成后可以或得到文件位置
         if (item.status === "complete") {
+          task.path = item.files[0].path;
           logger.log("文件下载到", item.files[0].path);
-          this.$set(task, "path", item.files[0].path);
         }
         // 保存到数据库
-        this.saveSub(this.subsHash[task.author.id]);
+        db.saveTask(task);
+        // 更新界面
+        logger.log(task);
+        if (this.currentSub && this.currentSub.id === task.sub.id) {
+          this.currentSubTasks = await db.getTasks(task.sub.id);
+        }
       }
-    },
-
-    // 保存订阅信息到数据库
-    saveSub(sub) {
-      logger.log("保存", sub.author.id);
-      toPromise(db.subscription.set)(sub.author.id, sub);
     }
   }
 };

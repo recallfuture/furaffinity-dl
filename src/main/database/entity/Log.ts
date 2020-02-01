@@ -24,7 +24,10 @@ export class Log {
 
   @ManyToOne(
     type => Subscription,
-    sub => sub.logs
+    sub => sub.logs,
+    {
+      eager: true
+    }
   )
   sub: Subscription | undefined;
 }

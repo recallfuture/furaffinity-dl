@@ -8,7 +8,6 @@ import * as db from "../database/service";
 import { dbPath } from "../database/api";
 import logger from "@/shared/logger";
 import fs from "fs";
-import path from "path";
 import { Subscription, Task } from "../database/entity";
 import { TaskType } from "../database/entity/Task";
 
@@ -77,7 +76,7 @@ export async function migrate() {
       s.scrapsDir = sub.scrapsDir;
       s.scrapsTaskNum = sub.scrapsTasks.length;
       s.status = sub.status;
-      await db.addSub(s);
+      await db.saveSub(s);
       logger.log("添加新订阅", s.id, `${index++}/${subs.length}`);
 
       await db.addTasks(

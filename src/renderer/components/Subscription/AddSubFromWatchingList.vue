@@ -86,19 +86,15 @@ export default {
         const scrapsDir = path.join(baseDir, "scraps");
 
         return {
-          author: user,
+          id: user.id,
+          name: user.name,
+          url: user.url,
+          avatar: user.avatar,
           gallery: this.gallery,
           scraps: this.scraps,
-          galleryTasks: [],
-          scrapsTasks: [],
           dir: baseDir,
           galleryDir: galleryDir,
-          scrapsDir: scrapsDir,
-          log: [],
-          status: "created",
-          updateOnly: false,
-          createAt: Date.parse(new Date()),
-          deleted: false
+          scrapsDir: scrapsDir
         };
       });
       logger.log(subs);

@@ -54,8 +54,8 @@ export default {
     },
 
     formatLog(log) {
-      const { text, timestamp } = log;
-      const date = new Date(timestamp);
+      const { message, createAt } = log;
+      const date = new Date(createAt);
       const year = date.getFullYear();
       const month = date.getMonth();
       const day = date.getDay();
@@ -64,7 +64,7 @@ export default {
       const sec = date.getSeconds();
 
       const time = [hour, min, sec].join(":");
-      return `[${time}] ${text}`;
+      return `[${time}] ${message}`;
     },
 
     clearLog() {

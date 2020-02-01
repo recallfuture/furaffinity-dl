@@ -11,8 +11,8 @@
 
       //- 下载详情
       v-tab-item
-        detail-tasks( title="Gallery" :tasks="galleryTasks" )
-        detail-tasks( title="Scraps" :tasks="scrapsTasks" )
+        detail-tasks( title="Gallery" v-if="sub.gallery" :tasks="galleryTasks" )
+        detail-tasks( title="Scraps" v-if="sub.scraps" :tasks="scrapsTasks" )
 
       //- 日志
       v-tab-item

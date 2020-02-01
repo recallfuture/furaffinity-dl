@@ -143,19 +143,15 @@ export default {
 
       this.loading = true;
       const sub = {
-        author: this.user,
+        id: this.user.id,
+        name: this.user.name,
+        url: this.user.url,
+        avatar: this.user.avatar,
         gallery: this.gallery,
         scraps: this.scraps,
-        galleryTasks: [],
-        scrapsTasks: [],
         dir: this.dir,
         galleryDir: this.getFullPath(this.galleryDir),
-        scrapsDir: this.getFullPath(this.scrapsDir),
-        log: [],
-        status: "created",
-        updateOnly: false,
-        createAt: Date.parse(new Date()),
-        deleted: false
+        scrapsDir: this.getFullPath(this.scrapsDir)
       };
       logger.log(sub);
       this.$emit("sub:new", [sub]);
