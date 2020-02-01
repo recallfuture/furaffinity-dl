@@ -88,3 +88,13 @@ export async function existsPaths(paths: string[]): Promise<boolean[]> {
   // @ts-ignore
   return await ipc.send("app.existsPaths", paths);
 }
+
+export async function isNeedMgrate() {
+  // @ts-ignore
+  return await ipc.send("app.isNeedMigrate");
+}
+
+export async function migrate() {
+  // @ts-ignore
+  return await ipc.send("app.migrate");
+}

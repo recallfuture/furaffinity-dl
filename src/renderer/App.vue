@@ -5,6 +5,12 @@
       span {{ alertMessage }}
       v-btn( @click="alert = false" icon )
         v-icon mdi-close
+      
+    v-dialog( v-model="migrateDialog" width="400" persistent )
+      v-card
+        v-card-title 正在升级数据库
+        v-card-text {{ migrateStatus.current }}/{{ migrateStatus.total }}
+          v-progress-linear( :value="migrateStatus.current/migrateStatus.total*100" )
 
     //- 全局使用的组件
     guide(
@@ -67,6 +73,7 @@ import fs from "fs";
 import { promisify } from "util";
 import _ from "lodash";
 import sleep from "sleep-promise";
+import ipc from "electron-promise-ipc";
 
 // 内部库
 import {
@@ -84,7 +91,9 @@ import {
   onDownloadStop,
   onDownloadComplete,
   onDownloadError,
-  resumeTask
+  resumeTask,
+  isNeedMgrate,
+  migrate
 } from "@/renderer/api";
 import bus from "./utils/EventBus";
 import cache from "./utils/Cache";
@@ -119,6 +128,8 @@ export default {
       addSubDialog: false,
       loginDialog: false,
       logoutDialog: false,
+      migrateDialog: false,
+      migrateStatus: { current: 0, total: 1 },
 
       user: null,
       subs: [],
@@ -148,6 +159,11 @@ export default {
     bus.$on("logout", this.logout);
     bus.$on("clearLog", this.clearSubLog);
 
+    ipc.on("app.migrateStatus", status => {
+      this.migrateStatus = status;
+    });
+
+    this.initMigrate();
     this.loading = false;
   },
 
@@ -172,6 +188,16 @@ export default {
   },
 
   methods: {
+    async initMigrate() {
+      if (await isNeedMgrate()) {
+        this.migrateDialog = true;
+        await migrate();
+        await this.initSubs();
+        this.migrateDialog = false;
+        this.showSnackBar({ message: "数据库升级完成" });
+      }
+    },
+
     // 初始化用户信息
     async initUser() {
       const user = cache.get("user");
@@ -339,11 +365,11 @@ export default {
     },
 
     // 清空任务日志
-    async clearSubLog(sub) {
-      if (this.currentSub && this.currentSub.id === sub.id) {
+    async clearSubLog(id) {
+      if (this.currentSub && this.currentSub.id === id) {
         this.currentSubLogs = [];
       }
-      await db.clearLogs(sub.id);
+      await db.clearLogs(id);
     },
 
     // 遍历订阅下载列表

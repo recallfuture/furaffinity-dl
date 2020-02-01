@@ -123,6 +123,7 @@ export async function migrate() {
       });
     }
   }
+  fs.unlinkSync(dbPath);
 }
 
 export function registerAppIpc() {
