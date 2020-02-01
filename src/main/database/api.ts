@@ -2,21 +2,28 @@ import Datastore from "nedb-promises";
 import path from "path";
 import { getPath } from "@/shared/utils";
 
-const dbPath: string = getPath("userData");
+export const dbPath: string = path.join(getPath("userData"), "database.db");
 
 let db: Datastore | null = null;
 
 /**
  * 初始化数据库
  */
-export async function initDatabase() {
+export async function initDatabase(path: string) {
   db = Datastore.create({
-    filename: path.join(dbPath, "database.db")
+    filename: path
   });
   await db.load();
   // 设定数据库每隔30秒自动压缩
   // @ts-ignore
-  await db.persistence.setAutocompactionInterval(30000);
+  // await db.persistence.setAutocompactionInterval(30000);
+}
+
+/**
+ * 清空数据库
+ */
+export async function clearDatabase() {
+  db?.remove({}, { multi: true });
 }
 
 /**
