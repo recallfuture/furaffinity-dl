@@ -217,11 +217,6 @@ export default {
         sub.status = "";
         this.subs.push(sub);
       }
-
-      // 排序
-      this.subs = this.subs.sort((a, b) => {
-        return b.id - a.id;
-      });
     },
 
     // 初始化配置信息
