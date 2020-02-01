@@ -6,17 +6,17 @@ import {
   ConnectionOptions
 } from "typeorm";
 import { Subscription } from "../entity/Subscription";
-import { Task, TaskType } from "../entity/Task";
+import { Task } from "../entity/Task";
 import { Log } from "../entity/Log";
-import db from "../";
-import logger from "@/shared/logger";
+
+export * from "./config";
 
 const config: ConnectionOptions = require("./ormconfig");
 
 /**
  * 初始化
  */
-export async function init() {
+export async function initDatabase() {
   await createConnection(config);
 }
 

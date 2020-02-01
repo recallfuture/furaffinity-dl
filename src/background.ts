@@ -2,13 +2,10 @@
 
 import { app, protocol } from "electron";
 import { win, createWindow } from "./main/window";
-import db from "./main/database";
+import { initDatabase } from "./main/database/service";
 import aria from "./main/aria";
 import { registerFaIpc, registerAppIpc } from "./main/ipc";
 const isDevelopment = process.env.NODE_ENV !== "production";
-
-// @ts-ignore
-global.db = db;
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -49,10 +46,10 @@ app.on("ready", async () => {
     //   console.error('Vue Devtools failed to install:', e.toString())
     // }
   }
-  await db.initDatabase();
+  await initDatabase();
   await aria.start();
-  await registerFaIpc();
-  await registerAppIpc();
+  registerFaIpc();
+  registerAppIpc();
   createWindow();
 });
 

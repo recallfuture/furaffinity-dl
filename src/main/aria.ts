@@ -5,7 +5,7 @@ import { resolve, join } from "path";
 import { exec, ChildProcess } from "child_process";
 import logger from "../shared/logger";
 import ariaNames from "./config/aria";
-import db from "./database";
+import { getAriaConfig } from "./database/service";
 
 // aria2 启动实例
 let instance: ChildProcess | null = null;
@@ -53,13 +53,13 @@ async function getStartSh(): Promise<string[]> {
 
   // 获取配置路径和 session 路径
   const confPath = join(basePath, "/aria2/aria2.conf");
-  const config = await db.userConfig.get();
+  const config = await getAriaConfig();
 
   // 生成命令
   let result = [
     `${binPath}`,
     `--conf-path=${confPath}`,
-    ...transformConfig(await db.ariaConfig.get())
+    ...transformConfig(config)
   ];
 
   return result;

@@ -1,6 +1,5 @@
 import { find, findOne, insert, update, remove } from "./api";
 import { Subscription } from "./interfaces";
-import logger from "@/shared/logger";
 
 /**
  * 获取一个订阅
@@ -25,11 +24,9 @@ export async function getAll() {
   };
   const result: any[] | undefined = await find(query);
   // FIX: 修复层级过深的对象解析时间过长的问题
-  return JSON.stringify(
-    result?.map(value => {
-      return value.data;
-    })
-  );
+  return result?.map(value => {
+    return value.data;
+  }) as Subscription[];
 }
 
 /**
