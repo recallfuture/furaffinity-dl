@@ -2,9 +2,9 @@
   v-container
     v-btn( @click="clearLog" text block ) 清空日志
       
-    template( v-if="sub.log.length > 0" )
+    template( v-if="logs.length > 0" )
       v-row( class="flex-column-reverse" dense )
-        v-col( cols="12" v-for="(log, index) in sub.log" :key="index" :class="typeToColor(log.type) + '--text'" )
+        v-col( cols="12" v-for="(log, index) in logs" :key="index" :class="typeToColor(log.type) + '--text'" )
           span {{ formatLog(log) }}
     h2( v-else ) 暂无日志
 </template>
@@ -23,6 +23,11 @@ export default {
 
     sub: {
       type: Object,
+      required: true
+    },
+
+    logs: {
+      type: Array,
       required: true
     }
   },
@@ -63,7 +68,7 @@ export default {
     },
 
     clearLog() {
-      bus.$emit("clearLog", this.sub);
+      bus.$emit("clearLog", this.sub.id);
     }
   }
 };

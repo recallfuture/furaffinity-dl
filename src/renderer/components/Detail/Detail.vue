@@ -11,12 +11,12 @@
 
       //- 下载详情
       v-tab-item
-        detail-tasks( title="Gallery" :tasks="sub.galleryTasks" )
-        detail-tasks( title="Scraps" :tasks="sub.scrapsTasks" )
+        detail-tasks( title="Gallery" :tasks="galleryTasks" )
+        detail-tasks( title="Scraps" :tasks="scrapsTasks" )
 
       //- 日志
       v-tab-item
-        detail-logs( :sub="sub" )
+        detail-logs( :sub="sub" :logs="logs" )
         
 </template>
 
@@ -32,6 +32,21 @@ export default {
   props: {
     sub: {
       type: Object,
+      required: true
+    },
+
+    galleryTasks: {
+      type: Array,
+      required: true
+    },
+
+    scrapsTasks: {
+      type: Array,
+      required: true
+    },
+
+    logs: {
+      type: Array,
       required: true
     }
   },

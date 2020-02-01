@@ -1,15 +1,15 @@
 <template lang="pug">
   v-card(  )
     v-card-title
-      user( :user="sub.author" )
+      user( :user="sub" )
 
     v-divider( light)
     
     v-list(  )
       v-list-item
-        span 作者名：{{ sub.author.name }}
+        span 作者名：{{ sub.name }}
       v-list-item
-        span 作者主页：{{ sub.author.url }}
+        span 作者主页：{{ sub.url }}
       v-list-item
         span 本地目录：{{ sub.dir }}
       //- v-list-item( v-if="sub.gallery" )
