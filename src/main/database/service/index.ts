@@ -25,14 +25,14 @@ export async function initDatabase() {
  * @param id 订阅id
  */
 export async function getSub(id: string) {
-  return getManager().findOne(Subscription, id, { relations: ["author"] });
+  return getManager().findOne(Subscription, id);
 }
 
 /**
  * 获取所有的订阅
  */
 export async function getSubs(): Promise<Subscription[]> {
-  return getManager().find(Subscription, { relations: ["author"] });
+  return getManager().find(Subscription);
 }
 
 /**
@@ -41,7 +41,6 @@ export async function getSubs(): Promise<Subscription[]> {
  */
 export async function getTasks(id: string): Promise<Task[]> {
   return getManager().find(Task, {
-    relations: ["author"],
     where: {
       sub: id
     }
@@ -54,7 +53,6 @@ export async function getTasks(id: string): Promise<Task[]> {
  */
 export async function getLogs(id: string): Promise<Log[]> {
   return getManager().find(Log, {
-    relations: ["author"],
     where: {
       sub: id
     }

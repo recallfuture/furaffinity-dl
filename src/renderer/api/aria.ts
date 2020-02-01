@@ -1,5 +1,5 @@
 import { compactUndefined, mergeTaskResult } from "@/shared/utils";
-import { AriaConfig, UserConfig } from "@/main/database/interfaces";
+import { AriaConfig } from "../../main/database/service/config";
 import logger from "@/shared/logger";
 // @ts-ignore
 import Aria2 from "aria2";
@@ -31,7 +31,7 @@ export function onDownloadError(callback: Function) {
 /**
  * 初始化客户端
  */
-export async function initClient(config: AriaConfig & UserConfig) {
+export async function initClient(config: AriaConfig) {
   const port = config["rpc-listen-port"];
   const host = "127.0.0.1";
   client = new Aria2({
