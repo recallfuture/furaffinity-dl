@@ -13,6 +13,10 @@ export function createWindow() {
   win = new BrowserWindow({
     width: 1024,
     height: 768,
+    minWidth: 800,
+    minHeight: 600,
+    show: false,
+    backgroundColor: "#33333D",
     webPreferences: {
       nodeIntegration: true
     }
@@ -30,5 +34,10 @@ export function createWindow() {
 
   win.on("closed", () => {
     win = null;
+  });
+
+  win.on("ready-to-show", function() {
+    win?.maximize();
+    win?.focus();
   });
 }
