@@ -30,8 +30,10 @@
     Drawer(
       v-model="drawer"
       title="订阅"
-      :subs="subs"
+      :sort="sort"
+      :subs="sortedSubs"
       :fetching="fetching"
+      @sort:change="changeSort"
       @addSub:open="addSubDialog = true"
       @sub:select="selectSub"
       @sub:startAll="startAll"
@@ -132,6 +134,7 @@ export default {
       migrateStatus: { current: 0, total: 1 },
 
       user: null,
+      sort: "按名称降序排序",
       subs: [],
       subSelected: undefined,
       currentSub: null,
@@ -184,6 +187,25 @@ export default {
 
     scrapsTasks() {
       return this.currentSubTasks.filter(task => task.type === "scraps");
+    },
+
+    sortedSubs() {
+      switch (this.sort) {
+        case "按名称升序排序": {
+          return _.orderBy(this.subs, "id", "asc");
+        }
+        case "按名称降序排序": {
+          return _.orderBy(this.subs, "id", "desc");
+        }
+        case "按添加时间升序排序": {
+          return _.orderBy(this.subs, "createAt", "asc");
+        }
+        case "按添加时间降序排序": {
+          return _.orderBy(this.subs, "createAt", "desc");
+        }
+        default:
+          return this.subs;
+      }
     }
   },
 
@@ -285,11 +307,15 @@ export default {
       }
     },
 
+    changeSort(value) {
+      this.sort = value;
+    },
+
     // 选中某个订阅
     async selectSub(value) {
       this.subSelected = value;
       if (typeof value !== "undefined") {
-        this.currentSub = this.subs[value];
+        this.currentSub = this.sortedSubs[value];
         this.currentSubTasks = await db.getTasks(this.currentSub.id);
         this.currentSubLogs = await db.getLogs(this.currentSub.id);
       } else {
@@ -322,17 +348,17 @@ export default {
         return;
       }
 
-      if (this.subs.length === 0) {
+      if (this.sortedSubs.length === 0) {
         return;
       }
 
       // 开始获取
       this.fetching = true;
       // 从选中处开始下载
-      if (this.subSelected in this.subs) {
-        this.fetchingList = this.subs.slice(this.subSelected);
+      if (this.subSelected in this.sortedSubs) {
+        this.fetchingList = this.sortedSubs.slice(this.subSelected);
       } else {
-        this.fetchingList = [...this.subs];
+        this.fetchingList = [...this.sortedSubs];
       }
 
       // 开始获取并下载
@@ -547,16 +573,17 @@ export default {
 
     // 缓存任务
     async saveTask({ sub, type, task }) {
-      if (this.currentSub && this.currentSub.id === sub.id) {
-        this.currentSubTasks.push(task);
-      }
+      const t = await db.getTask(task.id);
       await db.saveTask(task);
-      if (task.type === TaskType.Gallery) {
-        sub.galleryTaskNum++;
-      } else {
-        sub.scrapsTaskNum++;
+      if (this.currentSub && this.currentSub.id === sub.id && !t) {
+        this.currentSubTasks.push(task);
+        if (task.type === TaskType.Gallery) {
+          sub.galleryTaskNum++;
+        } else {
+          sub.scrapsTaskNum++;
+        }
+        await db.saveSub(sub);
       }
-      await db.saveSub(sub);
     },
 
     async onDownloadStart(event) {

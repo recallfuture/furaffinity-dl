@@ -28,12 +28,12 @@
         //- 添加订阅
         v-btn( @click="add" color="primary" rounded ) 添加订阅
 
-      v-select( v-model="sort" :items="sortItems" outlined dense )
+      v-select( v-model="sortType" :items="sortItems" label="订阅排列顺序" outlined dense )
 
       //- 订阅列表
       v-list( rounded style="height: 100%; overflow-y: auto;" )
           //- v-list-item-group( v-model="item" color="primary" )
-          v-list-item( v-for="(s, index) in sortedSubs" :key="s.id" @click="select(index)" )
+          v-list-item( v-for="(s, index) in subs" :key="s.id" @click="select(index)" )
             //- 作者头像
             v-list-item-avatar
               v-img( :src="s.avatar" )
@@ -79,6 +79,11 @@ export default {
       default: ""
     },
 
+    sort: {
+      type: String,
+      require: true
+    },
+
     subs: {
       type: Array,
       default: () => []
@@ -97,35 +102,14 @@ export default {
       deleteSubDialog: false,
       deleteFiles: false,
 
-      sort: "按名称升序",
+      sortType: this.sort,
       sortItems: [
-        { text: "按名称升序" },
-        { text: "按名称降序" },
-        { text: "按添加时间升序" },
-        { text: "按添加时间降序" }
+        { text: "按名称升序排序" },
+        { text: "按名称降序排序" },
+        { text: "按添加时间升序排序" },
+        { text: "按添加时间降序排序" }
       ]
     };
-  },
-
-  computed: {
-    sortedSubs() {
-      switch (this.sort) {
-        case "按名称升序": {
-          return _.orderBy(this.subs, "id", "asc");
-        }
-        case "按名称降序": {
-          return _.orderBy(this.subs, "id", "desc");
-        }
-        case "按添加时间升序": {
-          return _.orderBy(this.subs, "createAt", "asc");
-        }
-        case "按添加时间降序": {
-          return _.orderBy(this.subs, "createAt", "desc");
-        }
-        default:
-          return this.subs;
-      }
-    }
   },
 
   methods: {
@@ -139,6 +123,7 @@ export default {
 
     select(index) {
       this.item = index;
+      this.$emit("sub:select", index);
     },
 
     add() {
@@ -179,8 +164,8 @@ export default {
       this.model = value;
     },
 
-    item(value) {
-      this.$emit("sub:select", value);
+    sortType(value) {
+      this.$emit("sort:change", value);
     }
   }
 };
