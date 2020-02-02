@@ -2,15 +2,17 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       chainWebpackMainProcess: config => {
-        config.plugin("uglify").tap(option => {
-          option[0].terserOptions = {
-            keep_classnames: true,
-            keep_fnames: true
-          };
-          return option;
-        });
-        config.optimization.minimize(false);
-        console.log(config);
+        if (process.env.NODE_ENV === "production") {
+          config.plugin("uglify").tap(option => {
+            option[0].terserOptions = {
+              keep_classnames: true,
+              keep_fnames: true
+            };
+            return option;
+          });
+          config.optimization.minimize(false);
+          console.log(config);
+        }
       },
       builderOptions: {
         productName: "Furaffinity-dl",
