@@ -85,7 +85,16 @@ export async function start() {
 export async function stop() {
   try {
     logger.info("[Furaffinity-dl] Aria2 stopping===>");
-    instance?.kill("SIGINT");
+    if (is.windows()) {
+      instance?.send("graceful-exit");
+    } else {
+      instance?.kill("SIGTERM");
+    }
+    setTimeout(() => {
+      if (!instance?.killed) {
+        instance?.kill("SIGKILL");
+      }
+    }, 3000);
   } catch (err) {
     logger.error("[Furaffinity-dl] Aria2 stop fail===>", err.message);
   }
