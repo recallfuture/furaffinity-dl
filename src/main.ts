@@ -10,7 +10,7 @@ import logger from "@/shared/logger";
 
 Vue.config.productionTip = false;
 Vue.config.errorHandler = (error, vm) => {
-  logger.error("Vue error", error, vm);
+  logger.error("Vue error", error);
 };
 
 // @ts-ignore
