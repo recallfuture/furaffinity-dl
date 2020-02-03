@@ -2,8 +2,7 @@ import { app } from "electron";
 import is from "electron-is";
 import { existsSync } from "fs";
 import { resolve, join } from "path";
-import { exec, spawn, ChildProcess } from "child_process";
-import sleep from "sleep-promise";
+import { spawn, ChildProcess } from "child_process";
 import logger from "../shared/logger";
 import ariaNames from "./config/aria";
 import { getAriaConfig } from "./database/service";
@@ -70,14 +69,11 @@ async function getStartSh(): Promise<string[]> {
 export async function start() {
   const sh = await getStartSh();
   logger.info("[Furaffinity-dl] Aria2 start sh===>", sh);
-  instance = exec(sh.join(" "), (err, stdout, stderr) => {
-    if (err) {
-      logger.info(`[Furaffinity-dl] Aria2 error===> ${err}`);
-      return;
-    }
+  instance = spawn(sh[0], sh.slice(1));
+  instance.on("error", err => {
+    logger.error(`[Furaffinity-dl] Aria2 error===> ${err}`);
   });
-
-  instance.on("exit", (code, signal) => {
+  instance.on("close", code => {
     logger.info(`[Furaffinity-dl] Aria2 exit===> ${code}`);
   });
 }
@@ -85,14 +81,12 @@ export async function start() {
 // 关闭 aria2
 export async function stop() {
   try {
-    logger.info("[Furaffinity-dl] Aria2 stopping===>");
+    logger.info("[Furaffinity-dl] Aria2 stopping===>" + instance?.pid);
     if (is.windows()) {
-      spawn("taskkill", ["/pid", instance?.pid.toString() ?? "", "/f", "/t"]);
+      instance?.kill("SIGINT");
     } else {
       instance?.kill("SIGTERM");
     }
-    // 休眠一秒等待进程关闭
-    await sleep(1000);
   } catch (err) {
     logger.error("[Furaffinity-dl] Aria2 stop fail===>", err.message);
   }
