@@ -59,6 +59,10 @@ export async function migrate() {
   const subs = await _db.subscription.getAll();
   console.log(subs.length);
 
+  // 迁移配置信息
+  const config = await _db.ariaConfig.get();
+  db.saveAriaConfig(config);
+
   let index = 1;
   for (const sub of subs) {
     try {

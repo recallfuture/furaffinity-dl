@@ -224,6 +224,7 @@ export default {
         this.migrateDialog = true;
         await migrate();
         await this.initSubs();
+        await this.initConfig();
         this.migrateDialog = false;
         this.showSnackBar({ message: "数据库升级完成" });
       }
