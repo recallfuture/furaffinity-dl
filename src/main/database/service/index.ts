@@ -100,6 +100,22 @@ export async function removeSub(id: string) {
 }
 
 /**
+ * 批量添加订阅
+ * @param subs 订阅
+ */
+export async function addSubs(subs: Subscription[]) {
+  subs = subs.map(sub => {
+    const s = new Subscription();
+    for (const key in sub) {
+      // @ts-ignore
+      s[key] = sub[key];
+    }
+    return s;
+  });
+  await getManager().save(subs, { chunk: 500 });
+}
+
+/**
  * 添加一个任务
  * @param id 订阅id
  * @param task 任务

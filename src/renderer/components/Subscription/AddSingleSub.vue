@@ -41,6 +41,7 @@ import bus from "@/renderer/utils/EventBus";
 import DirField from "../Form/DirField";
 import User from "../Main/User";
 import logger from "@/shared/logger";
+import { Subscription } from "../../../main/database/entity";
 
 export default {
   name: "AddSingleSub",
@@ -142,17 +143,18 @@ export default {
       }
 
       this.loading = true;
-      const sub = {
-        id: this.user.id,
-        name: this.user.name,
-        url: this.user.url,
-        avatar: this.user.avatar,
-        gallery: this.gallery,
-        scraps: this.scraps,
-        dir: this.dir,
-        galleryDir: this.getFullPath(this.galleryDir),
-        scrapsDir: this.getFullPath(this.scrapsDir)
-      };
+      const sub = new Subscription();
+
+      sub.id = this.user.id;
+      sub.name = this.user.name;
+      sub.url = this.user.url;
+      sub.avatar = this.user.avatar;
+      sub.gallery = this.gallery;
+      sub.scraps = this.scraps;
+      sub.dir = this.dir;
+      sub.galleryDir = this.getFullPath(this.galleryDir);
+      sub.scrapsDir = this.getFullPath(this.scrapsDir);
+
       logger.log(sub);
       this.$emit("sub:new", [sub]);
       this.loading = false;

@@ -57,7 +57,14 @@ export default {
 
   methods: {
     newSubs(subs) {
-      this.$emit("subs:new", subs);
+      const result = [];
+      for (const sub of subs) {
+        if (!(sub.id in this.subs)) {
+          result.push(sub);
+        }
+      }
+      logger.log(result);
+      this.$emit("subs:new", result);
       this.model = false;
     }
   },

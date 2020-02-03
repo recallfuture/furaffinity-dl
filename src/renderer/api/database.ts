@@ -47,6 +47,11 @@ export async function addSub(sub: Subscription) {
   return await ipc.send("db.addSub", sub);
 }
 
+export async function addSubs(subs: Subscription[]) {
+  // @ts-ignore
+  return await ipc.send("db.addSubs", subs);
+}
+
 export async function saveSub(sub: Subscription) {
   // @ts-ignore
   return await ipc.send("db.saveSub", sub);

@@ -38,6 +38,7 @@ import bus from "@/renderer/utils/EventBus";
 import DirField from "../Form/DirField";
 import User from "../Main/User";
 import logger from "@/shared/logger";
+import { Subscription } from "../../../main/database/entity";
 
 export default {
   name: "AddSubFromWatchingList",
@@ -132,20 +133,20 @@ export default {
         const baseDir = this.getPath(user);
         const galleryDir = baseDir;
         const scrapsDir = path.join(baseDir, "scraps");
+        const sub = new Subscription();
 
-        return {
-          id: user.id,
-          name: user.name,
-          url: user.url,
-          avatar: user.avatar,
-          gallery: this.gallery,
-          scraps: this.scraps,
-          dir: baseDir,
-          galleryDir: galleryDir,
-          scrapsDir: scrapsDir
-        };
+        sub.id = user.id;
+        sub.name = user.name;
+        sub.url = user.url;
+        sub.avatar = user.avatar;
+        sub.gallery = this.gallery;
+        sub.scraps = this.scraps;
+        sub.dir = baseDir;
+        sub.galleryDir = galleryDir;
+        sub.scrapsDir = galleryDir;
+
+        return sub;
       });
-      logger.log(subs);
       this.$emit("sub:new", subs);
       this.loading = false;
     }

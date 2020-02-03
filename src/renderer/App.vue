@@ -23,6 +23,7 @@
     add-sub-dialog(
       v-model="addSubDialog"
       :config="config"
+      :subs="subsHash"
       @subs:new="addSubs"
     )
 
@@ -134,7 +135,7 @@ export default {
       migrateStatus: { current: 0, total: 1 },
 
       user: null,
-      sort: "按名称降序排序",
+      sort: "按名称升序排序",
       subs: [],
       subSelected: undefined,
       currentSub: null,
@@ -181,6 +182,14 @@ export default {
   },
 
   computed: {
+    subsHash() {
+      const hash = {};
+      for (const sub of this.subs) {
+        hash[sub.id] = sub;
+      }
+      return hash;
+    },
+
     galleryTasks() {
       return this.currentSubTasks.filter(task => task.type === "gallery");
     },
@@ -276,18 +285,11 @@ export default {
 
     // 添加订阅
     async addSubs(subs) {
-      let num = 0;
-      for (const sub of subs) {
-        const s = await db.getSub(sub.id);
-        if (!s) {
-          num++;
-          await db.addSub(sub);
-        }
-      }
+      await db.addSubs(subs);
 
-      if (num > 0) {
+      if (subs.length > 0) {
         this.subs = await db.getSubs();
-        this.showSnackBar({ message: `成功添加${num}个订阅` });
+        this.showSnackBar({ message: `成功添加${subs.length}个订阅` });
       }
     },
 
@@ -577,13 +579,13 @@ export default {
       await db.saveTask(task);
       if (this.currentSub && this.currentSub.id === sub.id && !t) {
         this.currentSubTasks.push(task);
-        if (task.type === TaskType.Gallery) {
-          sub.galleryTaskNum++;
-        } else {
-          sub.scrapsTaskNum++;
-        }
-        await db.saveSub(sub);
       }
+      if (task.type === TaskType.Gallery) {
+        sub.galleryTaskNum++;
+      } else {
+        sub.scrapsTaskNum++;
+      }
+      await db.saveSub(sub);
     },
 
     async onDownloadStart(event) {

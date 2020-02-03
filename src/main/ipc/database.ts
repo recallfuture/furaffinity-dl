@@ -13,6 +13,7 @@ export function registerDatabaseIpc() {
 
   ipc.on("db.addSub", db.saveSub as any);
   ipc.on("db.saveSub", db.saveSub as any);
+  ipc.on("db.addSubs", db.addSubs as any);
   ipc.on("db.removeSub", db.removeSub as any);
   ipc.on("db.addTask", db.saveTask as any);
   ipc.on("db.saveTask", db.saveTask as any);
