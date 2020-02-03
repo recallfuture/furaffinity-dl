@@ -71,10 +71,11 @@ export async function getTasks(id: string): Promise<Task[]> {
  * @param id 订阅id
  */
 export async function getLogs(id: string): Promise<Log[]> {
+  const count = await getManager().count(Log, { where: { sub: id } });
   return getManager().find(Log, {
     where: { sub: id },
     order: { createAt: "ASC" },
-    take: 100
+    skip: count > 100 ? count - 100 : 0
   });
 }
 
