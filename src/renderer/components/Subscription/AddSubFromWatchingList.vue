@@ -143,7 +143,7 @@ export default {
         sub.scraps = this.scraps;
         sub.dir = baseDir;
         sub.galleryDir = galleryDir;
-        sub.scrapsDir = galleryDir;
+        sub.scrapsDir = scrapsDir;
 
         return sub;
       });
