@@ -2,7 +2,8 @@ import { app } from "electron";
 import is from "electron-is";
 import { existsSync } from "fs";
 import { resolve, join } from "path";
-import { exec, ChildProcess } from "child_process";
+import { exec, spawn, ChildProcess } from "child_process";
+import sleep from "sleep-promise";
 import logger from "../shared/logger";
 import ariaNames from "./config/aria";
 import { getAriaConfig } from "./database/service";
@@ -86,15 +87,12 @@ export async function stop() {
   try {
     logger.info("[Furaffinity-dl] Aria2 stopping===>");
     if (is.windows()) {
-      instance?.send("graceful-exit");
+      spawn("taskkill", ["/pid", instance?.pid.toString() ?? "", "/f", "/t"]);
     } else {
       instance?.kill("SIGTERM");
     }
-    setTimeout(() => {
-      if (!instance?.killed) {
-        instance?.kill("SIGKILL");
-      }
-    }, 3000);
+    // 休眠一秒等待进程关闭
+    await sleep(1000);
   } catch (err) {
     logger.error("[Furaffinity-dl] Aria2 stop fail===>", err.message);
   }
