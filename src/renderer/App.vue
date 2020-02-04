@@ -47,6 +47,8 @@
       v-app-bar-nav-icon( @click="drawer = !drawer" )
       v-toolbar-title Furaffinity-dl
       v-spacer
+      v-btn( text ) 全局下载速度：{{ downloadSpeedFormat }}
+      v-spacer
       //- 登录前
       v-btn( v-if="!user" @click="loginDialog = true" text ) 登录
       user-login( v-model="loginDialog" )
@@ -54,6 +56,8 @@
       user( v-if="user" :user="user" )
       v-btn( v-if="user" @click="logoutDialog = true" text ) 注销
       user-logout( v-model="logoutDialog" )
+      //- 调试
+      v-btn( @click="openDevtools" text ) 调试
         
     
     v-content(  )
@@ -95,6 +99,7 @@ import {
   onDownloadComplete,
   onDownloadError,
   resumeTask,
+  getGlobalStat,
   isNeedMgrate,
   migrate
 } from "@/renderer/api";
@@ -145,6 +150,7 @@ export default {
 
       retry: 3,
       maxLogLines: 100,
+      downloadSpeed: "0",
       fetching: false,
       fetchingList: []
     };
@@ -196,6 +202,19 @@ export default {
 
     scrapsTasks() {
       return this.currentSubTasks.filter(task => task.type === "scraps");
+    },
+
+    downloadSpeedFormat() {
+      const b = parseInt(this.downloadSpeed, 10);
+      const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+      if (b === 0) {
+        return "0 KB";
+      }
+      const i = parseInt(Math.floor(Math.log(b) / Math.log(1024)), 10);
+      if (i === 0) {
+        return `${b} ${sizes[i]}`;
+      }
+      return `${(b / 1024 ** i).toFixed(1)} ${sizes[i]}`;
     },
 
     sortedSubs() {
@@ -275,6 +294,12 @@ export default {
       onDownloadPause(this.onDownloadPause);
       onDownloadComplete(this.onDownloadComplete);
       onDownloadError(this.onDownloadError);
+
+      // 定时更新全局下载速度
+      setInterval(async () => {
+        const stat = await getGlobalStat();
+        this.downloadSpeed = stat.downloadSpeed;
+      }, 200);
     },
 
     // 显示提示
@@ -296,10 +321,10 @@ export default {
 
     async deleteSub(index, { deleteFiles }) {
       await this.pauseAll();
-
-      if (index in this.subs) {
+      logger.log(index);
+      if (index in this.sortedSubs) {
         // 移除订阅
-        const sub = this.subs[index];
+        const sub = this.sortedSubs[index];
         await db.removeSub(sub.id);
         this.subs = await db.getSubs();
         if (deleteFiles) {
@@ -314,13 +339,23 @@ export default {
       this.sort = value;
     },
 
+    openDevtools() {
+      remote.getCurrentWebContents().openDevTools();
+    },
+
     // 选中某个订阅
     async selectSub(value) {
       this.subSelected = value;
       if (typeof value !== "undefined") {
+        // 获取当前所有任务和日志
         this.currentSub = this.sortedSubs[value];
         this.currentSubTasks = await db.getTasks(this.currentSub.id);
         this.currentSubLogs = await db.getLogs(this.currentSub.id);
+
+        // 更新gallery和scraps的真实个数
+        this.currentSub.galleryTaskNum = this.galleryTasks.length;
+        this.currentSub.scrapsTaskNum = this.scrapsTasks.length;
+        await db.saveSub(this.currentSub);
       } else {
         this.currentSub = null;
       }
@@ -512,7 +547,7 @@ export default {
         }
 
         this.addSubLog(sub, { message: `[${type}/${page}/${index + 1}] 开始` });
-        logger.log("作品详情", sub.author, type, page, index + 1);
+        logger.log("作品详情", sub, type, page, index + 1);
 
         // 添加下载任务
         const url = submissionDetail.downloadUrl;
@@ -579,14 +614,18 @@ export default {
       const t = await db.getTask(task.id);
       await db.saveTask(task);
       if (this.currentSub && this.currentSub.id === sub.id && !t) {
+        // 如果当前选中的订阅就是这个订阅，且库内没有这个作品，就更新界面
         this.currentSubTasks.push(task);
       }
-      if (task.type === TaskType.Gallery) {
-        sub.galleryTaskNum++;
-      } else {
-        sub.scrapsTaskNum++;
+      if (!t) {
+        // 如果库内没有这个作品，就更新数字
+        if (task.type === TaskType.Gallery) {
+          sub.galleryTaskNum++;
+        } else {
+          sub.scrapsTaskNum++;
+        }
+        await db.saveSub(sub);
       }
-      await db.saveSub(sub);
     },
 
     async onDownloadStart(event) {
@@ -634,7 +673,7 @@ export default {
           logger.log("文件下载到", item.files[0].path);
         }
         // 保存到数据库
-        db.saveTask(task);
+        await db.saveTask(task);
         // 更新界面
         logger.log(task);
         if (this.currentSub && this.currentSub.id === task.sub.id) {
