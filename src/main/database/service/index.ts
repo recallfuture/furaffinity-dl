@@ -97,6 +97,8 @@ export async function saveSub(sub: Subscription): Promise<Subscription> {
  * @param id 订阅id
  */
 export async function removeSub(id: string) {
+  await clearTasks(id);
+  await clearLogs(id);
   return getManager().delete(Subscription, id);
 }
 
@@ -158,6 +160,19 @@ export async function addLog(log: Log): Promise<Log> {
  */
 export async function addLogs(logs: Log[]) {
   return await getManager().save(logs, { chunk: 500 });
+}
+
+/**
+ * 删除某一订阅的所有日志
+ * @param id 订阅id
+ */
+export async function clearTasks(id: string) {
+  return await getConnection()
+    .createQueryBuilder()
+    .delete()
+    .from(Task)
+    .where("subId = :id", { id })
+    .execute();
 }
 
 /**
