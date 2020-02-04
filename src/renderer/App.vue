@@ -323,10 +323,17 @@ export default {
       await this.pauseAll();
       logger.log(index);
       if (index in this.sortedSubs) {
-        // 移除订阅
+        // 获取要删除的订阅
         const sub = this.sortedSubs[index];
+        // 如果当前选中的就是它，就取消选中
+        if (this.currentSub.id === sub.id) {
+          this.currentSub = null;
+        }
+        // 从数据库删除订阅
         await db.removeSub(sub.id);
+        // 刷新订阅列表
         this.subs = await db.getSubs();
+        // 删除订阅文件夹
         if (deleteFiles) {
           if (await existsAsync(sub.dir)) {
             fs.rmdirSync(sub.dir, { recursive: true });
