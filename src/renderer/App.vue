@@ -533,24 +533,28 @@ export default {
         let times = 0;
         let submissionDetail = null;
 
-        while (times++ < this.retry) {
-          // 从网络获取作品详情
-          submissionDetail = await faSubmission(submission.id);
-          if (submissionDetail === null) {
-            this.addSubLog(sub, {
-              type: "error",
-              message: `[${type}/${page}/${index +
-                1}] 作品详情获取失败，1秒后进行第${times}次重试`
-            });
-            logger.error("作品详情获取失败", sub, type, page, index + 1);
-            await sleep(1000);
-          } else {
-            break;
+        if (task) {
+          submissionDetail = task;
+        } else {
+          while (times++ < this.retry) {
+            // 从网络获取作品详情
+            submissionDetail = await faSubmission(submission.id);
+            if (submissionDetail === null) {
+              this.addSubLog(sub, {
+                type: "error",
+                message: `[${type}/${page}/${index +
+                  1}] 作品详情获取失败，1秒后进行第${times}次重试`
+              });
+              logger.error("作品详情获取失败", sub, type, page, index + 1);
+              await sleep(1000);
+            } else {
+              break;
+            }
           }
-        }
 
-        if (submissionDetail === null) {
-          throw new Error("作品详情获取失败");
+          if (submissionDetail === null) {
+            throw new Error("作品详情获取失败");
+          }
         }
 
         this.addSubLog(sub, { message: `[${type}/${page}/${index + 1}] 开始` });
@@ -562,14 +566,19 @@ export default {
         const gid = await this.addTask(url, dir);
 
         // 缓存当前任务
-        task = new Task();
-        task.gid = gid;
-        task.id = submissionDetail.id;
-        task.url = submissionDetail.url;
-        task.downloadUrl = submissionDetail.downloadUrl;
-        task.type = type;
-        task.sub = sub;
-        this.saveTask({ sub, type, task });
+        if (task) {
+          task.gid = gid;
+          this.saveTask({ sub, type, task, create: false });
+        } else {
+          task = new Task();
+          task.gid = gid;
+          task.id = submissionDetail.id;
+          task.url = submissionDetail.url;
+          task.downloadUrl = submissionDetail.downloadUrl;
+          task.type = type;
+          task.sub = sub;
+          this.saveTask({ sub, type, task, create: true });
+        }
       }
     },
 
@@ -617,14 +626,13 @@ export default {
     },
 
     // 缓存任务
-    async saveTask({ sub, type, task }) {
-      const t = await db.getTask(task.id);
+    async saveTask({ sub, type, task, create }) {
       await db.saveTask(task);
-      if (this.currentSub && this.currentSub.id === sub.id && !t) {
+      if (this.currentSub && this.currentSub.id === sub.id && create) {
         // 如果当前选中的订阅就是这个订阅，且库内没有这个作品，就更新界面
         this.currentSubTasks.push(task);
       }
-      if (!t) {
+      if (create) {
         // 如果库内没有这个作品，就更新数字
         if (task.type === TaskType.Gallery) {
           sub.galleryTaskNum++;
@@ -633,6 +641,7 @@ export default {
         }
         await db.saveSub(sub);
       }
+      await this.refreshTask(task.gid);
     },
 
     async onDownloadStart(event) {
