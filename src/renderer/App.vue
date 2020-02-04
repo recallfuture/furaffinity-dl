@@ -81,6 +81,7 @@ import { promisify } from "util";
 import _ from "lodash";
 import sleep from "sleep-promise";
 import ipc from "electron-promise-ipc";
+import rm from "rimraf";
 
 // 内部库
 import {
@@ -99,6 +100,7 @@ import {
   onDownloadComplete,
   onDownloadError,
   resumeTask,
+  pauseTask,
   getGlobalStat,
   isNeedMgrate,
   migrate
@@ -336,7 +338,7 @@ export default {
         // 删除订阅文件夹
         if (deleteFiles) {
           if (await existsAsync(sub.dir)) {
-            fs.rmdirSync(sub.dir, { recursive: true });
+            await rm(sub.dir, {}, () => {});
           }
         }
       }
@@ -564,11 +566,13 @@ export default {
         const url = submissionDetail.downloadUrl;
         const dir = sub[type + "Dir"];
         const gid = await this.addTask(url, dir);
+        await pauseTask({ gid });
 
         // 缓存当前任务
         if (task) {
           task.gid = gid;
-          this.saveTask({ sub, type, task, create: false });
+          task.status = "";
+          await this.saveTask({ sub, type, task, create: false });
         } else {
           task = new Task();
           task.gid = gid;
@@ -577,7 +581,7 @@ export default {
           task.downloadUrl = submissionDetail.downloadUrl;
           task.type = type;
           task.sub = sub;
-          this.saveTask({ sub, type, task, create: true });
+          await this.saveTask({ sub, type, task, create: true });
         }
       }
     },
@@ -641,7 +645,7 @@ export default {
         }
         await db.saveSub(sub);
       }
-      await this.refreshTask(task.gid);
+      await resumeTask({ gid: task.gid });
     },
 
     async onDownloadStart(event) {
@@ -691,9 +695,14 @@ export default {
         // 保存到数据库
         await db.saveTask(task);
         // 更新界面
-        logger.log(task);
         if (this.currentSub && this.currentSub.id === task.sub.id) {
-          this.currentSubTasks = await db.getTasks(task.sub.id);
+          for (let index = 0; index < this.currentSubTasks.length; index++) {
+            const t = this.currentSubTasks[index];
+            if (t.id === task.id) {
+              this.$set(this.currentSubTasks, index, task);
+              break;
+            }
+          }
         }
       }
     }
