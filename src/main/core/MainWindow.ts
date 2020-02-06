@@ -1,6 +1,5 @@
 import { BrowserWindow, Menu } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
-import { EventEmitter } from "events";
 
 // 去掉顶部的窗口菜单
 Menu.setApplicationMenu(null);
@@ -11,7 +10,6 @@ const options = {
   height: 768,
   minWidth: 800,
   minHeight: 600,
-  show: false,
   // backgroundColor: "#33333D",
   webPreferences: {
     nodeIntegration: true
@@ -19,9 +17,9 @@ const options = {
 };
 
 /**
- * 主窗口
+ * 主窗口类
  */
-export class MainWindow extends EventEmitter {
+export class MainWindow {
   win: BrowserWindow | null = null;
 
   create() {

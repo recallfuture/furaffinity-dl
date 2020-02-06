@@ -1,9 +1,13 @@
 module.exports = {
+  configureWebpack: config => {
+    config.entry.app = "./src/renderer/index.ts";
+  },
+
   pluginOptions: {
     electronBuilder: {
       mainProcessFile: "src/main/index.ts",
-      mainProcessWatch: ["src/main/*"],
       chainWebpackMainProcess: config => {
+        config.resolve.extensions.add(".json");
         if (process.env.NODE_ENV === "production") {
           config.plugin("uglify").tap(option => {
             option[0].terserOptions = {

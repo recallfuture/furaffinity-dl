@@ -3,9 +3,11 @@
 import { app, protocol, Event } from "electron";
 import is from "electron-is";
 import { EventEmitter } from "events";
-import { mainWindow } from ".";
-import { db } from "./index";
+import { db, mainWindow } from ".";
 
+/**
+ * Electron 应用类
+ */
 export class AppController extends EventEmitter {
   constructor() {
     super();
@@ -13,9 +15,9 @@ export class AppController extends EventEmitter {
   }
 
   init() {
+    this.registerProcessQuit();
     this.requestSingleInstanceLock();
     this.registerScheme();
-    this.registerProcessQuit();
 
     app.on("second-instance", this.onSecondInstance);
     app.on("window-all-closed", this.onWindowAllClosed);
@@ -92,6 +94,7 @@ export class AppController extends EventEmitter {
 
   async onReady() {
     await db.create();
+    // await aria.start();
     mainWindow.create();
   }
 }
