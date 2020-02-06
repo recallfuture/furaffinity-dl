@@ -3,7 +3,7 @@
 import { app, protocol, Event } from "electron";
 import is from "electron-is";
 import { EventEmitter } from "events";
-import { db, mainWindow } from ".";
+import { db, mainWindow, ariaController } from ".";
 
 /**
  * Electron 应用类
@@ -94,7 +94,7 @@ export class AppController extends EventEmitter {
 
   async onReady() {
     await db.create();
-    // await aria.start();
+    await ariaController.start();
     mainWindow.create();
   }
 }

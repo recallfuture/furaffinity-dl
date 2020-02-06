@@ -24,6 +24,7 @@ export class MainWindow {
 
   create() {
     this.win = new BrowserWindow(options);
+    this.win.maximize();
     this.load();
     this.win.on("close", this.close);
   }

@@ -10,6 +10,6 @@ process.on("uncaughtException", function(e) {
 });
 
 export const db: Database = new Database();
-export const aria: AriaController = new AriaController();
+export const ariaController: AriaController = new AriaController();
 export const mainWindow: MainWindow = new MainWindow();
 export const appController: AppController = new AppController();

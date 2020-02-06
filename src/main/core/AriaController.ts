@@ -1,6 +1,6 @@
 import { app } from "electron";
 import is from "electron-is";
-import { existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { resolve, join } from "path";
 import { execFile, ChildProcess } from "child_process";
 import logger from "@/shared/logger";
@@ -45,12 +45,25 @@ export class AriaController {
     const confPath = join(basePath, "/aria2/aria2.conf");
     const config = await db.getAriaConfig();
 
+    const sessionDir = join(app.getPath("documents"), "Furaffinity-dl");
+    if (!existsSync(sessionDir)) {
+      mkdirSync(sessionDir);
+    }
+
+    const sessionPath = join(sessionDir, "aria2.session");
+    const sessionIsExist = existsSync(sessionPath);
+
     // 生成命令
-    let result = [
+    const result = [
       `${binPath}`,
       `--conf-path=${confPath}`,
+      `--save-session=${sessionPath}`,
       ...transformConfig(config)
     ];
+
+    if (sessionIsExist) {
+      result.push(`--input-file=${sessionPath}`);
+    }
 
     return result;
   }
