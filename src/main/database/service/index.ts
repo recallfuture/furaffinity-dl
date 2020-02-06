@@ -4,6 +4,8 @@ import { Log, Subscription, Task } from "../entity";
 import * as Config from "./config";
 import { AriaConfig } from "./config";
 
+export { AriaConfig };
+
 export class Database {
   /**
    * 连接数据库

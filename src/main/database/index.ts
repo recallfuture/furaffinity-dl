@@ -1,1 +1,1 @@
-export { Database } from "./service/index";
+export * from "./service/index";

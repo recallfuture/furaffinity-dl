@@ -6,7 +6,7 @@ import { EventEmitter } from "events";
 import { mainWindow } from ".";
 import { db } from "./index";
 
-export class App extends EventEmitter {
+export class AppController extends EventEmitter {
   constructor() {
     super();
     this.init();
