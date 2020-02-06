@@ -1,6 +1,8 @@
 module.exports = {
   pluginOptions: {
     electronBuilder: {
+      mainProcessFile: "src/main/index.ts",
+      mainProcessWatch: ["src/main/*"],
       chainWebpackMainProcess: config => {
         if (process.env.NODE_ENV === "production") {
           config.plugin("uglify").tap(option => {
