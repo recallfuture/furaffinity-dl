@@ -1,5 +1,5 @@
-import { getPath } from "@/shared/utils";
-import logger from "@/shared/logger";
+import { getPath } from "@/backup/shared/utils";
+import logger from "@/backup/shared/logger";
 import { findOne, updateOrAdd } from "./api";
 import { AriaConfig } from "./interfaces";
 

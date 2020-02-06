@@ -1,5 +1,5 @@
-import { getPath } from "@/shared/utils";
-import logger from "@/shared/logger";
+import { getPath } from "@/backup/shared/utils";
+import logger from "@/backup/shared/logger";
 import { getManager } from "typeorm";
 import { Config, ConfigType } from "../entity/Config";
 
@@ -21,7 +21,7 @@ export interface AriaConfig {
   "user-agent": string;
 }
 
-export interface UserConfig {}
+export interface UserConfig { }
 
 /**
  * 获取配置默认值

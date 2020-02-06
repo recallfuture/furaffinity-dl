@@ -6,8 +6,8 @@ import {
   getGlobalStat,
   fetchTaskList,
   fetchTaskItem
-} from "../../src/renderer/api";
-import db from "../../src/main/database";
+} from "../../src/backup/renderer/api";
+import db from "../../src/backup/main/database";
 
 describe("renderer/api", () => {
   it("should open success", async () => {

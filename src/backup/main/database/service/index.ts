@@ -8,7 +8,7 @@ import {
 import { Subscription } from "../entity/Subscription";
 import { Task } from "../entity/Task";
 import { Log } from "../entity/Log";
-import logger from "@/shared/logger";
+import logger from "@/backup/shared/logger";
 
 export * from "./config";
 

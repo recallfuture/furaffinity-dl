@@ -1,6 +1,6 @@
-import { compactUndefined, mergeTaskResult } from "@/shared/utils";
+import { compactUndefined, mergeTaskResult } from "@/backup/shared/utils";
 import { AriaConfig } from "../../main/database/service/config";
-import logger from "@/shared/logger";
+import logger from "@/backup/shared/logger";
 // @ts-ignore
 import Aria2 from "aria2";
 

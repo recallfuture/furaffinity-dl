@@ -1,6 +1,6 @@
 import Datastore from "nedb-promises";
 import path from "path";
-import { getPath } from "@/shared/utils";
+import { getPath } from "@/backup/shared/utils";
 
 export const dbPath: string = path.join(getPath("userData"), "database.db");
 

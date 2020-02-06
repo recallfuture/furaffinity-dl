@@ -1,6 +1,6 @@
 import ipc from "electron-promise-ipc";
-import { Task, Subscription, Log } from "@/main/database/entity";
-import { AriaConfig } from "@/main/database/service/config";
+import { Task, Subscription, Log } from "@/backup/main/database/entity";
+import { AriaConfig } from "@/backup/main/database/service/config";
 
 export async function getAriaConfig(): Promise<AriaConfig> {
   // @ts-ignore

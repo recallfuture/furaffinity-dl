@@ -6,7 +6,7 @@ import { promisify } from "util";
 import _db from "../database";
 import * as db from "../database/service";
 import { dbPath } from "../database/api";
-import logger from "@/shared/logger";
+import logger from "@/backup/shared/logger";
 import fs from "fs";
 import { Subscription, Task } from "../database/entity";
 import { TaskType } from "../database/entity/Task";
