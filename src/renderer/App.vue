@@ -1,3 +1,3 @@
 <template lang="pug">
-  div
+  el-button {{ $t("message") }}
 </template>
