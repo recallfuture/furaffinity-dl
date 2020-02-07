@@ -23,6 +23,7 @@ export class AppController extends EventEmitter {
     app.on("window-all-closed", this.onWindowAllClosed);
     app.on("activate", this.onActivate);
     app.on("ready", this.onReady);
+    app.on("before-quit", this.onBeforeQuit);
   }
 
   /**
@@ -96,5 +97,9 @@ export class AppController extends EventEmitter {
     await db.create();
     await ariaController.start();
     mainWindow.create();
+  }
+
+  async onBeforeQuit() {
+    await ariaController.stop();
   }
 }

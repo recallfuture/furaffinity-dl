@@ -1,5 +1,5 @@
 import { getManager } from "typeorm";
-import { getPath } from "@/backup/shared/utils";
+import { app } from "electron";
 import { Config, ConfigType } from "../entity";
 
 export interface AriaConfig {
@@ -25,7 +25,7 @@ export const defaultAriaConfig = {
   "allow-overwrite": false,
   "auto-file-renaming": false,
   continue: true,
-  dir: getPath("pictures"),
+  dir: app.getPath("pictures"),
   "max-concurrent-downloads": 8,
   "max-connection-per-server": 16,
   "max-download-limit": 0,
