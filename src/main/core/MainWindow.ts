@@ -10,7 +10,7 @@ const options = {
   height: 768,
   minWidth: 800,
   minHeight: 600,
-  // backgroundColor: "#33333D",
+  backgroundColor: "#222",
   webPreferences: {
     nodeIntegration: true
   }

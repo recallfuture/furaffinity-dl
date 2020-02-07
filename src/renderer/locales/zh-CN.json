@@ -1,3 +1,10 @@
 {
-  "message": "你好 i18n !!"
+  "sub": {
+    "table": {
+      "avatar": "头像",
+      "username": "用户名",
+      "home_url": "主页地址",
+      "dir": "保存目录"
+    }
+  }
 }

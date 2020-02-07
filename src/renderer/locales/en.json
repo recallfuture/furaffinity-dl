@@ -1,3 +1,10 @@
 {
-  "message": "hello i18n !!"
+  "sub": {
+    "table": {
+      "avatar": "Avatar",
+      "username": "Username",
+      "home_url": "Home URL",
+      "dir": "Path"
+    }
+  }
 }
