@@ -17,6 +17,7 @@ import logger from "@/shared/logger";
 import { User } from "./interface";
 import cache from "@/renderer/utils/Cache";
 import { faLogin, getSubs } from "./api";
+import bus from "@/renderer/utils/EventBus";
 
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";
@@ -33,6 +34,7 @@ export default class App extends Vue {
   async mounted() {
     await this.initUser();
     await this.initSubs();
+    this.initHandle();
   }
 
   /**
@@ -55,6 +57,18 @@ export default class App extends Vue {
       sub.status = "";
       this.subs.push(sub);
     }
+  }
+
+  /**
+   * 初始化总线事件回调
+   */
+  initHandle() {
+    bus.$on("header.logout", this.handleLogout);
+  }
+
+  handleLogout() {
+    this.user = null;
+    cache.set("user", null);
   }
 }
 </script>

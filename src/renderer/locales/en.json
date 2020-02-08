@@ -1,4 +1,8 @@
 {
+  "generic": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
   "header": {
     "add": "New",
     "start": "Start",
@@ -6,7 +10,9 @@
     "delete": "Delete",
     "setting": "Setting",
     "login": "Log In FA",
-    "logout": "Logout"
+    "logout": "Log Out",
+    "logout_confirm_title": "Are you sure you want to log out?",
+    "logout_confirm_content": "Most of the subscribed information will not be available after log out!"
   },
   "main": {
     "table": {

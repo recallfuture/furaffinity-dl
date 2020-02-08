@@ -1,4 +1,8 @@
 {
+  "generic": {
+    "confirm": "确定",
+    "cancel": "取消"
+  },
   "header": {
     "add": "添加订阅",
     "start": "开始",
@@ -6,7 +10,9 @@
     "delete": "删除",
     "setting": "设置",
     "login": "登录FA",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "logout_confirm_title": "确定退出登录？",
+    "logout_confirm_content": "退出后将无法获取大部分订阅的信息！"
   },
   "main": {
     "table": {

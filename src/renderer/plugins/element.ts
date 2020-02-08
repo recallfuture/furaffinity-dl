@@ -12,7 +12,8 @@ import {
   ButtonGroup,
   Dropdown,
   DropdownMenu,
-  DropdownItem
+  DropdownItem,
+  Dialog
 } from "element-ui";
 // @ts-ignore
 import Scrollbar from "element-ui/lib/scrollbar";
@@ -31,4 +32,5 @@ Vue.use(ButtonGroup);
 Vue.use(Dropdown);
 Vue.use(DropdownMenu);
 Vue.use(DropdownItem);
+Vue.use(Dialog);
 Vue.use(Scrollbar);

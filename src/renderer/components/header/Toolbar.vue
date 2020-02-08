@@ -5,34 +5,90 @@
 
     //- 订阅下载控制
     el-button-group( style="margin-left: 10px; margin-right: 10px;" )
-      el-button( type="info" icon="el-icon-video-play" ) {{ $t("header.start") }}
-      el-button( type="info" icon="el-icon-video-pause" disabled ) {{ $t("header.stop") }}
-      el-button( type="info" icon="el-icon-delete" ) {{ $t("header.delete") }}
+      el-button( type="info" icon="el-icon-video-play" @click="onStart" ) {{ $t("header.start") }}
+      el-button( type="info" icon="el-icon-video-pause" @click="onStop" disabled ) {{ $t("header.stop") }}
+      el-button( type="info" icon="el-icon-delete" @click="onDelete" ) {{ $t("header.delete") }}
     
     div( class="spacer" )
 
-    //- 用户登录注销
-    el-dropdown( v-if="user" )
+    //- 用户登录后
+    el-dropdown( v-if="user" @command="onCommand" )
       div( class="user" )
         el-avatar( class="avatar" :size="36" :src="user.avatar" )
         span {{ user.name }}
         i( class="el-icon-caret-bottom" )
       
       el-dropdown-menu( slot="dropdown" )
-        el-dropdown-item {{ $t("header.logout") }}
-    el-button( v-else type="primary" icon="el-icon-user" ) {{ $t("header.login") }}
+        el-dropdown-item( command="logout" ) {{ $t("header.logout") }}
+
+    //- 用户登录前
+    el-button(
+      v-else
+      type="primary"
+      icon="el-icon-user"
+      @click="loginDialog= true"
+    ) {{ $t("header.login") }}
     
     //- 设置
     el-button( type="info" icon="el-icon-setting" ) {{ $t("header.setting") }}
+
+    //- 退出登录确认对话框
+    el-dialog(
+      :title="$t('header.logout_confirm_title')"
+      :visible.sync="logoutConfirmDialog"
+      width="30%"
+    )
+      h3 {{ $t("header.logout_confirm_content") }}
+      span( slot="footer" class="dialog-footer" )
+        el-button( @click="logoutConfirmDialog = false" ) {{ $t("generic.confirm") }}
+        el-button( @click="logoutConfirmDialog = false; onLogout()" type="primary" ) {{ $t("generic.cancel") }}
+
+    //- 登录对话框
+    el-dialog(
+      :title="$t('header.login')"
+      :visible.sync="loginDialog"
+      width="50%"
+    )
+      span 登录窗口
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
 import { User } from "@/renderer/interface";
+import bus from "@/renderer/utils/EventBus";
 
 @Component
 export default class Toolbar extends Vue {
   @Prop(Object) user!: User;
+
+  logoutConfirmDialog: boolean = false;
+  loginDialog: boolean = false;
+
+  onStart() {
+    bus.$emit("header.start");
+  }
+
+  onStop() {
+    bus.$emit("header.stop");
+  }
+
+  onDelete() {
+    bus.$emit("header.delete");
+  }
+
+  onLogin() {
+    bus.$emit("header.login");
+  }
+
+  onCommand(command: string) {
+    if (command === "logout") {
+      this.logoutConfirmDialog = true;
+    }
+  }
+
+  onLogout() {
+    bus.$emit("header.logout");
+  }
 }
 </script>
 
