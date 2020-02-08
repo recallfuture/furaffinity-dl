@@ -40,8 +40,8 @@
     )
       h3 {{ $t("header.logout_confirm_content") }}
       span( slot="footer" class="dialog-footer" )
-        el-button( @click="logoutConfirmDialog = false" ) {{ $t("generic.confirm") }}
-        el-button( @click="logoutConfirmDialog = false; onLogout()" type="primary" ) {{ $t("generic.cancel") }}
+        el-button( @click="logoutConfirmDialog = false" ) {{ $t("generic.cancel") }}
+        el-button( @click="logoutConfirmDialog = false; onLogout()" type="primary" ) {{ $t("generic.confirm") }}
 
     //- 登录对话框
     el-dialog(
@@ -49,15 +49,18 @@
       :visible.sync="loginDialog"
       width="50%"
     )
-      span 登录窗口
+      LoginForm( v-if="loginDialog" @success="onSuccess" )
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
 import { User } from "@/renderer/interface";
 import bus from "@/renderer/utils/EventBus";
+import LoginForm from "../form/LoginForm.vue";
 
-@Component
+@Component({
+  components: { LoginForm }
+})
 export default class Toolbar extends Vue {
   @Prop(Object) user!: User;
 
@@ -76,8 +79,13 @@ export default class Toolbar extends Vue {
     bus.$emit("header.delete");
   }
 
-  onLogin() {
-    bus.$emit("header.login");
+  onSuccess(user: User) {
+    this.loginDialog = false;
+    this.onLogin(user);
+  }
+
+  onLogin(user: User) {
+    bus.$emit("header.login", user);
   }
 
   onCommand(command: string) {
@@ -114,5 +122,14 @@ export default class Toolbar extends Vue {
 
 .user .avatar {
   margin-right: 5px;
+}
+
+.toolbar .el-dialog {
+  background-color: #333;
+}
+
+.toolbar .el-dialog__title,
+.toolbar .el-dialog__body {
+  color: rgba(256, 256, 256, 0.87);
 }
 </style>

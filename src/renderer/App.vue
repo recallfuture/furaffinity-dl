@@ -63,7 +63,13 @@ export default class App extends Vue {
    * 初始化总线事件回调
    */
   initHandle() {
+    bus.$on("header.login", this.handleLogin);
     bus.$on("header.logout", this.handleLogout);
+  }
+
+  handleLogin(user: User) {
+    this.user = user;
+    cache.set("user", user);
   }
 
   handleLogout() {

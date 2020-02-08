@@ -1,7 +1,8 @@
 {
   "generic": {
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "refresh": "Refresh"
   },
   "header": {
     "add": "New",

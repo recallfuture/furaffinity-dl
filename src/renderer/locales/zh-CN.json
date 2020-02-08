@@ -1,7 +1,8 @@
 {
   "generic": {
     "confirm": "确定",
-    "cancel": "取消"
+    "cancel": "取消",
+    "refresh": "刷新"
   },
   "header": {
     "add": "添加订阅",
