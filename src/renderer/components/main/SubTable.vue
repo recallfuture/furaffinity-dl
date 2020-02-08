@@ -8,7 +8,7 @@
     //- 复选框
     el-table-column( type="selection" width="40" )
     //- 用户头像
-    el-table-column( :label="$t('main.table.avatar')" align="center" width="60" )
+    el-table-column( :label="$t('main.table.avatar')" align="center" width="80" )
       template( slot-scope="{ row }")
         el-avatar( size="medium" :src="row.avatar" )
     //- 用户名

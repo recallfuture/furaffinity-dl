@@ -5,6 +5,7 @@
     "stop": "Stop",
     "delete": "Delete",
     "setting": "Setting",
+    "login": "Log In FA",
     "logout": "Logout"
   },
   "main": {

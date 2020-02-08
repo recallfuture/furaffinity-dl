@@ -39,7 +39,7 @@ export default class App extends Vue {
    * 初始化用户信息
    */
   async initUser() {
-    const user: User = cache.get("user");
+    const user: User | null = cache.get("user");
     if (user) {
       this.user = user;
       await faLogin(user.a, user.b);

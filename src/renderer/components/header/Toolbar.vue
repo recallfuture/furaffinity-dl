@@ -20,7 +20,7 @@
       
       el-dropdown-menu( slot="dropdown" )
         el-dropdown-item {{ $t("header.logout") }}
-    el-button( v-else type="primary" icon="el-icon-user" ) 登录FA
+    el-button( v-else type="primary" icon="el-icon-user" ) {{ $t("header.login") }}
     
     //- 设置
     el-button( type="info" icon="el-icon-setting" ) {{ $t("header.setting") }}
