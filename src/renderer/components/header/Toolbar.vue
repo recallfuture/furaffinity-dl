@@ -28,11 +28,11 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
-import { Author } from "furaffinity-api/dist/interfaces";
+import { User } from "@/renderer/interface";
 
 @Component
 export default class Toolbar extends Vue {
-  @Prop(Object) user!: Author;
+  @Prop(Object) user!: User;
 }
 </script>
 

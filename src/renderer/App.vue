@@ -13,9 +13,10 @@
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
 import { Subscription } from "@/main/database/entity";
-import { getSubs } from "./api/database";
 import logger from "@/shared/logger";
-import { Author } from "furaffinity-api/dist/interfaces";
+import { User } from "./interface";
+import cache from "@/renderer/utils/Cache";
+import { faLogin, getSubs } from "./api";
 
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";
@@ -27,15 +28,33 @@ import SubTable from "./components/main/SubTable.vue";
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
 
-  user: Author | null = {
-    id: "recallfuture",
-    name: "recallfuture",
-    url: "",
-    avatar: "http://a.facdn.net/1496933393/recallfuture.gif"
-  };
+  user: User | null = null;
 
   async mounted() {
-    this.subs = await getSubs();
+    await this.initUser();
+    await this.initSubs();
+  }
+
+  /**
+   * 初始化用户信息
+   */
+  async initUser() {
+    const user: User = cache.get("user");
+    if (user) {
+      this.user = user;
+      await faLogin(user.a, user.b);
+    }
+  }
+
+  /**
+   * 初始化订阅列表
+   */
+  async initSubs() {
+    const subs = await getSubs();
+    for (const sub of subs) {
+      sub.status = "";
+      this.subs.push(sub);
+    }
   }
 }
 </script>
