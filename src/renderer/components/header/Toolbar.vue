@@ -1,7 +1,7 @@
 <template lang="pug">
   div( class="toolbar" )
     //- 添加订阅
-    el-button( type="primary" icon="el-icon-plus" ) {{ $t("header.add") }}
+    el-button( type="primary" icon="el-icon-plus" @click="addDialog = true" ) {{ $t("header.add") }}
 
     //- 订阅下载控制
     el-button-group( style="margin-left: 10px; margin-right: 10px;" )
@@ -50,6 +50,10 @@
       width="50%"
     )
       LoginForm( v-if="loginDialog" @success="onSuccess" )
+    
+    //- 添加订阅对话框
+    el-dialog( :visible.sync="addDialog" width="50%" )
+      AddSubForm( v-if="addDialog" )
 </template>
 
 <script lang="ts">
@@ -57,15 +61,17 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 import { User } from "@/renderer/interface";
 import bus from "@/renderer/utils/EventBus";
 import LoginForm from "../form/LoginForm.vue";
+import AddSubForm from "../form/AddSubForm.vue";
 
 @Component({
-  components: { LoginForm }
+  components: { LoginForm, AddSubForm }
 })
 export default class Toolbar extends Vue {
   @Prop(Object) user!: User;
 
   logoutConfirmDialog: boolean = false;
   loginDialog: boolean = false;
+  addDialog: boolean = false;
 
   onStart() {
     bus.$emit("header.start");

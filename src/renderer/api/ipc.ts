@@ -82,7 +82,7 @@ export async function faSubmission(id: string): Promise<Submission> {
 /**
  * 打开对话框选择文件夹
  */
-export async function openFolderDialog(): Promise<string | undefined> {
+export async function openFolderDialog(): Promise<string[] | undefined> {
   // @ts-ignore
   return await ipc.send("app.openFolderDialog");
 }

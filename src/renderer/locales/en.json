@@ -4,6 +4,9 @@
     "cancel": "Cancel",
     "refresh": "Refresh"
   },
+  "sub": {
+    "add": "Successfully added a subscription | Successfully added {count} subscriptions"
+  },
   "header": {
     "add": "New",
     "start": "Start",
@@ -13,7 +16,20 @@
     "login": "Log In FA",
     "logout": "Log Out",
     "logout_confirm_title": "Are you sure you want to log out?",
-    "logout_confirm_content": "Most of the subscribed information will not be available after log out!"
+    "logout_confirm_content": "Most of the subscribed information will not be available after log out!",
+    "tab_add_single": {
+      "title": "Add a subscription",
+      "username": "Username",
+      "username_error": "Only letters and numbers, dash, underscore, tilde and a period are allowed",
+      "next": "Next",
+      "dir_error": "Please use absolute path",
+      "save_to": "Save to",
+      "fetch_error": "Failed to get user information",
+      "existed_error": "Subscription already exists"
+    },
+    "tab_import": {
+      "title": "Import from watching list"
+    }
   },
   "main": {
     "table": {

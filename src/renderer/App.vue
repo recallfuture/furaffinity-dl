@@ -1,5 +1,5 @@
 <template lang="pug">
-  el-container( style="height: 100vh;" )
+  el-container( v-if="!loading" style="height: 100vh;" )
     el-header
       Toolbar( :user="user" )
 
@@ -16,25 +16,34 @@ import { Subscription } from "@/main/database/entity";
 import logger from "@/shared/logger";
 import { User } from "./interface";
 import cache from "@/renderer/utils/Cache";
-import { faLogin, getSubs } from "./api";
+import { faLogin, getSubs, getAriaConfig, saveSubs } from "./api";
 import bus from "@/renderer/utils/EventBus";
 
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";
 import SubTable from "./components/main/SubTable.vue";
+import { AriaConfig } from "../main/database";
 
 @Component({
   components: { Toolbar, SubTable }
 })
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
+  @ProvideReactive() ariaConfig: AriaConfig | null = null;
 
+  loading: boolean = true;
   user: User | null = null;
 
   async mounted() {
+    await this.initConfig();
     await this.initUser();
     await this.initSubs();
     this.initHandle();
+    this.loading = false;
+  }
+
+  async initConfig() {
+    this.ariaConfig = await getAriaConfig();
   }
 
   /**
@@ -65,6 +74,7 @@ export default class App extends Vue {
   initHandle() {
     bus.$on("header.login", this.handleLogin);
     bus.$on("header.logout", this.handleLogout);
+    bus.$on("sub.add", this.handleAddSub);
   }
 
   handleLogin(user: User) {
@@ -75,6 +85,14 @@ export default class App extends Vue {
   handleLogout() {
     this.user = null;
     cache.set("user", null);
+  }
+
+  async handleAddSub(subs: Subscription[]) {
+    if (subs.length > 0) {
+      await saveSubs(subs);
+      await this.initSubs();
+      this.$message.success(this.$tc("sub.add", subs.length));
+    }
   }
 }
 </script>

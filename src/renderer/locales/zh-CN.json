@@ -4,6 +4,9 @@
     "cancel": "取消",
     "refresh": "刷新"
   },
+  "sub": {
+    "add": "成功添加{count}个订阅"
+  },
   "header": {
     "add": "添加订阅",
     "start": "开始",
@@ -13,7 +16,20 @@
     "login": "登录FA",
     "logout": "退出登录",
     "logout_confirm_title": "确定退出登录？",
-    "logout_confirm_content": "退出后将无法获取大部分订阅的信息！"
+    "logout_confirm_content": "退出后将无法获取大部分订阅的信息！",
+    "tab_add_single": {
+      "title": "添加一个订阅",
+      "username": "用户名",
+      "username_error": "用户名仅允许使用字母和数字，破折号，下划线，波浪号和句点。",
+      "next": "下一步",
+      "dir_error": "请提供绝对路径",
+      "save_to": "保存到",
+      "fetch_error": "用户信息获取失败",
+      "existed_error": "订阅已存在"
+    },
+    "tab_import": {
+      "title": "从关注列表导入"
+    }
   },
   "main": {
     "table": {
