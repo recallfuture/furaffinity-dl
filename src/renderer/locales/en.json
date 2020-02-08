@@ -1,5 +1,13 @@
 {
-  "sub": {
+  "header": {
+    "add": "New",
+    "start": "Start",
+    "stop": "Stop",
+    "delete": "Delete",
+    "setting": "Setting",
+    "logout": "Logout"
+  },
+  "main": {
     "table": {
       "avatar": "Avatar",
       "username": "Username",

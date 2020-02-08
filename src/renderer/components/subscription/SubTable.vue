@@ -8,11 +8,11 @@
     //- 复选框
     el-table-column( type="selection" width="40" )
     //- 用户头像
-    el-table-column( :label="$t('sub.table.avatar')" align="center" width="60" )
+    el-table-column( :label="$t('main.table.avatar')" align="center" width="60" )
       template( slot-scope="{ row }")
         el-avatar( size="medium" :src="row.avatar" )
     //- 用户名
-    el-table-column( prop="name" :label="$t('sub.table.username')" width="200" sortable )
+    el-table-column( prop="name" :label="$t('main.table.username')" width="200" sortable )
     //- Gallery
     el-table-column( label="Gallery" width="100" align="center" )
       template( slot-scope="{ row }")
@@ -24,9 +24,9 @@
         span( v-if="row.scraps" class="scraps-task-num" ) {{ row.scrapsTaskNum }}
         i( v-else class="el-icon-close" )
     //- 主页地址
-    el-table-column( prop="url" :label="$t('sub.table.home_url')" align="center" )
+    el-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )
     //- 保存目录
-    el-table-column( prop="dir" :label="$t('sub.table.dir')" align="center" )
+    el-table-column( prop="dir" :label="$t('main.table.dir')" align="center" )
 </template>
 
 <script lang="ts">

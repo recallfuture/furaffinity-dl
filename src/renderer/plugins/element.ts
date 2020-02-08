@@ -8,7 +8,11 @@ import {
   Table,
   TableColumn,
   Avatar,
-  Tag
+  Tag,
+  ButtonGroup,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem
 } from "element-ui";
 // @ts-ignore
 import Scrollbar from "element-ui/lib/scrollbar";
@@ -23,4 +27,8 @@ Vue.use(Table);
 Vue.use(TableColumn);
 Vue.use(Avatar);
 Vue.use(Tag);
+Vue.use(ButtonGroup);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
 Vue.use(Scrollbar);
