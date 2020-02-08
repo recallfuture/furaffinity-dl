@@ -30,7 +30,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
 import { Subscription } from "@/main/database/entity";
-import SubTable from "./components/subscription/SubTable.vue";
+import SubTable from "./components/main/SubTable.vue";
 import { getSubs } from "./api/database";
 import logger from "@/shared/logger";
 import { Author } from "furaffinity-api/dist/interfaces";
