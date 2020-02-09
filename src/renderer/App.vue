@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
-import { Subscription } from "@/main/database/entity";
+import { Subscription, Task } from "@/main/database/entity";
 import logger from "@/shared/logger";
 import { User } from "./interface";
 import cache from "@/renderer/utils/Cache";
@@ -22,15 +22,17 @@ import {
   getAriaConfig,
   saveSubs,
   faFetchStart,
-  faFetchStop
+  faFetchStop,
+  getSub
 } from "./api";
 import bus from "@/renderer/utils/EventBus";
+import { AriaConfig } from "../main/database";
+import ipc from "electron-promise-ipc";
+import _ from "lodash";
 
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";
 import SubTable from "./components/main/SubTable.vue";
-import { AriaConfig } from "../main/database";
-import ipc from "electron-promise-ipc";
 
 @Component({
   components: { Toolbar, SubTable }
@@ -42,6 +44,15 @@ export default class App extends Vue {
   loading: boolean = true;
   user: User | null = null;
   fetching: boolean = false;
+
+  subUpdateList: string[] = [];
+  taskUpdateList: string[] = [];
+  logUpdateList: string[] = [];
+
+  // 创建节流函数，最快500毫秒执行一次
+  doSubUpdateThrottle: Function = _.throttle(this.doSubUpdate, 500);
+  doTaskUpdateThrottle: Function = _.throttle(this.doTaskUpdate, 500);
+  doLogUpdateThrottle: Function = _.throttle(this.doLogUpdate, 500);
 
   async mounted() {
     await this.initConfig();
@@ -89,20 +100,29 @@ export default class App extends Vue {
     bus.$on("sub.delete", this.handleSubDelete);
 
     ipc.on("sub.update", this.handleIpcSubUpdate as any);
-    ipc.on("task.update", this.handleIpcTaskUpdate as any);
+    ipc.on("task.add", this.handleIpcTaskAdd as any);
     ipc.on("log.update", this.handleIpcLogUpdate as any);
   }
 
+  /**
+   * 用户登录回调
+   */
   handleLogin(user: User) {
     this.user = user;
     cache.set("user", user);
   }
 
+  /**
+   * 用户注销回调
+   */
   handleLogout() {
     this.user = null;
     cache.set("user", null);
   }
 
+  /**
+   * 添加订阅回调
+   */
   async handleSubAdd(subs: Subscription[]) {
     if (subs.length > 0) {
       await saveSubs(subs);
@@ -111,6 +131,9 @@ export default class App extends Vue {
     }
   }
 
+  /**
+   * 开始下载订阅回调
+   */
   async handleSubStart(subs: Subscription[]) {
     if (subs.length === 0) {
       this.$message.warning("请先选择要开始下载的订阅");
@@ -120,17 +143,26 @@ export default class App extends Vue {
     this.fetchStart(subs);
   }
 
+  /**
+   * 停止下载订阅回调
+   */
   async handleHeaderStop() {
     console.log("停止");
     this.fetchStop();
   }
 
+  /**
+   * 删除订阅回调
+   */
   async handleSubDelete(subs: Subscription[]) {
     if (subs.length === 0) {
       this.$message.warning("请先选择要删除的订阅");
     }
   }
 
+  /**
+   * 通知主进程开始获取
+   */
   async fetchStart(subs: Subscription[]) {
     if (this.fetching) {
       return;
@@ -146,21 +178,65 @@ export default class App extends Vue {
     this.fetching = false;
   }
 
+  /**
+   * 通知主进程停止获取
+   */
   fetchStop() {
     faFetchStop();
   }
 
+  /**
+   * 更新订阅回调
+   */
   async handleIpcSubUpdate(id: string) {
     console.log("sub.update", id);
+    this.subUpdateList.push(id);
+    this.doSubUpdateThrottle();
   }
 
-  async handleIpcTaskUpdate(id: string) {
-    console.log("task.update", id);
+  /**
+   * 添加任务回调
+   */
+  async handleIpcTaskAdd(task: Task) {
+    console.log("task.add", task);
   }
 
+  /**
+   * 日志更新回调
+   */
   async handleIpcLogUpdate(id: string) {
     console.log("log.update", id);
   }
+
+  /**
+   * 执行订阅更新
+   */
+  async doSubUpdate() {
+    // 去重
+    const list = _.uniq(this.subUpdateList);
+    // 清空等待列表
+    this.subUpdateList = [];
+    for (const id of list) {
+      const sub = await getSub(id);
+      if (!sub) {
+        continue;
+      }
+
+      // 遍历订阅并更新
+      // TODO: 可以使用hash来提升效率
+      for (let index = 0; index < this.subs.length; index++) {
+        const s = this.subs[index];
+        if (s.id === sub.id) {
+          this.$set(this.subs, index, sub);
+          break;
+        }
+      }
+    }
+  }
+
+  async doTaskUpdate() {}
+
+  async doLogUpdate() {}
 }
 </script>
 

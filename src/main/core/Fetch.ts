@@ -222,7 +222,7 @@ export class Fetch {
       t.type = type;
 
       await db.saveTask(t);
-      send("task.update", sub.id);
+      send("task.add", t);
       logger.log("作品详情", sub.id, type, page, index + 1, t);
 
       // 更新数量
