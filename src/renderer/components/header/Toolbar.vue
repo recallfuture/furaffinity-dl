@@ -13,10 +13,7 @@
 
     //- 用户登录后
     el-dropdown( v-if="user" @command="onCommand" )
-      div( class="user" )
-        el-avatar( class="avatar" :size="36" :src="user.avatar" )
-        span {{ user.name }}
-        i( class="el-icon-caret-bottom" )
+      UserInfo( :sub="user" )
       
       el-dropdown-menu( slot="dropdown" )
         el-dropdown-item( command="logout" ) {{ $t("header.logout") }}
@@ -62,9 +59,10 @@ import { User } from "@/renderer/interface";
 import bus from "@/renderer/utils/EventBus";
 import LoginForm from "../form/LoginForm.vue";
 import AddSubForm from "../form/AddSubForm.vue";
+import UserInfo from "../generic/User.vue";
 
 @Component({
-  components: { LoginForm, AddSubForm }
+  components: { LoginForm, AddSubForm, UserInfo }
 })
 export default class Toolbar extends Vue {
   @Prop(Object) user!: User;

@@ -1,20 +1,28 @@
 <template lang="pug">
-  el-container( v-if="!loading" style="height: 100vh;" )
+  el-container( v-if="!loading" class="app" )
     el-header
       Toolbar( :user="user" :fetching="fetching" )
 
     el-main
-      sub-table()
+      SubTable()
+      SubDetail(
+        v-show="detail.show"
+        :sub="detail.sub"
+        :tasks="detail.tasks"
+        :logs="detail.logs"
+      )
 
     el-footer
-      span @Furaffinity-dl
+      UserInfo( v-if="detail.sub" :sub="detail.sub" )
+      el-button( v-if="detail.sub && detail.show" type="text" icon="el-icon-arrow-down" @click="handleDetailHide" )
+      el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
-import { Subscription, Task } from "@/main/database/entity";
+import { Subscription, Task, Log } from "@/main/database/entity";
 import logger from "@/shared/logger";
-import { User } from "./interface";
+import { User, Detail } from "./interface";
 import cache from "@/renderer/utils/Cache";
 import {
   faLogin,
@@ -23,7 +31,9 @@ import {
   saveSubs,
   faFetchStart,
   faFetchStop,
-  getSub
+  getSub,
+  getTasks,
+  getLogs
 } from "./api";
 import bus from "@/renderer/utils/EventBus";
 import { AriaConfig } from "../main/database";
@@ -33,9 +43,11 @@ import _ from "lodash";
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";
 import SubTable from "./components/main/SubTable.vue";
+import SubDetail from "./components/main/SubDetail.vue";
+import UserInfo from "./components/generic/User.vue";
 
 @Component({
-  components: { Toolbar, SubTable }
+  components: { Toolbar, SubTable, SubDetail, UserInfo }
 })
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
@@ -48,6 +60,13 @@ export default class App extends Vue {
   subUpdateList: string[] = [];
   taskUpdateList: string[] = [];
   logUpdateList: string[] = [];
+
+  detail: Detail = {
+    show: false,
+    sub: null,
+    tasks: [],
+    logs: []
+  };
 
   // 创建节流函数，最快500毫秒执行一次
   doSubUpdateThrottle: Function = _.throttle(this.doSubUpdate, 500);
@@ -98,6 +117,9 @@ export default class App extends Vue {
     bus.$on("sub.start", this.handleSubStart);
     bus.$on("header.stop", this.handleHeaderStop);
     bus.$on("sub.delete", this.handleSubDelete);
+    bus.$on("sub.select", this.handleSubSelect);
+    bus.$on("detail.show", this.handleDetailShow);
+    bus.$on("detail.hide", this.handleDetailHide);
 
     ipc.on("sub.update", this.handleIpcSubUpdate as any);
     ipc.on("task.add", this.handleIpcTaskAdd as any);
@@ -141,6 +163,26 @@ export default class App extends Vue {
     }
     this.$message.info("开始下载" + subs.length + "个订阅");
     this.fetchStart(subs);
+  }
+
+  async handleSubSelect(sub: Subscription) {
+    if (this.detail.sub && this.detail.sub.id === sub.id) {
+      this.detail.show = true;
+      return;
+    }
+
+    this.detail.sub = sub;
+    this.detail.tasks = await getTasks(sub.id);
+    this.detail.logs = await getLogs(sub.id);
+    this.detail.show = true;
+  }
+
+  handleDetailShow() {
+    this.detail.show = true;
+  }
+
+  handleDetailHide() {
+    this.detail.show = false;
   }
 
   /**
@@ -245,17 +287,23 @@ body {
   margin: 0;
 }
 
-.el-header {
+.app {
+  height: 100vh;
+}
+
+.app .el-header {
   background-color: #121212;
   color: rgba(256, 256, 256, 0.87);
 }
 
-.el-main {
+.app .el-main {
   background-color: #222;
   color: rgba(256, 256, 256, 0.87);
+  display: flex;
+  flex-direction: column;
 }
 
-.el-footer {
+.app .el-footer {
   background-color: #131313;
   display: flex;
   align-items: center;

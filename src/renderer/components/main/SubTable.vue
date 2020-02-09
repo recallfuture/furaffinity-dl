@@ -69,6 +69,7 @@ export default class SubTable extends Vue {
 
   handleCurrentChange(val: Subscription) {
     this.currentRow = val;
+    bus.$emit("sub.select", val);
   }
 
   handleSelectionChange(val: Subscription[]) {
