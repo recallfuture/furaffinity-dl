@@ -5,7 +5,11 @@
     "refresh": "刷新"
   },
   "sub": {
-    "add": "成功添加{count}个订阅"
+    "add": "成功添加{count}个订阅",
+    "status": {
+      "label": "状态",
+      "active": "获取中"
+    }
   },
   "header": {
     "add": "添加订阅",

@@ -9,23 +9,23 @@
   )
     //- 复选框
     el-table-column( type="selection" width="40" )
+    //- 状态
+    el-table-column(
+      :label="$t('sub.status.label')"
+      width="80"
+      align="center"
+      :filters="statusFilters"
+      :filter-method="filterStatus"
+      filter-placement="bottom"
+    )
+      template( slot-scope="{ row }")
+        el-tag( v-if="row.status === 'active'" type="success" effect="dark" ) {{ $t("sub.status.active") }}
     //- 用户头像
     el-table-column( :label="$t('main.table.avatar')" align="center" width="80" )
       template( slot-scope="{ row }")
         el-avatar( size="medium" :src="row.avatar" )
     //- 用户名
     el-table-column( prop="name" :label="$t('main.table.username')" width="200" sortable )
-    //- 状态
-    el-table-column(
-      label="状态"
-      width="80"
-      align="center"
-      :filters="statusFilters"
-      :filter-method="filterStatus"
-      filter-placement="bottom-end"
-    )
-      template( slot-scope="{ row }")
-        el-tag( v-if="row.status === 'active'" type="success" effect="dark" ) 获取中
     //- Gallery
     el-table-column( label="Gallery" width="100" align="center" )
       template( slot-scope="{ row }")
@@ -55,7 +55,7 @@ export default class SubTable extends Vue {
   multipleSelection: Subscription[] = [];
 
   get statusFilters() {
-    return [{ text: "获取中", value: "active" }];
+    return [{ text: this.$tc("sub.status.active"), value: "active" }];
   }
 
   filterStatus(value: any, row: any, column: any) {

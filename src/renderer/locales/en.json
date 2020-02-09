@@ -5,7 +5,11 @@
     "refresh": "Refresh"
   },
   "sub": {
-    "add": "Successfully added a subscription | Successfully added {count} subscriptions"
+    "add": "Successfully added a subscription | Successfully added {count} subscriptions",
+    "status": {
+      "label": "Status",
+      "active": "Fetching"
+    }
   },
   "header": {
     "add": "New",
