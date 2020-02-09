@@ -11,6 +11,13 @@
       "active": "获取中"
     }
   },
+  "task": {
+    "status": {
+      "complete": "已完成",
+      "active": "下载中",
+      "error": "错误"
+    }
+  },
   "header": {
     "add": "添加订阅",
     "start": "开始",
@@ -52,6 +59,10 @@
       "username": "用户名",
       "home_url": "主页地址",
       "dir": "保存目录"
+    },
+    "detail": {
+      "log": "日志",
+      "no-log": "暂无日志"
     }
   }
 }

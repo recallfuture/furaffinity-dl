@@ -11,9 +11,9 @@
           h2 Gallery
           div( class="sub-detail-card-body" )
             div
-              span 已完成 {{ galleryCompleteTasks.length }}/{{ galleryTasks.length }}
+              span {{ $t("task.status.complete") }} {{ galleryCompleteTasks.length }}/{{ galleryTasks.length }}
               el-progress( :percentage="galleryCompleteTasksPercent" )
-            div 下载中 {{ galleryActiveTasks.length }}/{{ galleryTasks.length }}
+            div {{ $t("task.status.active") }} {{ galleryActiveTasks.length }}/{{ galleryTasks.length }}
               el-progress( :percentage="galleryActiveTasksPercent" )
 
       //- Scraps
@@ -22,9 +22,9 @@
           h2 Scraps
           div( class="sub-detail-card-body" )
             div
-              span 已完成 {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
+              span {{ $t("task.status.complete") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
               el-progress( :percentage="scrapsCompleteTasksPercent" )
-            div 下载中 {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
+            div {{ $t("task.status.active") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
               el-progress( :percentage="scrapsActiveTasksPercent" )
 
       //- 日志

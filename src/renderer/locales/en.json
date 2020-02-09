@@ -11,6 +11,11 @@
       "active": "Fetching"
     }
   },
+  "status": {
+    "complete": "Complete",
+    "active": "Active",
+    "error": "Error"
+  },
   "header": {
     "add": "New",
     "start": "Start",
@@ -52,6 +57,10 @@
       "username": "Username",
       "home_url": "Home URL",
       "dir": "Path"
+    },
+    "detail": {
+      "log": "Log",
+      "no-log": "No log"
     }
   }
 }
