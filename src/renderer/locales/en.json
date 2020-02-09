@@ -28,7 +28,18 @@
       "existed_error": "Subscription already exists"
     },
     "tab_import": {
-      "title": "Import from watching list"
+      "title": "Import from watching list",
+      "example": "A user nickname is Furry, and the id is Furry subscription, will be stored to {path}",
+      "path": "Parent directory",
+      "prefix": "Folder prefix",
+      "dir": "Folder format",
+      "dirOptions": {
+        "id": "User ID",
+        "Id": "User ID, Capital letter",
+        "name": "Nickname",
+        "Name": "Nickname, Capital letter"
+      },
+      "suffix": "Folder suffix"
     }
   },
   "main": {

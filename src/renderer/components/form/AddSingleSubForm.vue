@@ -5,7 +5,7 @@
     @submit.native.prevent="submit"
     ref="addSingleSubForm"
     status-icon
-    label-width="80px"
+    label-width="110px"
   )
     //-  Step 1
     el-form-item( v-if="step === 1" :label="$t('header.tab_add_single.username')" prop="username" )

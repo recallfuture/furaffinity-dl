@@ -28,7 +28,18 @@
       "existed_error": "订阅已存在"
     },
     "tab_import": {
-      "title": "从关注列表导入"
+      "title": "从关注列表导入",
+      "example": "一个用户昵称为Furry，id为furry的订阅，将存储到{path}",
+      "path": "父目录",
+      "prefix": "子目录前缀",
+      "dir": "子目录格式",
+      "dirOptions": {
+        "id": "用户ID",
+        "Id": "用户ID，首字母大写",
+        "name": "用户昵称",
+        "Name": "用户昵称，首字母大写"
+      },
+      "suffix": "子目录后缀"
     }
   },
   "main": {

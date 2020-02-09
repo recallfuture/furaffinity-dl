@@ -23,7 +23,9 @@ import {
   Form,
   FormItem,
   Input,
-  Switch
+  Switch,
+  Select,
+  Option
 } from "element-ui";
 // @ts-ignore
 import Scrollbar from "element-ui/lib/scrollbar";
@@ -57,4 +59,6 @@ Vue.use(Form);
 Vue.use(FormItem);
 Vue.use(Input);
 Vue.use(Switch);
+Vue.use(Select);
+Vue.use(Option);
 Vue.use(Scrollbar);
