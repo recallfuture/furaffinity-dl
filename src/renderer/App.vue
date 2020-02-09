@@ -245,10 +245,6 @@ body {
   margin: 0;
 }
 
-.el-scrollbar__wrap {
-  overflow-x: hidden !important;
-}
-
 .el-header {
   background-color: #121212;
   color: rgba(256, 256, 256, 0.87);

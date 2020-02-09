@@ -3,6 +3,8 @@
     :data="subs"
     height="100%"
     class="sub-table"
+    highlight-current-row
+    @current-change="handleCurrentChange"
     @selection-change="handleSelectionChange"
   )
     //- 复选框
@@ -13,6 +15,17 @@
         el-avatar( size="medium" :src="row.avatar" )
     //- 用户名
     el-table-column( prop="name" :label="$t('main.table.username')" width="200" sortable )
+    //- 状态
+    el-table-column(
+      label="状态"
+      width="80"
+      align="center"
+      :filters="statusFilters"
+      :filter-method="filterStatus"
+      filter-placement="bottom-end"
+    )
+      template( slot-scope="{ row }")
+        el-tag( v-if="row.status === 'active'" type="success" effect="dark" ) 获取中
     //- Gallery
     el-table-column( label="Gallery" width="100" align="center" )
       template( slot-scope="{ row }")
@@ -38,11 +51,24 @@ import bus from "@/renderer/utils/EventBus";
 export default class SubTable extends Vue {
   @InjectReactive() subs!: Subscription[];
 
+  currentRow: Subscription | null = null;
   multipleSelection: Subscription[] = [];
+
+  get statusFilters() {
+    return [{ text: "获取中", value: "active" }];
+  }
+
+  filterStatus(value: any, row: any, column: any) {
+    return row.status === value;
+  }
 
   mounted() {
     bus.$on("header.start", this.handleHeaderStart);
     bus.$on("header.delete", this.handleHeaderDelete);
+  }
+
+  handleCurrentChange(val: Subscription) {
+    this.currentRow = val;
   }
 
   handleSelectionChange(val: Subscription[]) {
@@ -77,7 +103,8 @@ export default class SubTable extends Vue {
 .sub-table.el-table td {
   border-bottom: 1px solid #555;
 }
-.sub-table.el-table--enable-row-hover .el-table__body tr:hover > td {
+.sub-table.el-table--enable-row-hover .el-table__body tr:hover > td,
+.sub-table .el-table__body tr.current-row > td {
   background-color: #666;
 }
 .sub-table.el-table::before {
