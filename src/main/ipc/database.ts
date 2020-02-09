@@ -1,26 +1,14 @@
 import ipc from "electron-promise-ipc";
 import { db } from "../core";
 import { Subscription } from "@/main/database/entity";
+import { transformSub, transformSubs } from "@/shared/utils";
 
 async function saveSub(sub: Subscription) {
-  const s = new Subscription();
-  for (const key in sub) {
-    // @ts-ignore
-    s[key] = sub[key];
-  }
-  return await db.saveSub(s);
+  return await db.saveSub(transformSub(sub));
 }
 
 async function saveSubs(subs: Subscription[]) {
-  subs = subs.map(sub => {
-    const s = new Subscription();
-    for (const key in sub) {
-      // @ts-ignore
-      s[key] = sub[key];
-    }
-    return s;
-  });
-  return await db.saveSubs(subs);
+  return await db.saveSubs(transformSubs(subs));
 }
 
 export function registerDatabaseIpc() {

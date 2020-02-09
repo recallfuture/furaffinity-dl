@@ -1,4 +1,5 @@
 import Bluebird from "bluebird";
+import { Subscription } from "@/main/database/entity";
 
 /**
  * 将配置对象转换为命令行参数数组
@@ -12,6 +13,27 @@ export function transformConfig(config: {}): string[] {
     }
   }
   return result;
+}
+
+/**
+ * 转换从渲染进程到主进程的订阅数据
+ * @param sub 订阅
+ */
+export function transformSub(sub: Subscription) {
+  const s = new Subscription();
+  for (const key in sub) {
+    // @ts-ignore
+    s[key] = sub[key];
+  }
+  return s;
+}
+
+/**
+ * 转换从渲染进程到主进程的订阅数据
+ * @param subs 订阅列表
+ */
+export function transformSubs(subs: Subscription[]) {
+  return subs.map(sub => transformSub(sub));
 }
 
 /**

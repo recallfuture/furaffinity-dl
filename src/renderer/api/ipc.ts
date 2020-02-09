@@ -1,5 +1,6 @@
 import ipc from "electron-promise-ipc";
 import { Author, Result, Submission } from "furaffinity-api/dist/interfaces";
+import { Subscription } from "@/main/database/entity";
 
 /**
  * 清除 furaffinity.net 的所有cookie
@@ -77,6 +78,23 @@ export async function faScraps(id: string, page: number): Promise<Result> {
 export async function faSubmission(id: string): Promise<Submission> {
   // @ts-ignore
   return await ipc.send("fa.submission", id);
+}
+
+/**
+ * 开始获取订阅作品信息
+ * @param subs 订阅列表
+ */
+export async function faFetchStart(subs: Subscription[]) {
+  // @ts-ignore
+  return await ipc.send("fa.fetchStart", subs);
+}
+
+/**
+ * 停止获取订阅作品信息
+ */
+export async function faFetchStop() {
+  // @ts-ignore
+  return await ipc.send("fa.fetchStop");
 }
 
 /**

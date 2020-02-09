@@ -32,6 +32,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, InjectReactive } from "vue-property-decorator";
 import { Subscription } from "@/main/database/entity";
+import bus from "@/renderer/utils/EventBus";
 
 @Component
 export default class SubTable extends Vue {
@@ -39,8 +40,21 @@ export default class SubTable extends Vue {
 
   multipleSelection: Subscription[] = [];
 
+  mounted() {
+    bus.$on("header.start", this.handleHeaderStart);
+    bus.$on("header.delete", this.handleHeaderDelete);
+  }
+
   handleSelectionChange(val: Subscription[]) {
     this.multipleSelection = val;
+  }
+
+  handleHeaderStart() {
+    bus.$emit("sub.start", this.multipleSelection);
+  }
+
+  handleHeaderDelete() {
+    bus.$emit("sub.delete", this.multipleSelection);
   }
 }
 </script>

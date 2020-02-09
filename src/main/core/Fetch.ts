@@ -1,11 +1,19 @@
-import { Subscription, Log, Task } from "../database/entity";
-import { db } from ".";
 import logger from "@/shared/logger";
-import { Gallery, Scraps, Result, Submission } from "furaffinity-api";
 import { sleep } from "@/shared/utils";
 import Bluebird from "bluebird";
+import ipc from "electron-promise-ipc";
 import fs from "fs";
+import { Gallery, Result, Scraps, Submission } from "furaffinity-api";
 import { Submission as ISubmission } from "furaffinity-api/dist/interfaces";
+import { Log, Subscription, Task } from "../database/entity";
+import { db } from "./";
+import { mainWindow } from "./index";
+
+function send(route: string, ...args: any) {
+  if (mainWindow.win) {
+    ipc.send(route, mainWindow.win.webContents, ...args);
+  }
+}
 
 /**
  * 获取订阅内的作品类
@@ -29,7 +37,11 @@ export class Fetch {
     // 开始获取
     this.fetching = true;
 
-    await this.mapSubs(subs);
+    try {
+      await this.mapSubs(subs);
+    } catch (e) {
+      logger.error(e);
+    }
 
     // 结束获取
     this.fetching = false;
@@ -55,6 +67,7 @@ export class Fetch {
     log.sub = sub;
 
     await db.addLog(log);
+    send("log.update", sub.id);
   }
 
   /**
@@ -63,6 +76,7 @@ export class Fetch {
    */
   private async clearLogs(id: string) {
     await db.clearLogs(id);
+    send("log.update", id);
   }
 
   /**
@@ -96,6 +110,8 @@ export class Fetch {
     // 获取当前订阅
     for (const sub of subs) {
       sub.status = "active";
+      await db.saveSub(sub);
+      send("sub.update", sub.id);
       await this.clearLogs(sub.id);
 
       // 下载的图集
@@ -118,6 +134,8 @@ export class Fetch {
         }
       }
       sub.status = "";
+      await db.saveSub(sub);
+      send("sub.update", sub.id);
     }
   }
 
@@ -204,6 +222,7 @@ export class Fetch {
       t.type = type;
 
       await db.saveTask(t);
+      send("task.update", sub.id);
       logger.log("作品详情", sub.id, type, page, index + 1, t);
 
       // 更新数量
@@ -214,6 +233,7 @@ export class Fetch {
           sub.scrapsTaskNum++;
         }
         await db.saveSub(sub);
+        send("sub.update", sub.id);
       }
     }
   }

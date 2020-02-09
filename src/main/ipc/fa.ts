@@ -1,14 +1,18 @@
-import ipc from "electron-promise-ipc";
 import { session } from "electron";
+import ipc from "electron-promise-ipc";
 import {
-  Login,
-  User,
-  MyWatchingList,
   Author,
   Gallery,
+  Login,
+  MyWatchingList,
   Scraps,
-  Submission
+  Submission,
+  User
 } from "furaffinity-api";
+import { transformSubs } from "../../shared/utils";
+import { Fetch } from "../core/Fetch";
+
+const fetch = new Fetch();
 
 async function onFaClearCookies() {
   await session.defaultSession?.cookies.remove(
@@ -29,15 +33,18 @@ async function onFaGetCookies() {
 
 export function registerFaIpc() {
   // cookies
-  ipc.on("fa.clearCookies", onFaClearCookies);
-  ipc.on("fa.getCookies", onFaGetCookies);
+  ipc.on("fa.clearCookies", onFaClearCookies as any);
+  ipc.on("fa.getCookies", onFaGetCookies as any);
 
   // fa api
-  ipc.on("fa.login", (a: any, b: any) => Login(a, b));
-  ipc.on("fa.user", User);
-  ipc.on("fa.watchingList", MyWatchingList);
-  ipc.on("fa.author", (id: any) => Author(id));
-  ipc.on("fa.gallery", (id: any, page: any) => Gallery(id, page));
-  ipc.on("fa.scraps", (id: any, page: any) => Scraps(id, page));
-  ipc.on("fa.submission", (id: any) => Submission(id));
+  ipc.on("fa.login", Login as any);
+  ipc.on("fa.user", User as any);
+  ipc.on("fa.watchingList", MyWatchingList as any);
+  ipc.on("fa.author", Author as any);
+  ipc.on("fa.gallery", Gallery as any);
+  ipc.on("fa.scraps", Scraps as any);
+  ipc.on("fa.submission", Submission as any);
+
+  ipc.on("fa.fetchStart", (subs: any) => fetch.start(transformSubs(subs)));
+  ipc.on("fa.fetchStop", () => fetch.stop());
 }
