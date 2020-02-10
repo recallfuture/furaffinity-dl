@@ -5,9 +5,9 @@
 
     //- 订阅下载控制
     el-button-group( style="margin-left: 10px; margin-right: 10px;" )
-      el-button( type="info" icon="el-icon-video-play" @click="onStart" :disabled="fetching" ) {{ $t("header.start") }}
-      el-button( type="info" icon="el-icon-video-pause" @click="onStop" :disabled="!fetching" ) {{ $t("header.stop") }}
-      el-button( type="info" icon="el-icon-delete" @click="onDelete" :disabled="fetching" ) {{ $t("header.delete") }}
+      el-button( type="info" icon="el-icon-video-play" @click="onStart" :disabled="downloading" ) {{ $t("header.start") }}
+      el-button( type="info" icon="el-icon-video-pause" @click="onStop" :disabled="!downloading" ) {{ $t("header.stop") }}
+      el-button( type="info" icon="el-icon-delete" @click="onDelete" :disabled="downloading" ) {{ $t("header.delete") }}
     
     div( class="spacer" )
 
@@ -66,7 +66,7 @@ import UserInfo from "../generic/User.vue";
 })
 export default class Toolbar extends Vue {
   @Prop(Object) user!: User;
-  @Prop(Boolean) fetching!: boolean;
+  @Prop(Boolean) downloading!: boolean;
 
   logoutConfirmDialog: boolean = false;
   loginDialog: boolean = false;

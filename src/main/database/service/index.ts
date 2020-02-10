@@ -82,7 +82,8 @@ export class Database {
    */
   getTaskByGid(gid: string): Promise<Task | undefined> {
     return getManager().findOne(Task, {
-      where: { gid }
+      where: { gid },
+      relations: ["sub"]
     });
   }
 

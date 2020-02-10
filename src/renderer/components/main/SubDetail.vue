@@ -12,9 +12,9 @@
           div( class="sub-detail-card-body" )
             div
               span {{ $t("task.status.complete") }} {{ galleryCompleteTasks.length }}/{{ galleryTasks.length }}
-              el-progress( :percentage="galleryCompleteTasksPercent" )
+              el-progress( text-inside :percentage="galleryCompleteTasksPercent" :format="()=>''" )
             div {{ $t("task.status.active") }} {{ galleryActiveTasks.length }}/{{ galleryTasks.length }}
-              el-progress( :percentage="galleryActiveTasksPercent" )
+              el-progress( text-inside :percentage="galleryActiveTasksPercent" :format="()=>''" )
 
       //- Scraps
       el-col( :span="7" style="display: flex; flex-direction: column;" )
@@ -23,9 +23,9 @@
           div( class="sub-detail-card-body" )
             div
               span {{ $t("task.status.complete") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
-              el-progress( :percentage="scrapsCompleteTasksPercent" )
+              el-progress( text-inside :percentage="scrapsCompleteTasksPercent" :format="()=>''" )
             div {{ $t("task.status.active") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
-              el-progress( :percentage="scrapsActiveTasksPercent" )
+              el-progress( text-inside :percentage="scrapsActiveTasksPercent" :format="()=>''" )
 
       //- 日志
       el-col( :span="10" style="display: flex; flex-direction: column;" )
@@ -72,7 +72,7 @@ export default class SubDetail extends Vue {
     if (this.galleryTasks.length === 0) {
       return 0;
     }
-    return this.galleryCompleteTasks.length / this.galleryTasks.length;
+    return (this.galleryCompleteTasks.length / this.galleryTasks.length) * 100;
   }
 
   get galleryActiveTasks() {
@@ -83,7 +83,7 @@ export default class SubDetail extends Vue {
     if (this.galleryTasks.length === 0) {
       return 0;
     }
-    return this.galleryActiveTasks.length / this.galleryTasks.length;
+    return (this.galleryActiveTasks.length / this.galleryTasks.length) * 100;
   }
 
   get scrapsCompleteTasks() {
@@ -94,7 +94,7 @@ export default class SubDetail extends Vue {
     if (this.scrapsTasks.length === 0) {
       return 0;
     }
-    return this.scrapsCompleteTasks.length / this.scrapsTasks.length;
+    return (this.scrapsCompleteTasks.length / this.scrapsTasks.length) * 100;
   }
 
   get scrapsActiveTasks() {
@@ -105,7 +105,7 @@ export default class SubDetail extends Vue {
     if (this.scrapsTasks.length === 0) {
       return 0;
     }
-    return this.scrapsActiveTasks.length / this.scrapsTasks.length;
+    return (this.scrapsActiveTasks.length / this.scrapsTasks.length) * 100;
   }
 
   hideDetail() {

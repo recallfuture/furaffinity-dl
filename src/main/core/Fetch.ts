@@ -3,11 +3,14 @@ import { sleep } from "@/shared/utils";
 import Bluebird from "bluebird";
 import ipc from "electron-promise-ipc";
 import fs from "fs";
+import { promisify } from "util";
 import { Gallery, Result, Scraps, Submission } from "furaffinity-api";
 import { Submission as ISubmission } from "furaffinity-api/dist/interfaces";
 import { Log, Subscription, Task } from "../database/entity";
 import { db } from "./";
 import { mainWindow } from "./index";
+
+const existsAsync = promisify(fs.exists);
 
 function send(route: string, ...args: any) {
   if (mainWindow.win) {
@@ -157,7 +160,7 @@ export class Fetch {
           message: `[${type}/${page}] 获取失败，1秒后重试`
         });
       };
-
+      logger.log("result");
       const result: Result[] | null = await this.retry(fun, error);
       if (result === null) {
         throw new Error("获取作品列表失败");
@@ -192,9 +195,21 @@ export class Fetch {
         task &&
         task.status === "complete" &&
         task.path &&
-        (await Bluebird.promisify(fs.exists)(task.path))
+        (await existsAsync(task.path))
       ) {
         logger.log("跳过作品", sub.id, type, page, index + 1, task);
+        continue;
+      }
+
+      if (task) {
+        task.gid = "";
+        task.path = "";
+        task.type = type;
+        task.sub = sub;
+
+        await db.saveTask(task);
+        send("task.add", task);
+        logger.log("作品详情", sub.id, type, page, index + 1, task);
         continue;
       }
 
@@ -226,15 +241,13 @@ export class Fetch {
       logger.log("作品详情", sub.id, type, page, index + 1, t);
 
       // 更新数量
-      if (!task) {
-        if (type === "gallery") {
-          sub.galleryTaskNum++;
-        } else {
-          sub.scrapsTaskNum++;
-        }
-        await db.saveSub(sub);
-        send("sub.update", sub.id);
+      if (type === "gallery") {
+        sub.galleryTaskNum++;
+      } else {
+        sub.scrapsTaskNum++;
       }
+      await db.saveSub(sub);
+      send("sub.update", sub.id);
     }
   }
 }

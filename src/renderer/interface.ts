@@ -12,3 +12,12 @@ export interface Detail {
   tasks: Task[];
   logs: Log[];
 }
+
+export interface AriaStatus {
+  downloadSpeed: string;
+  numActive: string;
+  numStopped: string;
+  numStoppedTotal: string;
+  numWaiting: string;
+  uploadSpeed: string;
+}

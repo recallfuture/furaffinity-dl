@@ -1,5 +1,5 @@
 import Bluebird from "bluebird";
-import { Subscription } from "@/main/database/entity";
+import { Subscription, Task } from "@/main/database/entity";
 
 /**
  * 将配置对象转换为命令行参数数组
@@ -34,6 +34,15 @@ export function transformSub(sub: Subscription) {
  */
 export function transformSubs(subs: Subscription[]) {
   return subs.map(sub => transformSub(sub));
+}
+
+export function transformTask(task: Task) {
+  const t = new Task();
+  for (const key in task) {
+    // @ts-ignore
+    t[key] = task[key];
+  }
+  return t;
 }
 
 /**

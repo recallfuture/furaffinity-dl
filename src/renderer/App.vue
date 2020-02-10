@@ -1,7 +1,7 @@
 <template lang="pug">
   el-container( v-if="!loading" class="app" )
     el-header
-      Toolbar( :user="user" :fetching="fetching" )
+      Toolbar( :user="user" :downloading="fetching || downloading" )
 
     el-main
       SubTable()
@@ -16,13 +16,17 @@
       UserInfo( v-if="detail.sub" :sub="detail.sub" )
       el-button( v-if="detail.sub && detail.show" type="text" icon="el-icon-arrow-down" @click="handleDetailHide" )
       el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
+      
+      div( class="spacer" )
+
+      SpeedBar( :ariaStatus="ariaStatus" )
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
 import { Subscription, Task, Log } from "@/main/database/entity";
 import logger from "@/shared/logger";
-import { User, Detail } from "./interface";
+import { User, Detail, AriaStatus } from "./interface";
 import cache from "@/renderer/utils/Cache";
 import {
   faLogin,
@@ -33,7 +37,22 @@ import {
   faFetchStop,
   getSub,
   getTasks,
-  getLogs
+  getLogs,
+  addUri,
+  saveTask,
+  getGlobalStat,
+  onDownloadStart,
+  onDownloadStop,
+  onDownloadComplete,
+  onDownloadError,
+  onDownloadPause,
+  fetchTaskItem,
+  getTaskByGid,
+  initClient,
+  removeAllTask,
+  purgeTaskRecord,
+  saveSession,
+  pauseAllTask
 } from "./api";
 import bus from "@/renderer/utils/EventBus";
 import { AriaConfig } from "../main/database";
@@ -45,9 +64,10 @@ import Toolbar from "./components/header/Toolbar.vue";
 import SubTable from "./components/main/SubTable.vue";
 import SubDetail from "./components/main/SubDetail.vue";
 import UserInfo from "./components/generic/User.vue";
+import SpeedBar from "./components/footer/SpeedBar.vue";
 
 @Component({
-  components: { Toolbar, SubTable, SubDetail, UserInfo }
+  components: { Toolbar, SubTable, SubDetail, UserInfo, SpeedBar }
 })
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
@@ -58,8 +78,18 @@ export default class App extends Vue {
   fetching: boolean = false;
 
   subUpdateList: string[] = [];
-  taskUpdateList: string[] = [];
+  taskAddList: Task[] = [];
+  taskUpdateList: Task[] = [];
   logUpdateList: string[] = [];
+
+  ariaStatus: AriaStatus = {
+    downloadSpeed: "0",
+    numActive: "0",
+    numStopped: "0",
+    numStoppedTotal: "0",
+    numWaiting: "0",
+    uploadSpeed: "0"
+  };
 
   detail: Detail = {
     show: false,
@@ -70,14 +100,27 @@ export default class App extends Vue {
 
   // 创建节流函数，最快500毫秒执行一次
   doSubUpdateThrottle: Function = _.throttle(this.doSubUpdate, 500);
+  doTaskAddThrottle: Function = _.throttle(this.doTaskAdd, 500);
   doTaskUpdateThrottle: Function = _.throttle(this.doTaskUpdate, 500);
   doLogUpdateThrottle: Function = _.throttle(this.doLogUpdate, 500);
 
+  get downloading() {
+    return !!(
+      Number.parseInt(this.ariaStatus.numActive) +
+      Number.parseInt(this.ariaStatus.numWaiting)
+    );
+  }
+
   async mounted() {
-    await this.initConfig();
-    await this.initUser();
-    await this.initSubs();
-    this.initHandle();
+    try {
+      await this.initConfig();
+      await this.initUser();
+      await this.initSubs();
+      await this.initAria();
+      this.initHandle();
+    } catch (e) {
+      this.$alert(e);
+    }
     this.loading = false;
   }
 
@@ -127,6 +170,28 @@ export default class App extends Vue {
   }
 
   /**
+   * 初始化Aria
+   */
+  async initAria() {
+    if (!this.ariaConfig) {
+      console.error("Aria init error");
+      return;
+    }
+
+    await initClient(this.ariaConfig);
+
+    onDownloadStart((event: any) => this.handleDownloadStart(event));
+    onDownloadStop((event: any) => this.handleDownloadStop(event));
+    onDownloadComplete((event: any) => this.handleDownloadComplete(event));
+    onDownloadError((event: any) => this.handleDownloadError(event));
+    onDownloadPause((event: any) => this.handleDownloadPause(event));
+
+    setInterval(async () => {
+      this.ariaStatus = await getGlobalStat();
+    }, 200);
+  }
+
+  /**
    * 用户登录回调
    */
   handleLogin(user: User) {
@@ -166,6 +231,10 @@ export default class App extends Vue {
   }
 
   async handleSubSelect(sub: Subscription) {
+    if (!sub) {
+      return;
+    }
+
     if (this.detail.sub && this.detail.sub.id === sub.id) {
       this.detail.show = true;
       return;
@@ -191,6 +260,9 @@ export default class App extends Vue {
   async handleHeaderStop() {
     console.log("停止");
     this.fetchStop();
+    await removeAllTask();
+    await purgeTaskRecord();
+    await saveSession();
   }
 
   /**
@@ -231,7 +303,6 @@ export default class App extends Vue {
    * 更新订阅回调
    */
   async handleIpcSubUpdate(id: string) {
-    console.log("sub.update", id);
     this.subUpdateList.push(id);
     this.doSubUpdateThrottle();
   }
@@ -240,14 +311,24 @@ export default class App extends Vue {
    * 添加任务回调
    */
   async handleIpcTaskAdd(task: Task) {
-    console.log("task.add", task);
+    this.taskAddList.push(task);
+    this.doTaskAddThrottle();
+  }
+
+  /**
+   * 添加任务回调
+   */
+  async handleIpcTaskUpdate(task: Task) {
+    this.taskUpdateList.push(task);
+    this.doTaskUpdateThrottle();
   }
 
   /**
    * 日志更新回调
    */
   async handleIpcLogUpdate(id: string) {
-    console.log("log.update", id);
+    this.logUpdateList.push(id);
+    this.doLogUpdateThrottle();
   }
 
   /**
@@ -276,9 +357,119 @@ export default class App extends Vue {
     }
   }
 
-  async doTaskUpdate() {}
+  async doTaskAdd() {
+    // 去重
+    const list = _.uniq(this.taskAddList);
+    this.taskAddList = [];
+    let update = false;
+    for (const task of list) {
+      // 逐个添加订阅
+      task.gid = await addUri({
+        uris: [task.downloadUrl],
+        options: {
+          dir:
+            task.type === "gallery"
+              ? task.sub?.galleryDir ?? ""
+              : task.sub?.scrapsDir ?? ""
+        }
+      });
+      await saveTask(task);
+      this.handleIpcTaskUpdate(task);
+    }
+  }
 
-  async doLogUpdate() {}
+  async doTaskUpdate() {
+    // 去重
+    const list = _.uniq(this.taskUpdateList);
+    // 清空等待列表
+    this.taskUpdateList = [];
+
+    if (!this.detail.sub) {
+      return;
+    }
+
+    for (const task of list) {
+      if (!task.sub) {
+        continue;
+      }
+
+      if (this.detail.sub.id === task.sub.id) {
+        this.detail.tasks = await getTasks(task.sub.id);
+        break;
+      }
+    }
+  }
+
+  async doLogUpdate() {
+    // 去重
+    const list = _.uniq(this.logUpdateList);
+    // 清空等待列表
+    this.logUpdateList = [];
+
+    if (!this.detail.sub) {
+      return;
+    }
+
+    for (const id of list) {
+      if (this.detail.sub.id === id) {
+        this.detail.logs = await getLogs(id);
+        break;
+      }
+    }
+  }
+
+  async handleDownloadStart(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid);
+    logger.log("任务开始", gid);
+  }
+
+  async handleDownloadComplete(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid);
+    logger.log("任务完成", gid);
+  }
+
+  async handleDownloadPause(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid);
+    logger.log("任务暂停", gid);
+  }
+
+  async handleDownloadStop(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid);
+    logger.log("任务停止", gid);
+  }
+
+  async handleDownloadError(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid);
+    logger.log("任务失败", gid);
+  }
+
+  // 更新任务信息
+  async refreshTask(gid: string) {
+    // 获取任务信息
+    const item = await fetchTaskItem({ gid });
+    const task = await getTaskByGid(gid);
+    if (task) {
+      // 覆盖任务状态
+      task.status = item.status;
+      // 覆盖文件位置
+      // 任务完成后可以或得到文件位置
+      if (item.status === "complete") {
+        task.path = item.files[0].path;
+        logger.log("文件下载到", item.files[0].path);
+      }
+      // 保存到数据库
+      await saveTask(task);
+      // 更新界面
+      if (this.detail.sub && this.detail.sub.id === task.sub?.id) {
+        this.handleIpcTaskUpdate(task);
+      }
+    }
+  }
 }
 </script>
 

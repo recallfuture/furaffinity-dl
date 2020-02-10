@@ -237,6 +237,25 @@ export async function forceRemoveTask(params: any = {}) {
 }
 
 /**
+ * 删除所有任务
+ */
+export async function removeAllTask() {
+  const status = await getGlobalStat();
+  const tasks = await fetchWaitingTaskList({
+    offset: 0,
+    num: Number.parseInt(status.numWaiting),
+    keys: ["gid"]
+  });
+  console.log("will remove", tasks);
+
+  return await client.multicall(
+    tasks.map((task: any) => {
+      return ["remove", ...compactUndefined([task.gid])];
+    })
+  );
+}
+
+/**
  * 保存session
  */
 export async function saveSession() {
