@@ -30,11 +30,15 @@
     el-table-column( label="Gallery" width="100" align="center" )
       template( slot-scope="{ row }")
         span( v-if="row.gallery" class="gallery-task-num" ) {{ row.galleryTaskNum }}
+          el-tooltip( v-if="row.galleryUpdateOnly" effect="dark" content="仅更新模式开启" placement="top" )
+            i( class="el-icon-time" )
         i( v-else class="el-icon-close" )
     //- Scraps
     el-table-column( label="Scraps" width="100" align="center" )
       template( slot-scope="{ row }")
         span( v-if="row.scraps" class="scraps-task-num" ) {{ row.scrapsTaskNum }}
+          el-tooltip( v-if="row.scrapsUpdateOnly" effect="dark" content="仅更新模式开启" placement="top" )
+            i( class="el-icon-time" )
         i( v-else class="el-icon-close" )
     //- 主页地址
     el-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )

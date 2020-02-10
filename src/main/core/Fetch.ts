@@ -18,6 +18,8 @@ function send(route: string, ...args: any) {
   }
 }
 
+class UpdateOnlyError extends Error {}
+
 /**
  * 获取订阅内的作品类
  */
@@ -109,7 +111,7 @@ export class Fetch {
    * 遍历订阅下载列表
    * @param subs 订阅列表
    */
-  async mapSubs(subs: Subscription[]) {
+  private async mapSubs(subs: Subscription[]) {
     // 获取当前订阅
     for (const sub of subs) {
       sub.status = "active";
@@ -128,12 +130,25 @@ export class Fetch {
           // 下载此图集的所有图片
           this.addLog(sub, { message: `[${type}] 开始获取` });
           await this.mapPages(type, { sub });
+          // 正常获取完所有的作品后就开启仅更新模式
+          if (type === "gallery") {
+            sub.galleryUpdateOnly = true;
+          } else {
+            sub.scrapsUpdateOnly = true;
+          }
         } catch (e) {
-          this.addLog(sub, {
-            type: "error",
-            message: `[${type}] 出现错误，停止获取：${e.message}`
-          });
-          logger.error(e);
+          // 仅更新模式跳出循环
+          if (e instanceof UpdateOnlyError) {
+            this.addLog(sub, {
+              message: `[${type}] ${e.message}`
+            });
+          } else {
+            this.addLog(sub, {
+              type: "error",
+              message: `[${type}] 出现错误，停止获取：${e.message}`
+            });
+            logger.error(e);
+          }
         }
       }
       sub.status = "";
@@ -147,7 +162,7 @@ export class Fetch {
    * @param type 类型
    * @param param1 附加参数
    */
-  async mapPages(type: string, { sub }: { sub: Subscription }) {
+  private async mapPages(type: string, { sub }: { sub: Subscription }) {
     for (let page = 1; this.fetching; page++) {
       const fun = () =>
         type === "gallery"
@@ -181,7 +196,7 @@ export class Fetch {
    * @param submissions 作品列表
    * @param param1 附加参数
    */
-  async mapSubmissions(
+  private async mapSubmissions(
     submissions: Result[],
     { sub, type, page }: { sub: Subscription; type: string; page: number }
   ) {
@@ -198,6 +213,11 @@ export class Fetch {
         (await existsAsync(task.path))
       ) {
         logger.log("跳过作品", sub.id, type, page, index + 1, task);
+        const updateOnly =
+          type === "gallery" ? sub.galleryUpdateOnly : sub.scrapsUpdateOnly;
+        if (updateOnly) {
+          throw new UpdateOnlyError("仅更新模式下快速跳过");
+        }
         continue;
       }
 
