@@ -2,7 +2,6 @@ import ipc from "electron-promise-ipc";
 import { db } from "../core";
 import { Subscription, Task } from "@/main/database/entity";
 import { transformSub, transformSubs, transformTask } from "@/shared/utils";
-import logger from "@/shared/logger";
 
 async function saveSub(sub: Subscription) {
   return await db.saveSub(transformSub(sub));
@@ -29,11 +28,7 @@ export function registerDatabaseIpc() {
   ipc.on("db.addSub", saveSub as any);
   ipc.on("db.saveSub", saveSub as any);
   ipc.on("db.saveSubs", saveSubs as any);
-  ipc.on("db.removeSub", db.removeSub as any);
+  ipc.on("db.removeSub", (id: any) => db.removeSub(id));
   ipc.on("db.addTask", saveTask as any);
   ipc.on("db.saveTask", saveTask as any);
-  ipc.on("db.addTasks", db.addTasks as any);
-  ipc.on("db.addLog", db.addLog as any);
-  ipc.on("db.addLogs", db.addLogs as any);
-  ipc.on("db.clearLogs", db.clearLogs as any);
 }

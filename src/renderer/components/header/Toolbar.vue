@@ -51,6 +51,19 @@
     //- 添加订阅对话框
     el-dialog( :visible.sync="addDialog" width="50%" )
       AddSubForm( v-if="addDialog" )
+
+    el-dialog(
+      :visible.sync="deleteDialog"
+      :before-close="() => {}"
+      width="400px"
+      title="确定删除这些订阅吗？"
+      :show-close="false"
+    )
+      span( v-if="!!deleteStatus" ) 删除中 {{ deleteStatus.current }}/{{ deleteStatus.total }}
+      el-checkbox( v-else v-model="deleteWithTrash" style="color: white;" ) 同时将订阅文件夹放入回收站
+      span( slot="footer" class="dialog-footer" )
+        el-button( @click="deleteDialog = false" :disabled="!!deleteStatus" ) 取消
+        el-button( @click="doDelete" type="primary" :loading="!!deleteStatus" ) 确定
 </template>
 
 <script lang="ts">
@@ -60,6 +73,9 @@ import bus from "@/renderer/utils/EventBus";
 import LoginForm from "../form/LoginForm.vue";
 import AddSubForm from "../form/AddSubForm.vue";
 import UserInfo from "../generic/User.vue";
+import { Subscription } from "@/main/database/entity";
+import { removeSub } from "../../api";
+import trash from "trash";
 
 @Component({
   components: { LoginForm, AddSubForm, UserInfo }
@@ -71,6 +87,11 @@ export default class Toolbar extends Vue {
   logoutConfirmDialog: boolean = false;
   loginDialog: boolean = false;
   addDialog: boolean = false;
+  deleteDialog: boolean = false;
+  deleteWithTrash: boolean = false;
+
+  deleteStatus: any = null;
+  willDeleteSubs: Subscription[] = [];
 
   onStart() {
     bus.$emit("header.start");
@@ -101,6 +122,39 @@ export default class Toolbar extends Vue {
 
   onLogout() {
     bus.$emit("header.logout");
+  }
+
+  mounted() {
+    bus.$on("sub.delete", this.handleSubDelete);
+  }
+
+  handleSubDelete(subs: Subscription[]) {
+    if (subs.length === 0) {
+      this.$message.warning("请先选择要删除的订阅");
+      return;
+    }
+    this.willDeleteSubs = subs;
+    this.deleteDialog = true;
+  }
+
+  async doDelete() {
+    let current = 0;
+    const total = this.willDeleteSubs.length;
+    for (const sub of this.willDeleteSubs) {
+      current++;
+      this.deleteStatus = { current, total };
+      try {
+        await removeSub(sub.id);
+        if (this.deleteWithTrash) {
+          await trash(sub.dir);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    this.deleteStatus = null;
+    this.deleteDialog = false;
+    bus.$emit("sub.deleted", this.willDeleteSubs);
   }
 }
 </script>

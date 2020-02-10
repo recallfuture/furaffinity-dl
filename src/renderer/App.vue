@@ -144,11 +144,13 @@ export default class App extends Vue {
    * 初始化订阅列表
    */
   async initSubs() {
+    this.subs = [];
     const subs = await getSubs();
     for (const sub of subs) {
       sub.status = "";
       this.subs.push(sub);
     }
+    console.log("订阅初始化完成");
   }
 
   /**
@@ -160,7 +162,7 @@ export default class App extends Vue {
     bus.$on("sub.add", this.handleSubAdd);
     bus.$on("sub.start", this.handleSubStart);
     bus.$on("header.stop", this.handleHeaderStop);
-    bus.$on("sub.delete", this.handleSubDelete);
+    bus.$on("sub.deleted", this.handleSubDeleted);
     bus.$on("sub.select", this.handleSubSelect);
     bus.$on("detail.show", this.handleDetailShow);
     bus.$on("detail.hide", this.handleDetailHide);
@@ -266,13 +268,15 @@ export default class App extends Vue {
     await saveSession();
   }
 
-  /**
-   * 删除订阅回调
-   */
-  async handleSubDelete(subs: Subscription[]) {
-    if (subs.length === 0) {
-      this.$message.warning("请先选择要删除的订阅");
+  async handleSubDeleted(subs: Subscription[]) {
+    if (
+      this.detail.sub &&
+      subs.filter(sub => sub.id === this.detail.sub?.id).length > 0
+    ) {
+      this.detail.show = false;
+      this.detail.sub = null;
     }
+    await this.initSubs();
   }
 
   /**
