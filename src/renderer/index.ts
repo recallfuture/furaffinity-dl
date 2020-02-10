@@ -3,7 +3,7 @@ import App from "./App.vue";
 import "./plugins/element";
 import i18n from "./plugins/i18n";
 
-import logger from "@/backup/shared/logger";
+import logger from "@/shared/logger";
 
 Vue.config.productionTip = false;
 Vue.config.errorHandler = error => {

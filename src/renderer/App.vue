@@ -14,6 +14,7 @@
 
     el-footer
       UserInfo( v-if="detail.sub" :sub="detail.sub" )
+      span( v-else ) 未选择订阅
       el-button( v-if="detail.sub && detail.show" type="text" icon="el-icon-arrow-down" @click="handleDetailHide" )
       el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
       
