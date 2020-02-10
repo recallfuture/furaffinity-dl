@@ -8,6 +8,7 @@
 import { Vue, Component } from "vue-property-decorator";
 import { clearCookies, getCookies, faLogin, faUser } from "@/renderer/api";
 import { User } from "@/renderer/interface";
+import logger from "@/shared/logger";
 
 @Component
 export default class LoginForm extends Vue {
@@ -37,7 +38,7 @@ export default class LoginForm extends Vue {
   async checkLogin() {
     let a, b;
     const cookies = await getCookies();
-    console.log(cookies);
+    logger.log(cookies);
 
     cookies.forEach((cookie, index) => {
       if (cookie.name === "a") {
@@ -56,7 +57,7 @@ export default class LoginForm extends Vue {
 
       const { id, name, url, avatar } = ret;
       const user: User = { id, name, url, avatar, a, b };
-      console.log(user);
+      logger.log(user);
 
       this.success = true;
       this.$emit("success", user);

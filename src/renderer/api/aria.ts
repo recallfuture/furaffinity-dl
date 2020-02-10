@@ -246,7 +246,7 @@ export async function removeAllTask() {
     num: Number.parseInt(status.numWaiting),
     keys: ["gid"]
   });
-  console.log("will remove", tasks);
+  logger.log("will remove", tasks);
 
   return await client.multicall(
     tasks.map((task: any) => {

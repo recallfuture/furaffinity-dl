@@ -150,7 +150,7 @@ export default class App extends Vue {
       sub.status = "";
       this.subs.push(sub);
     }
-    console.log("订阅初始化完成");
+    logger.log("订阅初始化完成");
   }
 
   /**
@@ -177,7 +177,7 @@ export default class App extends Vue {
    */
   async initAria() {
     if (!this.ariaConfig) {
-      console.error("Aria init error");
+      logger.error("Aria init error");
       return;
     }
 
@@ -261,7 +261,7 @@ export default class App extends Vue {
    * 停止下载订阅回调
    */
   async handleHeaderStop() {
-    console.log("停止");
+    logger.log("停止");
     this.fetchStop();
     await removeAllTask();
     await purgeTaskRecord();
@@ -292,7 +292,7 @@ export default class App extends Vue {
       await faFetchStart(subs);
     } catch (e) {
       this.$message.error(e.message);
-      console.error(e);
+      logger.error(e);
     }
     this.fetching = false;
   }

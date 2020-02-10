@@ -43,6 +43,7 @@ import { AriaConfig } from "@/main/database";
 import { join, isAbsolute } from "path";
 import { Subscription } from "../../../main/database/entity";
 import bus from "@/renderer/utils/EventBus";
+import logger from "@/shared/logger";
 
 @Component
 export default class AddSingleSubForm extends Vue {
@@ -136,7 +137,7 @@ export default class AddSingleSubForm extends Vue {
         sub.galleryDir = this.galleryPath;
         sub.scrapsDir = this.scrapsPath;
 
-        console.log([sub]);
+        logger.log([sub]);
         bus.$emit("sub.add", [sub]);
 
         this.user = null;

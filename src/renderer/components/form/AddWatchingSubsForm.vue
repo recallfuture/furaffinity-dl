@@ -54,6 +54,7 @@ import { join, isAbsolute } from "path";
 import { Subscription } from "../../../main/database/entity";
 import bus from "@/renderer/utils/EventBus";
 import _ from "lodash";
+import logger from "@/shared/logger";
 
 @Component
 export default class AddWatchingSubsForm extends Vue {
@@ -177,7 +178,7 @@ export default class AddWatchingSubsForm extends Vue {
           })
           .filter(sub => !this.subHash[sub.id]);
 
-        console.log(subs);
+        logger.log(subs);
         bus.$emit("sub.add", subs);
         this.loading = false;
       } else {

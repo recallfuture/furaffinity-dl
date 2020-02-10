@@ -76,6 +76,7 @@ import UserInfo from "../generic/User.vue";
 import { Subscription } from "@/main/database/entity";
 import { removeSub } from "../../api";
 import trash from "trash";
+import logger from "@/shared/logger";
 
 @Component({
   components: { LoginForm, AddSubForm, UserInfo }
@@ -149,7 +150,7 @@ export default class Toolbar extends Vue {
           await trash(sub.dir);
         }
       } catch (e) {
-        console.error(e);
+        logger.error(e);
       }
     }
     this.deleteStatus = null;
