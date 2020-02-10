@@ -19,6 +19,7 @@ function send(route: string, ...args: any) {
 }
 
 class UpdateOnlyError extends Error {}
+class FetchStopError extends Error {}
 
 /**
  * 获取订阅内的作品类
@@ -122,7 +123,7 @@ export class Fetch {
       // 下载的图集
       const types: any = { gallery: sub.gallery, scraps: sub.scraps };
       for (const type in types) {
-        if (!types[type] || !this.fetching) {
+        if (!types[type]) {
           continue;
         }
 
@@ -137,10 +138,15 @@ export class Fetch {
             sub.scrapsUpdateOnly = true;
           }
         } catch (e) {
-          // 仅更新模式跳出循环
           if (e instanceof UpdateOnlyError) {
+            // 仅更新模式跳出循环
             this.addLog(sub, {
               message: `[${type}] ${e.message}`
+            });
+          } else if (e instanceof FetchStopError) {
+            // 用户手动停止
+            this.addLog(sub, {
+              message: `[${type}] 终止获取`
             });
           } else {
             this.addLog(sub, {
@@ -163,7 +169,11 @@ export class Fetch {
    * @param param1 附加参数
    */
   private async mapPages(type: string, { sub }: { sub: Subscription }) {
-    for (let page = 1; this.fetching; page++) {
+    for (let page = 1; ; page++) {
+      if (!this.fetching) {
+        throw new FetchStopError();
+      }
+
       const fun = () =>
         type === "gallery"
           ? Bluebird.resolve(Gallery(sub.id, page))
@@ -175,7 +185,6 @@ export class Fetch {
           message: `[${type}/${page}] 获取失败，1秒后重试`
         });
       };
-      logger.log("result");
       const result: Result[] | null = await this.retry(fun, error);
       if (result === null) {
         throw new Error("获取作品列表失败");
@@ -200,7 +209,11 @@ export class Fetch {
     submissions: Result[],
     { sub, type, page }: { sub: Subscription; type: string; page: number }
   ) {
-    for (let index = 0; index < submissions.length && this.fetching; index++) {
+    for (let index = 0; index < submissions.length; index++) {
+      if (!this.fetching) {
+        throw new FetchStopError();
+      }
+
       // 获取当前作品
       const submission = submissions[index];
 
@@ -245,6 +258,10 @@ export class Fetch {
       const detail: ISubmission | null = await this.retry(fun, error);
       if (detail === null) {
         throw new Error("作品详情获取失败");
+      }
+
+      if (!this.fetching) {
+        throw new FetchStopError();
       }
 
       // 创建新任务并保存

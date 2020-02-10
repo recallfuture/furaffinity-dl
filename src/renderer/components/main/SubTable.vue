@@ -1,6 +1,7 @@
 <template lang="pug">
   el-table(
     :data="subs"
+    :default-sort="{ prop: 'name', order: 'ascending' }"
     height="100%"
     class="sub-table"
     highlight-current-row
