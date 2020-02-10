@@ -6,9 +6,9 @@
 
     el-row( type="flex" class="sub-detail-body" )
       //- Gallery
-      el-col( :span="7" style="display: flex; flex-direction: column;" )
+      el-col( :span="7" style="height: 100%; display: flex; flex-direction: column;" )
         div( class="sub-detail-card" )
-          h2 Gallery
+          h3 Gallery
           div( class="sub-detail-card-body" )
             div
               span {{ $t("task.status.complete") }} {{ galleryCompleteTasks.length }}/{{ galleryTasks.length }}
@@ -17,9 +17,9 @@
               el-progress( text-inside :percentage="galleryActiveTasksPercent" :format="()=>''" )
 
       //- Scraps
-      el-col( :span="7" style="display: flex; flex-direction: column;" )
+      el-col( :span="7" style="height: 100%; display: flex; flex-direction: column;" )
         div( class="sub-detail-card" )
-          h2 Scraps
+          h3 Scraps
           div( class="sub-detail-card-body" )
             div
               span {{ $t("task.status.complete") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
@@ -28,14 +28,14 @@
               el-progress( text-inside :percentage="scrapsActiveTasksPercent" :format="()=>''" )
 
       //- 日志
-      el-col( :span="10" style="display: flex; flex-direction: column;" )
+      el-col( :span="10" style="height: 100%; display: flex; flex-direction: column;" )
         div( class="sub-detail-card" )
-          h2 日志
+          h3 日志
           div( v-if="logs.length === 0" class="sub-detail-card-body" )
             span 暂无日志
           div( v-else class="sub-detail-card-body sub-detail-logs" )
             div(
-              v-for="(log, index) in logs"
+              v-for="(log, index) in reverseLogs"
               :key="index"
               :class="typeToColor(log.type)"
             )
@@ -106,6 +106,10 @@ export default class SubDetail extends Vue {
       return 0;
     }
     return (this.scrapsActiveTasks.length / this.scrapsTasks.length) * 100;
+  }
+
+  get reverseLogs() {
+    return this.logs.reverse();
   }
 
   hideDetail() {
@@ -179,12 +183,7 @@ export default class SubDetail extends Vue {
 
 .sub-detail .sub-detail-card-body {
   height: 100%;
-}
-
-.sub-detail .sub-detail-logs {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: flex-end;
+  overflow-y: auto;
 }
 
 .white--text {
