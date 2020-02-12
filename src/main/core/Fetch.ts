@@ -77,13 +77,16 @@ export class Fetch {
       } catch (e) {
         logger.error(e);
         clearInterval(this.ariaStatusUpdater);
-        // 出错就重新打开aria
-        await ariaController.start();
-        this.init(config);
-        // 继续未完成的任务
-        this.addTasksToAria();
+        // 如果主窗口没有关闭的时候aria崩溃的话
+        // 就重新打开aria
+        if (mainWindow.win) {
+          await ariaController.start();
+          this.init(config);
+          // 继续未完成的任务
+          this.addTasksToAria();
+        }
       }
-    }, 200);
+    }, 500);
   }
 
   async handleDownloadStart(event: any) {
