@@ -1,7 +1,7 @@
 <template lang="pug">
   el-table(
     :data="subs"
-    :default-sort="{ prop: 'name', order: 'ascending' }"
+    :default-sort="{ prop: 'id', order: 'ascending' }"
     height="100%"
     class="sub-table"
     @row-click="handleRowClick"
@@ -25,7 +25,9 @@
       template( slot-scope="{ row }")
         el-avatar( :size="36" :src="row.avatar" )
     //- 用户名
-    el-table-column( prop="name" :label="$t('main.table.username')" sortable )
+    el-table-column( prop="id" :label="$t('main.table.username')" sortable )
+      template( slot-scope="{ row }")
+        span {{ row.name }}
     //- Gallery
     el-table-column( label="Gallery" width="100" align="center" )
       template( slot-scope="{ row }")
