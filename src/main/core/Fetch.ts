@@ -307,6 +307,7 @@ export class Fetch {
           setTimeout(fun, 100);
         }
       };
+      fun();
     });
   }
 
