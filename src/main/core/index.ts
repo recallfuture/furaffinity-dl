@@ -7,7 +7,6 @@ import logger from "@/shared/logger";
 
 process.on("uncaughtException", function(e) {
   logger.error("Process Error", e);
-  process.exit();
 });
 
 export const db: Database = new Database();
