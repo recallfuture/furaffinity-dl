@@ -142,11 +142,7 @@ export default class App extends Vue {
    */
   async initAria() {
     setInterval(async () => {
-      try {
-        this.ariaStatus = await getGlobalStat();
-      } catch (e) {
-        this.$message.error("Aria连接失败");
-      }
+      this.ariaStatus = await getGlobalStat();
     }, 200);
   }
 

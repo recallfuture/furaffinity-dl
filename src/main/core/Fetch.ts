@@ -157,11 +157,16 @@ export class Fetch {
    */
   private async doAddTasks() {
     // 保存任务
-    // TODO: aria崩了之后的添加失败情况
-    this.addTasksToAria(this.addTaskList);
-    this.updateTaskList = [...this.updateTaskList, ...this.addTaskList];
-    this.updateTaskThrottle();
-    this.addTaskList = [];
+    try {
+      await this.addTasksToAria(this.addTaskList);
+      this.updateTaskList = [...this.updateTaskList, ...this.addTaskList];
+      this.updateTaskThrottle();
+      this.addTaskList = [];
+    } catch (e) {
+      // aria崩了之后的添加失败情况
+      // 等能成功添加再清空并保存
+      logger.error(e);
+    }
   }
 
   /**
@@ -284,15 +289,13 @@ export class Fetch {
   async stop() {
     this.fetching = false;
     await aria.removeAllTask();
-    await aria.purgeTaskRecord();
-    await aria.saveSession();
   }
 
   /**
    * 获取aria全局状态
    */
-  async getGlobalStat() {
-    return await aria.getGlobalStat();
+  getGlobalStat() {
+    return this.ariaStatus;
   }
 
   /**
@@ -364,6 +367,9 @@ export class Fetch {
 
       // 等待下载结束
       await this.waitForComplete();
+
+      // 清理记录
+      aria.purgeTaskRecord();
 
       sub.status = "";
       this.updateSubList.push(sub);
