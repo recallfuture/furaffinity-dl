@@ -36,6 +36,10 @@ export function transformSubs(subs: Subscription[]) {
   return subs.map(sub => transformSub(sub));
 }
 
+/**
+ * 转换从渲染进程到主进程的任务数据
+ * @param task 任务
+ */
 export function transformTask(task: Task) {
   const t = new Task();
   for (const key in task) {
@@ -43,6 +47,14 @@ export function transformTask(task: Task) {
     t[key] = task[key];
   }
   return t;
+}
+
+/**
+ * 转换从渲染进程到主进程的任务数据
+ * @param tasks 任务列表
+ */
+export function transformTasks(tasks: Task[]) {
+  return tasks.map(task => transformTask(task));
 }
 
 /**

@@ -3,7 +3,7 @@
 import { app, protocol, Event } from "electron";
 import is from "electron-is";
 import { EventEmitter } from "events";
-import { db, mainWindow, ariaController } from ".";
+import { db, mainWindow, ariaController, fetch } from ".";
 import { registerIpc } from "@/main/ipc";
 
 /**
@@ -97,11 +97,14 @@ export class AppController extends EventEmitter {
   async onReady() {
     await db.create();
     await ariaController.start();
+    await fetch.init(await db.getAriaConfig());
     registerIpc();
+    // require("vue-devtools").install();
     mainWindow.create();
   }
 
   async onBeforeQuit() {
     await ariaController.stop();
+    await fetch.stop();
   }
 }

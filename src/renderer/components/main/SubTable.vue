@@ -4,8 +4,7 @@
     :default-sort="{ prop: 'name', order: 'ascending' }"
     height="100%"
     class="sub-table"
-    highlight-current-row
-    @current-change="handleCurrentChange"
+    @row-click="handleRowClick"
     @selection-change="handleSelectionChange"
   )
     //- 复选框
@@ -24,22 +23,18 @@
     //- 用户头像
     el-table-column( :label="$t('main.table.avatar')" align="center" width="80" )
       template( slot-scope="{ row }")
-        el-avatar( size="medium" :src="row.avatar" )
+        el-avatar( :size="36" :src="row.avatar" )
     //- 用户名
-    el-table-column( prop="name" :label="$t('main.table.username')" width="200" sortable )
+    el-table-column( prop="name" :label="$t('main.table.username')" sortable )
     //- Gallery
     el-table-column( label="Gallery" width="100" align="center" )
       template( slot-scope="{ row }")
         span( v-if="row.gallery" class="gallery-task-num" ) {{ row.galleryTaskNum }}
-          el-tooltip( v-if="row.galleryUpdateOnly" effect="dark" content="仅更新模式开启" placement="top" )
-            i( class="el-icon-time" )
         i( v-else class="el-icon-close" )
     //- Scraps
     el-table-column( label="Scraps" width="100" align="center" )
       template( slot-scope="{ row }")
         span( v-if="row.scraps" class="scraps-task-num" ) {{ row.scrapsTaskNum }}
-          el-tooltip( v-if="row.scrapsUpdateOnly" effect="dark" content="仅更新模式开启" placement="top" )
-            i( class="el-icon-time" )
         i( v-else class="el-icon-close" )
     //- 主页地址
     el-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )
@@ -72,9 +67,9 @@ export default class SubTable extends Vue {
     bus.$on("header.delete", this.handleHeaderDelete);
   }
 
-  handleCurrentChange(val: Subscription) {
-    this.currentRow = val;
-    bus.$emit("sub.select", val);
+  handleRowClick(row: any, event: any, column: any) {
+    this.currentRow = row;
+    bus.$emit("sub.select", row);
   }
 
   handleSelectionChange(val: Subscription[]) {

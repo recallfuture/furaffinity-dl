@@ -78,7 +78,7 @@ export class Database {
 
   /**
    * 获取某个任务
-   * @param id 任务id
+   * @param gid 任务gid
    */
   getTaskByGid(gid: string): Promise<Task | undefined> {
     return getManager().findOne(Task, {
@@ -89,7 +89,6 @@ export class Database {
 
   /**
    * 添加一个任务
-   * @param id 订阅id
    * @param task 任务
    */
   async saveTask(task: Task): Promise<Task> {
@@ -108,9 +107,9 @@ export class Database {
 
   /**
    * 批量添加任务
-   * @param tasks 任务
+   * @param tasks 任务列表
    */
-  async addTasks(tasks: Task[]) {
+  async saveTasks(tasks: Task[]) {
     return await getManager().save(tasks, { chunk: 500 });
   }
 

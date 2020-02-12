@@ -10,9 +10,7 @@ import {
   User
 } from "furaffinity-api";
 import { transformSubs } from "../../shared/utils";
-import { Fetch } from "../core/Fetch";
-
-const fetch = new Fetch();
+import { fetch } from "../core";
 
 async function onFaClearCookies() {
   await session.defaultSession?.cookies.remove(
@@ -47,4 +45,5 @@ export function registerFaIpc() {
 
   ipc.on("fa.fetchStart", (subs: any) => fetch.start(transformSubs(subs)));
   ipc.on("fa.fetchStop", () => fetch.stop());
+  ipc.on("fa.getGlobalStat", () => fetch.getGlobalStat());
 }

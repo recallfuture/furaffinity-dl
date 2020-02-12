@@ -68,7 +68,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { User } from "@/renderer/interface";
+import { User } from "@/shared/interface";
 import bus from "@/renderer/utils/EventBus";
 import LoginForm from "../form/LoginForm.vue";
 import AddSubForm from "../form/AddSubForm.vue";

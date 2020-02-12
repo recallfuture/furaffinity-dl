@@ -1,7 +1,7 @@
 <template lang="pug">
-  el-container( v-if="!loading" class="app" )
+  el-container( class="app" )
     el-header
-      Toolbar( :user="user" :downloading="fetching || downloading" )
+      Toolbar( :user="user" :downloading="fetching" )
 
     el-main
       SubTable()
@@ -27,7 +27,7 @@
 import { Vue, Component, Prop, ProvideReactive } from "vue-property-decorator";
 import { Subscription, Task, Log } from "@/main/database/entity";
 import logger from "@/shared/logger";
-import { User, Detail, AriaStatus } from "./interface";
+import { User, Detail, AriaStatus } from "@/shared/interface";
 import cache from "@/renderer/utils/Cache";
 import {
   faLogin,
@@ -39,21 +39,8 @@ import {
   getSub,
   getTasks,
   getLogs,
-  addUri,
-  saveTask,
-  getGlobalStat,
-  onDownloadStart,
-  onDownloadStop,
-  onDownloadComplete,
-  onDownloadError,
-  onDownloadPause,
-  fetchTaskItem,
   getTaskByGid,
-  initClient,
-  removeAllTask,
-  purgeTaskRecord,
-  saveSession,
-  pauseAllTask
+  getGlobalStat
 } from "./api";
 import bus from "@/renderer/utils/EventBus";
 import { AriaConfig } from "../main/database";
@@ -74,14 +61,8 @@ export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
   @ProvideReactive() ariaConfig: AriaConfig | null = null;
 
-  loading: boolean = true;
   user: User | null = null;
   fetching: boolean = false;
-
-  subUpdateList: string[] = [];
-  taskAddList: Task[] = [];
-  taskUpdateList: Task[] = [];
-  logUpdateList: string[] = [];
 
   ariaStatus: AriaStatus = {
     downloadSpeed: "0",
@@ -99,34 +80,21 @@ export default class App extends Vue {
     logs: []
   };
 
-  // 创建节流函数，最快500毫秒执行一次
-  doSubUpdateThrottle: Function = _.throttle(this.doSubUpdate, 500);
-  doTaskAddThrottle: Function = _.throttle(this.doTaskAdd, 500);
-  doTaskUpdateThrottle: Function = _.throttle(this.doTaskUpdate, 500);
-  doLogUpdateThrottle: Function = _.throttle(this.doLogUpdate, 500);
-
-  get downloading() {
-    return !!(
-      Number.parseInt(this.ariaStatus.numActive) +
-      Number.parseInt(this.ariaStatus.numWaiting)
-    );
-  }
-
   async mounted() {
     try {
       await this.initConfig();
       await this.initUser();
       await this.initSubs();
-      await this.initAria();
+      this.initAria();
       this.initHandle();
     } catch (e) {
       this.$alert(e);
     }
-    this.loading = false;
   }
 
   async initConfig() {
     this.ariaConfig = await getAriaConfig();
+    logger.log("配置初始化完成");
   }
 
   /**
@@ -138,18 +106,14 @@ export default class App extends Vue {
       this.user = user;
       await faLogin(user.a, user.b);
     }
+    logger.log("用户信息初始化完成");
   }
 
   /**
    * 初始化订阅列表
    */
   async initSubs() {
-    this.subs = [];
-    const subs = await getSubs();
-    for (const sub of subs) {
-      sub.status = "";
-      this.subs.push(sub);
-    }
+    this.subs = await getSubs();
     logger.log("订阅初始化完成");
   }
 
@@ -168,29 +132,21 @@ export default class App extends Vue {
     bus.$on("detail.hide", this.handleDetailHide);
 
     ipc.on("sub.update", this.handleIpcSubUpdate as any);
-    ipc.on("task.add", this.handleIpcTaskAdd as any);
-    ipc.on("log.update", this.handleIpcLogUpdate as any);
+    ipc.on("task.update", this.handleIpcTaskUpdate as any);
+    ipc.on("log.add", this.handleIpcLogAdd as any);
+    ipc.on("log.clear", this.handleIpcLogClear as any);
   }
 
   /**
    * 初始化Aria
    */
   async initAria() {
-    if (!this.ariaConfig) {
-      logger.error("Aria init error");
-      return;
-    }
-
-    await initClient(this.ariaConfig);
-
-    onDownloadStart((event: any) => this.handleDownloadStart(event));
-    onDownloadStop((event: any) => this.handleDownloadStop(event));
-    onDownloadComplete((event: any) => this.handleDownloadComplete(event));
-    onDownloadError((event: any) => this.handleDownloadError(event));
-    onDownloadPause((event: any) => this.handleDownloadPause(event));
-
     setInterval(async () => {
-      this.ariaStatus = await getGlobalStat();
+      try {
+        this.ariaStatus = await getGlobalStat();
+      } catch (e) {
+        this.$message.error("Aria连接失败");
+      }
     }, 200);
   }
 
@@ -263,9 +219,6 @@ export default class App extends Vue {
   async handleHeaderStop() {
     logger.log("停止");
     this.fetchStop();
-    await removeAllTask();
-    await purgeTaskRecord();
-    await saveSession();
   }
 
   async handleSubDeleted(subs: Subscription[]) {
@@ -307,49 +260,38 @@ export default class App extends Vue {
   /**
    * 更新订阅回调
    */
-  async handleIpcSubUpdate(id: string) {
-    this.subUpdateList.push(id);
-    this.doSubUpdateThrottle();
+  async handleIpcSubUpdate(subs: Subscription[]) {
+    this.doSubUpdate(subs);
   }
 
   /**
    * 添加任务回调
    */
-  async handleIpcTaskAdd(task: Task) {
-    this.taskAddList.push(task);
-    this.doTaskAddThrottle();
-  }
-
-  /**
-   * 添加任务回调
-   */
-  async handleIpcTaskUpdate(task: Task) {
-    this.taskUpdateList.push(task);
-    this.doTaskUpdateThrottle();
+  async handleIpcTaskUpdate() {
+    if (this.detail.sub) {
+      this.detail.tasks = await getTasks(this.detail.sub?.id);
+    }
   }
 
   /**
    * 日志更新回调
    */
-  async handleIpcLogUpdate(id: string) {
-    this.logUpdateList.push(id);
-    this.doLogUpdateThrottle();
+  async handleIpcLogAdd(logs: Log[]) {
+    this.doLogAdd(logs);
+  }
+
+  /**
+   * 日志更新回调
+   */
+  async handleIpcLogClear(id: string) {
+    this.doLogClear(id);
   }
 
   /**
    * 执行订阅更新
    */
-  async doSubUpdate() {
-    // 去重
-    const list = _.uniq(this.subUpdateList);
-    // 清空等待列表
-    this.subUpdateList = [];
-    for (const id of list) {
-      const sub = await getSub(id);
-      if (!sub) {
-        continue;
-      }
-
+  async doSubUpdate(subs: Subscription[]) {
+    for (const sub of subs) {
       // 遍历订阅并更新
       // TODO: 可以使用hash来提升效率
       for (let index = 0; index < this.subs.length; index++) {
@@ -362,117 +304,23 @@ export default class App extends Vue {
     }
   }
 
-  async doTaskAdd() {
-    // 去重
-    const list = _.uniq(this.taskAddList);
-    this.taskAddList = [];
-    let update = false;
-    for (const task of list) {
-      // 逐个添加订阅
-      task.gid = await addUri({
-        uris: [task.downloadUrl],
-        options: {
-          dir:
-            task.type === "gallery"
-              ? task.sub?.galleryDir ?? ""
-              : task.sub?.scrapsDir ?? ""
-        }
-      });
-      await saveTask(task);
-      this.handleIpcTaskUpdate(task);
-    }
-  }
-
-  async doTaskUpdate() {
-    // 去重
-    const list = _.uniq(this.taskUpdateList);
-    // 清空等待列表
-    this.taskUpdateList = [];
-
-    if (!this.detail.sub) {
-      return;
-    }
-
-    for (const task of list) {
-      if (!task.sub) {
-        continue;
-      }
-
-      if (this.detail.sub.id === task.sub.id) {
-        this.detail.tasks = await getTasks(task.sub.id);
-        break;
+  /**
+   * 执行日志添加
+   */
+  async doLogAdd(logs: Log[]) {
+    for (const log of logs) {
+      if (this.detail.sub && this.detail.sub.id === log.sub?.id) {
+        this.detail.logs.push(log);
       }
     }
   }
 
-  async doLogUpdate() {
-    // 去重
-    const list = _.uniq(this.logUpdateList);
-    // 清空等待列表
-    this.logUpdateList = [];
-
-    if (!this.detail.sub) {
-      return;
-    }
-
-    for (const id of list) {
-      if (this.detail.sub.id === id) {
-        this.detail.logs = await getLogs(id);
-        break;
-      }
-    }
-  }
-
-  async handleDownloadStart(event: any) {
-    const [{ gid }] = event;
-    await this.refreshTask(gid);
-    logger.log("任务开始", gid);
-  }
-
-  async handleDownloadComplete(event: any) {
-    const [{ gid }] = event;
-    await this.refreshTask(gid);
-    logger.log("任务完成", gid);
-  }
-
-  async handleDownloadPause(event: any) {
-    const [{ gid }] = event;
-    await this.refreshTask(gid);
-    logger.log("任务暂停", gid);
-  }
-
-  async handleDownloadStop(event: any) {
-    const [{ gid }] = event;
-    await this.refreshTask(gid);
-    logger.log("任务停止", gid);
-  }
-
-  async handleDownloadError(event: any) {
-    const [{ gid }] = event;
-    await this.refreshTask(gid);
-    logger.log("任务失败", gid);
-  }
-
-  // 更新任务信息
-  async refreshTask(gid: string) {
-    // 获取任务信息
-    const item = await fetchTaskItem({ gid });
-    const task = await getTaskByGid(gid);
-    if (task) {
-      // 覆盖任务状态
-      task.status = item.status;
-      // 覆盖文件位置
-      // 任务完成后可以或得到文件位置
-      if (item.status === "complete") {
-        task.path = item.files[0].path;
-        logger.log("文件下载到", item.files[0].path);
-      }
-      // 保存到数据库
-      await saveTask(task);
-      // 更新界面
-      if (this.detail.sub && this.detail.sub.id === task.sub?.id) {
-        this.handleIpcTaskUpdate(task);
-      }
+  /**
+   * 执行日志清空
+   */
+  async doLogClear(id: string) {
+    if (this.detail.sub && this.detail.sub.id === id) {
+      this.detail.logs = [];
     }
   }
 }

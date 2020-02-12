@@ -6,7 +6,7 @@ import {
   getGlobalStat,
   fetchTaskList,
   fetchTaskItem
-} from "../../src/renderer/api";
+} from "../../src/shared/aria";
 import * as db from "../../src/main/database";
 
 describe("renderer/api", () => {

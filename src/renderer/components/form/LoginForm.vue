@@ -7,7 +7,7 @@
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import { clearCookies, getCookies, faLogin, faUser } from "@/renderer/api";
-import { User } from "@/renderer/interface";
+import { User } from "@/shared/interface";
 import logger from "@/shared/logger";
 
 @Component

@@ -5,11 +5,12 @@ import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 Menu.setApplicationMenu(null);
 
 // 窗口创建参数
-const options = {
+const options: Electron.BrowserWindowConstructorOptions = {
   width: 1024,
   height: 768,
   minWidth: 800,
   minHeight: 600,
+  show: false,
   backgroundColor: "#222",
   webPreferences: {
     nodeIntegration: true
@@ -24,13 +25,18 @@ export class MainWindow {
 
   create() {
     this.win = new BrowserWindow(options);
-    this.win.maximize();
+    this.win.on("close", () => this.close());
+    this.win.once("ready-to-show", () => this.readyToShow());
     this.load();
-    this.win.on("close", this.close);
   }
 
   close() {
     this.win = null;
+  }
+
+  readyToShow() {
+    this.win?.show();
+    this.win?.maximize();
   }
 
   load() {

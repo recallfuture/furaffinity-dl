@@ -62,19 +62,14 @@ export async function removeSub(id: string) {
   return await ipc.send("db.removeSub", id);
 }
 
-export async function addTask(task: Task) {
-  // @ts-ignore
-  return await ipc.send("db.addTask", task);
-}
-
 export async function saveTask(task: Task) {
   // @ts-ignore
   return await ipc.send("db.saveTask", task);
 }
 
-export async function addTaks(tasks: Task[]) {
+export async function saveTasks(tasks: Task[]) {
   // @ts-ignore
-  return await ipc.send("db.addTasks", tasks);
+  return await ipc.send("db.saveTasks", tasks);
 }
 
 export async function addLog(log: Log) {

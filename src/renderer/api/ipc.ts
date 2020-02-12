@@ -98,6 +98,14 @@ export async function faFetchStop() {
 }
 
 /**
+ * 获取aria全局状态
+ */
+export async function getGlobalStat() {
+  // @ts-ignore
+  return await ipc.send("fa.getGlobalStat");
+}
+
+/**
  * 打开对话框选择文件夹
  */
 export async function openFolderDialog(): Promise<string[] | undefined> {

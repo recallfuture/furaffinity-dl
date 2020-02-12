@@ -8,13 +8,18 @@ import { Gallery, Result, Scraps, Submission } from "furaffinity-api";
 import { Submission as ISubmission } from "furaffinity-api/dist/interfaces";
 import { Log, Subscription, Task } from "../database/entity";
 import { db } from "./";
-import { mainWindow } from "./index";
+import { mainWindow, ariaController } from "./index";
+import _ from "lodash";
+import * as aria from "@/shared/aria";
+import { AriaConfig } from "../database/service/config";
+import { AriaStatus } from "@/shared/interface";
 
 const existsAsync = promisify(fs.exists);
 
+// 优化重点，减少使用次数
 function send(route: string, ...args: any) {
   if (mainWindow.win) {
-    ipc.send(route, mainWindow.win.webContents, ...args);
+    return ipc.send(route, mainWindow.win.webContents, ...args);
   }
 }
 
@@ -27,6 +32,226 @@ class FetchStopError extends Error {}
 export class Fetch {
   private fetching: boolean = false;
   private maxRetry: number = 3;
+
+  private updateSubList: Subscription[] = [];
+  private addTaskList: Task[] = [];
+  private updateTaskList: Task[] = [];
+  private addLogList: Log[] = [];
+
+  private updateSubThrottle: Function = _.throttle(this.doUpdateSubs, 1000);
+  private addTaskThrottle: Function = _.throttle(this.doAddTasks, 1000);
+  private updateTaskThrottle: Function = _.throttle(this.doUpdateTasks, 1000);
+  private addLogThrottle: Function = _.throttle(this.doUpdateLogs, 1000);
+
+  taskHash: { [propName: string]: Task } = {};
+
+  ariaStatus: AriaStatus = {
+    downloadSpeed: "0",
+    numActive: "0",
+    numStopped: "0",
+    numStoppedTotal: "0",
+    numWaiting: "0",
+    uploadSpeed: "0"
+  };
+
+  ariaStatusUpdater: any = null;
+
+  get downloading() {
+    return !!(
+      Number.parseInt(this.ariaStatus.numActive) +
+      Number.parseInt(this.ariaStatus.numWaiting)
+    );
+  }
+
+  async init(config: AriaConfig) {
+    await aria.initClient(config);
+
+    aria.onDownloadStart((event: any) => this.handleDownloadStart(event));
+    aria.onDownloadStop((event: any) => this.handleDownloadStop(event));
+    aria.onDownloadComplete((event: any) => this.handleDownloadComplete(event));
+    aria.onDownloadError((event: any) => this.handleDownloadError(event));
+    aria.onDownloadPause((event: any) => this.handleDownloadPause(event));
+
+    this.ariaStatusUpdater = setInterval(async () => {
+      try {
+        this.ariaStatus = await aria.getGlobalStat();
+      } catch (e) {
+        logger.error(e);
+        clearInterval(this.ariaStatusUpdater);
+        // 出错就重新打开aria
+        await ariaController.start();
+        this.init(config);
+      }
+    }, 200);
+  }
+
+  async handleDownloadStart(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid, "active");
+    logger.log("任务开始", gid);
+  }
+
+  async handleDownloadComplete(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid, "complete");
+    logger.log("任务完成", gid);
+  }
+
+  async handleDownloadPause(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid, "paused");
+    logger.log("任务暂停", gid);
+  }
+
+  async handleDownloadStop(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid, "stopped");
+    logger.log("任务停止", gid);
+  }
+
+  async handleDownloadError(event: any) {
+    const [{ gid }] = event;
+    await this.refreshTask(gid, "error");
+    logger.log("任务失败", gid);
+  }
+
+  /**
+   * 更新任务信息
+   * @param gid 任务gid
+   * @param status 任务状态
+   */
+  async refreshTask(gid: string, status: string) {
+    // 获取任务信息
+    const task = this.taskHash[gid];
+    if (task) {
+      // 覆盖任务状态
+      task.status = status;
+      // 覆盖文件位置
+      // 任务完成后可以或得到文件位置
+      if (status === "complete") {
+        const item = await aria.fetchTaskItem({ gid });
+        task.path = item.files[0].path;
+        logger.log("文件下载到", item.files[0].path);
+      }
+      // 任务结束后删除引用
+      if (status !== "active") {
+        delete this.taskHash[gid];
+      }
+      // 保存到数据库
+      this.updateTaskList.push(task);
+      this.updateTaskThrottle();
+    }
+  }
+
+  /**
+   * 批量更新任务
+   */
+  private doUpdateSubs() {
+    db.saveSubs(this.updateSubList);
+    send("sub.update", this.updateSubList);
+    this.updateSubList = [];
+  }
+
+  /**
+   * 批量添加任务
+   */
+  private async doAddTasks() {
+    // 保存任务
+    // TODO: aria崩了之后的添加失败情况
+    this.addTasksToAria(this.addTaskList);
+    this.updateTaskList = [...this.updateTaskList, ...this.addTaskList];
+    this.updateTaskThrottle();
+    this.addTaskList = [];
+  }
+
+  /**
+   * 批量更新任务
+   */
+  private async doUpdateTasks() {
+    db.saveTasks(this.updateTaskList);
+    this.updateTaskList = [];
+    send("task.update");
+  }
+
+  /**
+   * 批量更新日志
+   */
+  private doUpdateLogs() {
+    db.addLogs(this.addLogList);
+    send("log.add", this.addLogList);
+    this.addLogList = [];
+  }
+
+  /**
+   * 将任务列表内的任务添加进aria
+   * @param tasks 任务列表
+   */
+  private async addTasksToAria(tasks: Task[]) {
+    // 逐个添加进aria
+    for (const task of tasks) {
+      // 保存gid
+      task.gid = await aria.addUri({
+        uris: [task.downloadUrl],
+        options: {
+          dir:
+            task.type === "gallery"
+              ? task.sub?.galleryDir ?? ""
+              : task.sub?.scrapsDir ?? ""
+        }
+      });
+      // 添加缓存
+      this.taskHash[task.gid] = task;
+    }
+    return tasks;
+  }
+
+  /**
+   * 添加任务日志
+   * @param sub 订阅
+   * @param param1 参数
+   */
+  private async addLog(sub: Subscription, { type = "info", message = "" }) {
+    const log = new Log();
+    log.type = type;
+    log.message = message;
+    log.createAt = new Date().getTime();
+    log.sub = sub;
+
+    this.addLogList.push(log);
+    this.addLogThrottle();
+  }
+
+  /**
+   * 清空某订阅的日志
+   * @param id 订阅id
+   */
+  private clearLogs(id: string) {
+    db.clearLogs(id);
+    send("log.clear", id);
+  }
+
+  /**
+   * 反复重试并返回结果
+   * @param fun 要执行的函数
+   * @param error 错误时执行的函数
+   * @param times 重试次数
+   */
+  private async retry(
+    fun: Function,
+    error: Function,
+    times: number = this.maxRetry
+  ): Promise<any> {
+    if (times-- <= 0) {
+      return null;
+    }
+    const result = await fun();
+    if (result === null) {
+      error();
+      await sleep(1000);
+      return this.retry(fun, error, times);
+    }
+    return result;
+  }
 
   /**
    * 开始
@@ -56,56 +281,33 @@ export class Fetch {
   /**
    * 停止
    */
-  stop() {
+  async stop() {
     this.fetching = false;
+    await aria.removeAllTask();
+    await aria.purgeTaskRecord();
+    await aria.saveSession();
   }
 
   /**
-   * 添加任务日志
-   * @param sub 订阅
-   * @param param1 参数
+   * 获取aria全局状态
    */
-  private async addLog(sub: Subscription, { type = "info", message = "" }) {
-    const log = new Log();
-    log.type = type;
-    log.message = message;
-    log.createAt = new Date().getTime();
-    log.sub = sub;
-
-    await db.addLog(log);
-    send("log.update", sub.id);
+  async getGlobalStat() {
+    return await aria.getGlobalStat();
   }
 
   /**
-   * 清空某订阅的日志
-   * @param id 订阅id
+   * 等待下载完成
    */
-  private async clearLogs(id: string) {
-    await db.clearLogs(id);
-    send("log.update", id);
-  }
-
-  /**
-   * 反复重试并返回结果
-   * @param fun 要执行的函数
-   * @param error 错误时执行的函数
-   * @param times 重试次数
-   */
-  private async retry(
-    fun: Function,
-    error: Function,
-    times: number = this.maxRetry
-  ): Promise<any> {
-    if (times-- <= 0) {
-      return null;
-    }
-    const result = await fun();
-    if (result === null) {
-      error();
-      await sleep(1000);
-      return this.retry(fun, error, times);
-    }
-    return result;
+  async waitForComplete() {
+    return new Bluebird((resolve, reject) => {
+      const fun = () => {
+        if (!this.downloading || !this.fetching) {
+          resolve();
+        } else {
+          setTimeout(fun, 100);
+        }
+      };
+    });
   }
 
   /**
@@ -116,9 +318,9 @@ export class Fetch {
     // 获取当前订阅
     for (const sub of subs) {
       sub.status = "active";
-      await db.saveSub(sub);
-      send("sub.update", sub.id);
-      await this.clearLogs(sub.id);
+      this.updateSubList.push(sub);
+      this.updateSubThrottle();
+      this.clearLogs(sub.id);
 
       // 下载的图集
       const types: any = { gallery: sub.gallery, scraps: sub.scraps };
@@ -148,6 +350,7 @@ export class Fetch {
             this.addLog(sub, {
               message: `[${type}] 终止获取`
             });
+            break;
           } else {
             this.addLog(sub, {
               type: "error",
@@ -157,9 +360,13 @@ export class Fetch {
           }
         }
       }
+
+      // 等待下载结束
+      await this.waitForComplete();
+
       sub.status = "";
-      await db.saveSub(sub);
-      send("sub.update", sub.id);
+      this.updateSubList.push(sub);
+      this.updateSubThrottle();
     }
   }
 
@@ -192,7 +399,7 @@ export class Fetch {
 
       if (result.length === 0) {
         this.addLog(sub, { message: `[${type}] 获取结束` });
-        logger.log("页数到头了", sub, type, page);
+        logger.log("页数到头了", sub.id, type, page);
         break;
       }
 
@@ -225,12 +432,12 @@ export class Fetch {
         task.path &&
         (await existsAsync(task.path))
       ) {
-        logger.log("跳过作品", sub.id, type, page, index + 1, task);
-        const updateOnly =
-          type === "gallery" ? sub.galleryUpdateOnly : sub.scrapsUpdateOnly;
-        if (updateOnly) {
-          throw new UpdateOnlyError("仅更新模式下快速跳过");
-        }
+        logger.log("跳过作品", sub.id, type, page, index + 1);
+        // const updateOnly =
+        //   type === "gallery" ? sub.galleryUpdateOnly : sub.scrapsUpdateOnly;
+        // if (updateOnly) {
+        //   throw new UpdateOnlyError("仅更新模式下快速跳过");
+        // }
         continue;
       }
 
@@ -238,11 +445,12 @@ export class Fetch {
         task.gid = "";
         task.path = "";
         task.type = type;
+        task.status = "";
         task.sub = sub;
 
-        await db.saveTask(task);
-        send("task.add", task);
-        logger.log("作品详情", sub.id, type, page, index + 1, task);
+        this.addTaskList.push(task);
+        this.addTaskThrottle();
+        logger.log("作品详情", sub.id, type, page, index + 1);
         continue;
       }
 
@@ -273,9 +481,9 @@ export class Fetch {
       t.sub = sub;
       t.type = type;
 
-      await db.saveTask(t);
-      send("task.add", t);
-      logger.log("作品详情", sub.id, type, page, index + 1, t);
+      this.addTaskList.push(t);
+      this.addTaskThrottle();
+      logger.log("作品详情", sub.id, type, page, index + 1);
 
       // 更新数量
       if (type === "gallery") {
@@ -283,8 +491,8 @@ export class Fetch {
       } else {
         sub.scrapsTaskNum++;
       }
-      await db.saveSub(sub);
-      send("sub.update", sub.id);
+      this.updateSubList.push(sub);
+      this.updateSubThrottle();
     }
   }
 }

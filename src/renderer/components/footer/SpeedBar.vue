@@ -11,7 +11,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { Subscription } from "@/main/database/entity";
-import { AriaStatus } from "../../interface";
+import { AriaStatus } from "@/shared/interface";
 
 @Component
 export default class SpeedBar extends Vue {

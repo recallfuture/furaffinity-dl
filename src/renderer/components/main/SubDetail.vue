@@ -11,9 +11,9 @@
           h3 Gallery
           div( class="sub-detail-card-body" )
             div
-              span {{ $t("task.status.complete") }} {{ galleryCompleteTasks.length }}/{{ galleryTasks.length }}
+              span {{ $t("task.status.complete") }} {{ galleryCompleteTasks }}/{{ galleryTasks }}
               el-progress( text-inside :percentage="galleryCompleteTasksPercent" :format="()=>''" )
-            div {{ $t("task.status.active") }} {{ galleryActiveTasks.length }}/{{ galleryTasks.length }}
+            div {{ $t("task.status.active") }} {{ galleryActiveTasks }}/{{ galleryTasks }}
               el-progress( text-inside :percentage="galleryActiveTasksPercent" :format="()=>''" )
 
       //- Scraps
@@ -22,9 +22,9 @@
           h3 Scraps
           div( class="sub-detail-card-body" )
             div
-              span {{ $t("task.status.complete") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
+              span {{ $t("task.status.complete") }} {{ scrapsCompleteTasks }}/{{ scrapsTasks }}
               el-progress( text-inside :percentage="scrapsCompleteTasksPercent" :format="()=>''" )
-            div {{ $t("task.status.active") }} {{ scrapsCompleteTasks.length }}/{{ scrapsTasks.length }}
+            div {{ $t("task.status.active") }} {{ scrapsActiveTasks }}/{{ scrapsTasks }}
               el-progress( text-inside :percentage="scrapsActiveTasksPercent" :format="()=>''" )
 
       //- 日志
@@ -56,56 +56,72 @@ export default class SubDetail extends Vue {
   @Prop(Array) tasks!: Task[];
   @Prop(Array) logs!: Log[];
 
+  get taskHash() {
+    const hash: { [propName: string]: number } = {};
+    for (const task of this.tasks) {
+      // 缓存类型
+      const typeKey = task.type;
+      if (!hash[typeKey]) hash[typeKey] = 0;
+      hash[typeKey]++;
+
+      // 缓存类型-状态
+      const typeStatusKey = `${task.type}-${task.status}`;
+      if (!hash[typeStatusKey]) hash[typeStatusKey] = 0;
+      hash[typeStatusKey]++;
+    }
+    return hash;
+  }
+
   get galleryTasks() {
-    return this.tasks.filter(task => task.type === "gallery");
+    return this.taskHash["gallery"] ?? 0;
   }
 
   get scrapsTasks() {
-    return this.tasks.filter(task => task.type === "scraps");
+    return this.taskHash["scraps"] ?? 0;
   }
 
   get galleryCompleteTasks() {
-    return this.galleryTasks.filter(task => task.status === "complete");
+    return this.taskHash["gallery-complete"] ?? 0;
   }
 
   get galleryCompleteTasksPercent() {
-    if (this.galleryTasks.length === 0) {
+    if (this.galleryTasks === 0) {
       return 0;
     }
-    return (this.galleryCompleteTasks.length / this.galleryTasks.length) * 100;
+    return (this.galleryCompleteTasks / this.galleryTasks) * 100;
   }
 
   get galleryActiveTasks() {
-    return this.galleryTasks.filter(task => task.status === "active");
+    return this.taskHash["gallery-active"] ?? 0;
   }
 
   get galleryActiveTasksPercent() {
-    if (this.galleryTasks.length === 0) {
+    if (this.galleryTasks === 0) {
       return 0;
     }
-    return (this.galleryActiveTasks.length / this.galleryTasks.length) * 100;
+    return (this.galleryActiveTasks / this.galleryTasks) * 100;
   }
 
   get scrapsCompleteTasks() {
-    return this.scrapsTasks.filter(task => task.status === "complete");
+    return this.taskHash["scraps-complete"] ?? 0;
   }
 
   get scrapsCompleteTasksPercent() {
-    if (this.scrapsTasks.length === 0) {
+    if (this.scrapsTasks === 0) {
       return 0;
     }
-    return (this.scrapsCompleteTasks.length / this.scrapsTasks.length) * 100;
+    return (this.scrapsCompleteTasks / this.scrapsTasks) * 100;
   }
 
   get scrapsActiveTasks() {
-    return this.scrapsTasks.filter(task => task.status === "active");
+    return this.taskHash["scraps-active"] ?? 0;
   }
 
   get scrapsActiveTasksPercent() {
-    if (this.scrapsTasks.length === 0) {
+    if (this.scrapsTasks === 0) {
       return 0;
     }
-    return (this.scrapsActiveTasks.length / this.scrapsTasks.length) * 100;
+    return (this.scrapsActiveTasks / this.scrapsTasks) * 100;
   }
 
   get reverseLogs() {
