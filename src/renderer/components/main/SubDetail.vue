@@ -11,9 +11,9 @@
           h3 Gallery
           div( class="sub-detail-card-body" )
             div
-              span {{ $t("task.status.complete") }} {{ galleryCompleteTasks }}/{{ galleryTasks }}
+              span {{ $t("task.status.complete") }} {{ tasks.galleryComplete }}/{{ tasks.gallery }}
               el-progress( text-inside :percentage="galleryCompleteTasksPercent" :format="()=>''" )
-            div {{ $t("task.status.active") }} {{ galleryActiveTasks }}/{{ galleryTasks }}
+            div {{ $t("task.status.active") }} {{ tasks.galleryActive }}/{{ tasks.gallery }}
               el-progress( text-inside :percentage="galleryActiveTasksPercent" :format="()=>''" )
 
       //- Scraps
@@ -22,9 +22,9 @@
           h3 Scraps
           div( class="sub-detail-card-body" )
             div
-              span {{ $t("task.status.complete") }} {{ scrapsCompleteTasks }}/{{ scrapsTasks }}
+              span {{ $t("task.status.complete") }} {{ tasks.scrapsComplete }}/{{ tasks.scraps }}
               el-progress( text-inside :percentage="scrapsCompleteTasksPercent" :format="()=>''" )
-            div {{ $t("task.status.active") }} {{ scrapsActiveTasks }}/{{ scrapsTasks }}
+            div {{ $t("task.status.active") }} {{ tasks.scrapsActive }}/{{ tasks.scraps }}
               el-progress( text-inside :percentage="scrapsActiveTasksPercent" :format="()=>''" )
 
       //- 日志
@@ -47,81 +47,42 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 import { Subscription, Task, Log } from "@/main/database/entity";
 import bus from "@/renderer/utils/EventBus";
 import User from "../generic/User.vue";
+import { TasksStatus } from "@/shared/interface";
 
 @Component({
   components: { User }
 })
 export default class SubDetail extends Vue {
   @Prop(Object) sub!: Subscription;
-  @Prop(Array) tasks!: Task[];
+  @Prop(Object) tasks!: TasksStatus;
   @Prop(Array) logs!: Log[];
 
-  get taskHash() {
-    const hash: { [propName: string]: number } = {};
-    for (const task of this.tasks) {
-      // 缓存类型
-      const typeKey = task.type;
-      if (!hash[typeKey]) hash[typeKey] = 0;
-      hash[typeKey]++;
-
-      // 缓存类型-状态
-      const typeStatusKey = `${task.type}-${task.status}`;
-      if (!hash[typeStatusKey]) hash[typeStatusKey] = 0;
-      hash[typeStatusKey]++;
-    }
-    return hash;
-  }
-
-  get galleryTasks() {
-    return this.taskHash["gallery"] ?? 0;
-  }
-
-  get scrapsTasks() {
-    return this.taskHash["scraps"] ?? 0;
-  }
-
-  get galleryCompleteTasks() {
-    return this.taskHash["gallery-complete"] ?? 0;
-  }
-
   get galleryCompleteTasksPercent() {
-    if (this.galleryTasks === 0) {
+    if (this.tasks.gallery === 0) {
       return 0;
     }
-    return (this.galleryCompleteTasks / this.galleryTasks) * 100;
-  }
-
-  get galleryActiveTasks() {
-    return this.taskHash["gallery-active"] ?? 0;
+    return (this.tasks.galleryComplete / this.tasks.gallery) * 100;
   }
 
   get galleryActiveTasksPercent() {
-    if (this.galleryTasks === 0) {
+    if (this.tasks.gallery === 0) {
       return 0;
     }
-    return (this.galleryActiveTasks / this.galleryTasks) * 100;
-  }
-
-  get scrapsCompleteTasks() {
-    return this.taskHash["scraps-complete"] ?? 0;
+    return (this.tasks.galleryActive / this.tasks.gallery) * 100;
   }
 
   get scrapsCompleteTasksPercent() {
-    if (this.scrapsTasks === 0) {
+    if (this.tasks.scraps === 0) {
       return 0;
     }
-    return (this.scrapsCompleteTasks / this.scrapsTasks) * 100;
-  }
-
-  get scrapsActiveTasks() {
-    return this.taskHash["scraps-active"] ?? 0;
+    return (this.tasks.scrapsComplete / this.tasks.scraps) * 100;
   }
 
   get scrapsActiveTasksPercent() {
-    if (this.scrapsTasks === 0) {
+    if (this.tasks.scraps === 0) {
       return 0;
     }
-    return (this.scrapsActiveTasks / this.scrapsTasks) * 100;
+    return (this.tasks.scrapsActive / this.tasks.scraps) * 100;
   }
 
   get reverseLogs() {

@@ -1,6 +1,7 @@
 import ipc from "electron-promise-ipc";
 import { Task, Subscription, Log } from "@/main/database/entity";
 import { AriaConfig } from "@/main/database/service/config";
+import { TasksStatus } from "@/shared/interface";
 
 export async function getAriaConfig(): Promise<AriaConfig> {
   // @ts-ignore
@@ -22,19 +23,9 @@ export async function getSubs(): Promise<Subscription[]> {
   return await ipc.send("db.getSubs");
 }
 
-export async function getTask(id: string): Promise<Task | undefined> {
+export async function getTasksStatus(id: string): Promise<TasksStatus> {
   // @ts-ignore
-  return await ipc.send("db.getTask", id);
-}
-
-export async function getTaskByGid(gid: string): Promise<Task | undefined> {
-  // @ts-ignore
-  return await ipc.send("db.getTaskByGid", gid);
-}
-
-export async function getTasks(id: string): Promise<Task[]> {
-  // @ts-ignore
-  return await ipc.send("db.getTasks", id);
+  return await ipc.send("db.getTasksStatus", id);
 }
 
 export async function getLogs(id: string): Promise<Log[]> {
@@ -60,26 +51,6 @@ export async function saveSub(sub: Subscription) {
 export async function removeSub(id: string) {
   // @ts-ignore
   return await ipc.send("db.removeSub", id);
-}
-
-export async function saveTask(task: Task) {
-  // @ts-ignore
-  return await ipc.send("db.saveTask", task);
-}
-
-export async function saveTasks(tasks: Task[]) {
-  // @ts-ignore
-  return await ipc.send("db.saveTasks", tasks);
-}
-
-export async function addLog(log: Log) {
-  // @ts-ignore
-  return await ipc.send("db.addLog", log);
-}
-
-export async function addLogs(logs: Log[]) {
-  // @ts-ignore
-  return await ipc.send("db.addLogs", logs);
 }
 
 export async function clearLogs(id: string) {

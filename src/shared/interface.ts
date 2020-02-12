@@ -6,10 +6,19 @@ export interface User extends Author {
   b: string;
 }
 
+export interface TasksStatus {
+  gallery: number;
+  galleryComplete: number;
+  galleryActive: number;
+  scraps: number;
+  scrapsComplete: number;
+  scrapsActive: number;
+}
+
 export interface Detail {
   show: boolean;
   sub: Subscription | null;
-  tasks: Task[];
+  tasksStatus: TasksStatus;
   logs: Log[];
 }
 

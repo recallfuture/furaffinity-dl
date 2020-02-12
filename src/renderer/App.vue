@@ -8,7 +8,7 @@
       SubDetail(
         v-show="detail.show"
         :sub="detail.sub"
-        :tasks="detail.tasks"
+        :tasks="detail.tasksStatus"
         :logs="detail.logs"
       )
 
@@ -37,9 +37,8 @@ import {
   faFetchStart,
   faFetchStop,
   getSub,
-  getTasks,
   getLogs,
-  getTaskByGid,
+  getTasksStatus,
   getGlobalStat
 } from "./api";
 import bus from "@/renderer/utils/EventBus";
@@ -76,7 +75,14 @@ export default class App extends Vue {
   detail: Detail = {
     show: false,
     sub: null,
-    tasks: [],
+    tasksStatus: {
+      gallery: 0,
+      galleryComplete: 0,
+      galleryActive: 0,
+      scraps: 0,
+      scrapsComplete: 0,
+      scrapsActive: 0
+    },
     logs: []
   };
 
@@ -196,7 +202,7 @@ export default class App extends Vue {
     }
 
     this.detail.sub = sub;
-    this.detail.tasks = await getTasks(sub.id);
+    this.detail.tasksStatus = await getTasksStatus(sub.id);
     this.detail.logs = await getLogs(sub.id);
     this.detail.show = true;
   }
@@ -265,7 +271,7 @@ export default class App extends Vue {
    */
   async handleIpcTaskUpdate() {
     if (this.detail.sub) {
-      this.detail.tasks = await getTasks(this.detail.sub?.id);
+      this.detail.tasksStatus = await getTasksStatus(this.detail.sub.id);
     }
   }
 

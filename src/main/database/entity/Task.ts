@@ -6,6 +6,15 @@ export enum TaskType {
   Scraps = "scraps"
 }
 
+export enum TaskStatus {
+  Active = "active",
+  Complete = "complete",
+  Stopped = "stopped",
+  Error = "error",
+  Waiting = "waiting",
+  Paused = "paused"
+}
+
 @Entity()
 export class Task {
   @PrimaryColumn("varchar")

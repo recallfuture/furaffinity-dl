@@ -3,6 +3,7 @@ import { createConnection, getManager, getConnection } from "typeorm";
 import { Log, Subscription, Task } from "../entity";
 import * as Config from "./config";
 import { AriaConfig } from "./config";
+import { TaskType } from "../entity/Task";
 
 export { AriaConfig };
 
@@ -93,6 +94,22 @@ export class Database {
    */
   async saveTask(task: Task): Promise<Task> {
     return await getManager().save(task);
+  }
+
+  /**
+   * 获取一个订阅的作品数量
+   * @param id 订阅id
+   */
+  async getTaskNum(id: string, type: TaskType, status?: string) {
+    if (typeof status === "undefined") {
+      return await getManager().count(Task, {
+        where: { sub: id, type }
+      });
+    } else {
+      return await getManager().count(Task, {
+        where: { sub: id, type, status }
+      });
+    }
   }
 
   /**

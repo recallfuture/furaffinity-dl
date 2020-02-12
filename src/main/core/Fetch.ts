@@ -6,7 +6,7 @@ import fs from "fs";
 import { promisify } from "util";
 import { Gallery, Result, Scraps, Submission } from "furaffinity-api";
 import { Submission as ISubmission } from "furaffinity-api/dist/interfaces";
-import { Log, Subscription, Task } from "../database/entity";
+import { Log, Subscription, Task, TaskType } from "../database/entity";
 import { db } from "./";
 import { mainWindow, ariaController } from "./index";
 import _ from "lodash";
@@ -39,7 +39,6 @@ export class Fetch {
   private addLogList: Log[] = [];
 
   private updateSubThrottle: Function = _.throttle(this.doUpdateSubs, 1000);
-  private addTaskThrottle: Function = _.throttle(this.doAddTasks, 1000);
   private updateTaskThrottle: Function = _.throttle(this.doUpdateTasks, 1000);
   private addLogThrottle: Function = _.throttle(this.doUpdateLogs, 1000);
 
@@ -81,6 +80,8 @@ export class Fetch {
         // 出错就重新打开aria
         await ariaController.start();
         this.init(config);
+        // 继续未完成的任务
+        this.addTasksToAria();
       }
     }, 200);
   }
@@ -153,23 +154,6 @@ export class Fetch {
   }
 
   /**
-   * 批量添加任务
-   */
-  private async doAddTasks() {
-    // 保存任务
-    try {
-      await this.addTasksToAria(this.addTaskList);
-      this.updateTaskList = [...this.updateTaskList, ...this.addTaskList];
-      this.updateTaskThrottle();
-      this.addTaskList = [];
-    } catch (e) {
-      // aria崩了之后的添加失败情况
-      // 等能成功添加再清空并保存
-      logger.error(e);
-    }
-  }
-
-  /**
    * 批量更新任务
    */
   private async doUpdateTasks() {
@@ -188,26 +172,29 @@ export class Fetch {
   }
 
   /**
-   * 将任务列表内的任务添加进aria
-   * @param tasks 任务列表
+   * 将任务添加进aria
+   * @param task 任务
    */
-  private async addTasksToAria(tasks: Task[]) {
-    // 逐个添加进aria
-    for (const task of tasks) {
+  private async addTasksToAria() {
+    try {
       // 保存gid
-      task.gid = await aria.addUri({
-        uris: [task.downloadUrl],
-        options: {
-          dir:
-            task.type === "gallery"
-              ? task.sub?.galleryDir ?? ""
-              : task.sub?.scrapsDir ?? ""
-        }
-      });
-      // 添加缓存
-      this.taskHash[task.gid] = task;
+      for (const task of this.addTaskList) {
+        task.gid = await aria.addUri({
+          uris: [task.downloadUrl],
+          options: {
+            dir:
+              task.type === "gallery"
+                ? task.sub?.galleryDir ?? ""
+                : task.sub?.scrapsDir ?? ""
+          }
+        });
+        // 添加缓存
+        this.taskHash[task.gid] = task;
+      }
+      this.addTaskList = [];
+    } catch (e) {
+      logger.error("Add tasks to aria error", e);
     }
-    return tasks;
   }
 
   /**
@@ -337,12 +324,12 @@ export class Fetch {
           // 下载此图集的所有图片
           this.addLog(sub, { message: `[${type}] 开始获取` });
           await this.mapPages(type, { sub });
-          // 正常获取完所有的作品后就开启仅更新模式
-          if (type === "gallery") {
-            sub.galleryUpdateOnly = true;
-          } else {
-            sub.scrapsUpdateOnly = true;
-          }
+          // // 正常获取完所有的作品后就开启仅更新模式
+          // if (type === "gallery") {
+          //   sub.galleryUpdateOnly = true;
+          // } else {
+          //   sub.scrapsUpdateOnly = true;
+          // }
         } catch (e) {
           if (e instanceof UpdateOnlyError) {
             // 仅更新模式跳出循环
@@ -455,9 +442,7 @@ export class Fetch {
         task.status = "";
         task.sub = sub;
 
-        this.addTaskList.push(task);
-        this.addTaskThrottle();
-        logger.log("作品详情", sub.id, type, page, index + 1);
+        await this.saveTask(task, { sub, type, page, index });
         continue;
       }
 
@@ -488,18 +473,28 @@ export class Fetch {
       t.sub = sub;
       t.type = type;
 
-      this.addTaskList.push(t);
-      this.addTaskThrottle();
-      logger.log("作品详情", sub.id, type, page, index + 1);
+      await this.saveTask(t, { sub, type, page, index });
 
       // 更新数量
-      if (type === "gallery") {
-        sub.galleryTaskNum++;
-      } else {
-        sub.scrapsTaskNum++;
-      }
+      sub.galleryTaskNum = await db.getTaskNum(sub.id, TaskType.Gallery);
+      sub.scrapsTaskNum = await db.getTaskNum(sub.id, TaskType.Scraps);
       this.updateSubList.push(sub);
       this.updateSubThrottle();
     }
+  }
+
+  async saveTask(
+    task: Task,
+    {
+      sub,
+      type,
+      page,
+      index
+    }: { sub: Subscription; type: string; page: number; index: number }
+  ) {
+    await db.saveTask(task);
+    this.addTaskList.push(task);
+    await this.addTasksToAria();
+    logger.log("作品详情", sub.id, type, page, index + 1);
   }
 }

@@ -1,6 +1,8 @@
 import ipc from "electron-promise-ipc";
 import { db } from "../core";
 import { Subscription, Task } from "@/main/database/entity";
+import { TaskType, TaskStatus } from "../database/entity/Task";
+import { TasksStatus } from "../../shared/interface";
 import {
   transformSub,
   transformSubs,
@@ -24,20 +26,49 @@ async function saveTasks(tasks: Task[]) {
   return await db.saveTasks(transformTasks(tasks));
 }
 
+async function getTasksStatus(id: string) {
+  const gallery = await db.getTaskNum(id, TaskType.Gallery);
+  const galleryComplete = await db.getTaskNum(
+    id,
+    TaskType.Gallery,
+    TaskStatus.Complete
+  );
+  const galleryActive = await db.getTaskNum(
+    id,
+    TaskType.Gallery,
+    TaskStatus.Active
+  );
+  const scraps = await db.getTaskNum(id, TaskType.Scraps);
+  const scrapsComplete = await db.getTaskNum(
+    id,
+    TaskType.Scraps,
+    TaskStatus.Complete
+  );
+  const scrapsActive = await db.getTaskNum(
+    id,
+    TaskType.Scraps,
+    TaskStatus.Active
+  );
+  return {
+    gallery,
+    galleryComplete,
+    galleryActive,
+    scraps,
+    scrapsComplete,
+    scrapsActive
+  } as TasksStatus;
+}
+
 export function registerDatabaseIpc() {
   ipc.on("db.getAriaConfig", db.getAriaConfig);
   ipc.on("db.saveAriaConfig", db.saveAriaConfig as any);
   ipc.on("db.getSub", db.getSub as any);
   ipc.on("db.getSubs", db.getSubs);
-  ipc.on("db.getTask", db.getTask as any);
-  ipc.on("db.getTaskByGid", db.getTaskByGid as any);
-  ipc.on("db.getTasks", db.getTasks as any);
+  ipc.on("db.getTasksStatus", getTasksStatus as any);
   ipc.on("db.getLogs", db.getLogs as any);
 
   ipc.on("db.addSub", saveSub as any);
   ipc.on("db.saveSub", saveSub as any);
   ipc.on("db.saveSubs", saveSubs as any);
   ipc.on("db.removeSub", (id: any) => db.removeSub(id));
-  ipc.on("db.saveTask", saveTask as any);
-  ipc.on("db.saveTasks", saveTasks as any);
 }
