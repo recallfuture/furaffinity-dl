@@ -11716,6 +11716,11 @@ vue-cli-plugin-electron-builder@^1.4.4:
     webpack-chain "^5.0.0"
     yargs "^14.0.0"
 
+vue-devtools@^5.1.3:
+  version "5.1.3"
+  resolved "http://r.cnpmjs.org/vue-devtools/download/vue-devtools-5.1.3.tgz#9f172b420ca87cec4737968769db8080e6e6f7a7"
+  integrity sha1-nxcrQgyofOxHN5aHaduAgObm96c=
+
 vue-eslint-parser@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-7.0.0.tgz#a4ed2669f87179dedd06afdd8736acbb3a3864d6"
