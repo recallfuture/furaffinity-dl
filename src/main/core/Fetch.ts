@@ -25,13 +25,19 @@ function send(route: string, ...args: any) {
 
 class UpdateOnlyError extends Error {}
 class FetchStopError extends Error {}
+interface Params {
+  sub: Subscription;
+  type?: string;
+  page?: number;
+  index?: number;
+}
 
 /**
  * 获取订阅内的作品类
  */
 export class Fetch {
   private fetching: boolean = false;
-  private maxRetry: number = 3;
+  private maxRetry: number = 5;
 
   private updateSubList: Subscription[] = [];
   private addTaskList: Task[] = [];
@@ -39,6 +45,7 @@ export class Fetch {
   private addLogList: Log[] = [];
 
   private updateSubThrottle: Function = _.throttle(this.doUpdateSubs, 1000);
+  private addTaskThrottle: Function = _.throttle(this.addTasksToAria, 1000);
   private updateTaskThrottle: Function = _.throttle(this.doUpdateTasks, 1000);
   private addLogThrottle: Function = _.throttle(this.doUpdateLogs, 1000);
 
@@ -160,8 +167,9 @@ export class Fetch {
    * 批量更新任务
    */
   private async doUpdateTasks() {
-    db.saveTasks(this.updateTaskList);
+    const tasks = [...this.updateTaskList];
     this.updateTaskList = [];
+    await db.saveTasks(tasks);
     send("task.update");
   }
 
@@ -180,8 +188,11 @@ export class Fetch {
    */
   private async addTasksToAria() {
     try {
+      const tasks = [...this.addTaskList];
+      this.addTaskList = [];
+      await db.saveTasks(tasks);
       // 保存gid
-      for (const task of this.addTaskList) {
+      for (const task of tasks) {
         task.gid = await aria.addUri({
           uris: [task.downloadUrl],
           options: {
@@ -194,7 +205,7 @@ export class Fetch {
         // 添加缓存
         this.taskHash[task.gid] = task;
       }
-      this.addTaskList = [];
+      await db.saveTasks(tasks);
     } catch (e) {
       logger.error("Add tasks to aria error", e);
     }
@@ -361,7 +372,13 @@ export class Fetch {
       // 清理记录
       aria.purgeTaskRecord();
 
+      // 保存剩下的任务
+      await this.doUpdateTasks();
+
+      // 保存订阅信息
       sub.status = "";
+      sub.galleryTaskNum = await db.getTaskNum(sub.id, TaskType.Gallery);
+      sub.scrapsTaskNum = await db.getTaskNum(sub.id, TaskType.Scraps);
       this.updateSubList.push(sub);
       this.updateSubThrottle();
     }
@@ -372,7 +389,7 @@ export class Fetch {
    * @param type 类型
    * @param param1 附加参数
    */
-  private async mapPages(type: string, { sub }: { sub: Subscription }) {
+  private async mapPages(type: string, { sub }: Params) {
     for (let page = 1; ; page++) {
       if (!this.fetching) {
         throw new FetchStopError();
@@ -383,12 +400,7 @@ export class Fetch {
           ? Bluebird.resolve(Gallery(sub.id, page))
           : Bluebird.resolve(Scraps(sub.id, page));
 
-      const error = () => {
-        this.addLog(sub, {
-          type: "error",
-          message: `[${type}/${page}] 获取失败，1秒后重试`
-        });
-      };
+      const error = () => {};
       const result: Result[] | null = await this.retry(fun, error);
       if (result === null) {
         throw new Error("获取作品列表失败");
@@ -400,7 +412,11 @@ export class Fetch {
         break;
       }
 
-      await this.mapSubmissions(result, { sub, type, page });
+      try {
+        await this.mapSubmissions(result, { sub, type, page });
+      } catch (e) {
+        logger.error(e);
+      }
     }
   }
 
@@ -411,18 +427,12 @@ export class Fetch {
    */
   private async mapSubmissions(
     submissions: Result[],
-    { sub, type, page }: { sub: Subscription; type: string; page: number }
+    { sub, type = TaskType.Gallery, page }: Params
   ) {
-    for (let index = 0; index < submissions.length; index++) {
-      if (!this.fetching) {
-        throw new FetchStopError();
-      }
-
-      // 获取当前作品
-      const submission = submissions[index];
-
+    let delay = 0;
+    await Bluebird.map(submissions, async (item, index) => {
       // 先判断数据库中有没有
-      const task = await db.getTask(submission.id);
+      const task = await db.getTask(item.id);
       if (
         task &&
         task.status === "complete" &&
@@ -430,74 +440,86 @@ export class Fetch {
         (await existsAsync(task.path))
       ) {
         logger.log("跳过作品", sub.id, type, page, index + 1);
-        // const updateOnly =
-        //   type === "gallery" ? sub.galleryUpdateOnly : sub.scrapsUpdateOnly;
-        // if (updateOnly) {
-        //   throw new UpdateOnlyError("仅更新模式下快速跳过");
-        // }
-        continue;
+        return;
       }
 
-      if (task) {
-        task.gid = "";
-        task.path = "";
-        task.type = type;
-        task.status = "";
-        task.sub = sub;
+      // 间隔100毫秒发动
+      await sleep(100 * delay++);
+      await this.createTaskFromSubmission(item, task, {
+        sub,
+        type,
+        page,
+        index
+      });
+    }).all();
+  }
 
-        await this.saveTask(task, { sub, type, page, index });
-        continue;
-      }
+  async createTaskFromSubmission(
+    submission: Result,
+    task: Task | undefined,
+    { sub, type = TaskType.Gallery, page, index = 0 }: Params
+  ) {
+    if (!this.fetching) {
+      throw new FetchStopError();
+    }
+    let result: Task;
+    if (task) {
+      // 从已有的任务中创建
+      task.gid = "";
+      task.path = "";
+      task.type = type;
+      task.status = "";
+      task.sub = sub;
 
-      // 获取这个作品的详细信息
-      const fun = () => Bluebird.resolve(Submission(submission.id));
-      const error = () => {
-        this.addLog(sub, {
-          type: "error",
-          message: `[${type}/${page}/${index + 1}] 获取失败，1秒后重试`
-        });
-      };
-
-      const detail: ISubmission | null = await this.retry(fun, error);
-      if (detail === null) {
-        throw new Error("作品详情获取失败");
-      }
-
+      result = task;
+    } else {
+      // 新任务
+      const detail = await this.getSubmissionDetail(submission, {
+        sub,
+        type,
+        page,
+        index
+      });
       if (!this.fetching) {
         throw new FetchStopError();
       }
 
-      // 创建新任务并保存
-      const t = new Task();
-      t.gid = "";
-      t.id = detail.id;
-      t.downloadUrl = detail.downloadUrl;
-      t.url = detail.url;
-      t.sub = sub;
-      t.type = type;
-
-      await this.saveTask(t, { sub, type, page, index });
-
-      // 更新数量
-      sub.galleryTaskNum = await db.getTaskNum(sub.id, TaskType.Gallery);
-      sub.scrapsTaskNum = await db.getTaskNum(sub.id, TaskType.Scraps);
-      this.updateSubList.push(sub);
-      this.updateSubThrottle();
+      // 创建新任务
+      result = new Task();
+      result.gid = "";
+      result.id = detail.id;
+      result.downloadUrl = detail.downloadUrl;
+      result.url = detail.url;
+      result.sub = sub;
+      result.type = type;
     }
+    await this.saveTask(result, { sub, type, page, index });
+
+    // 更新数量
+    sub.galleryTaskNum = await db.getTaskNum(sub.id, TaskType.Gallery);
+    sub.scrapsTaskNum = await db.getTaskNum(sub.id, TaskType.Scraps);
+    this.updateSubList.push(sub);
+    this.updateSubThrottle();
   }
 
-  async saveTask(
-    task: Task,
-    {
-      sub,
-      type,
-      page,
-      index
-    }: { sub: Subscription; type: string; page: number; index: number }
+  async getSubmissionDetail(
+    submission: Result,
+    { sub, type, page, index = 0 }: Params
   ) {
-    await db.saveTask(task);
+    // 获取这个作品的详细信息
+    const fun = () => Bluebird.resolve(Submission(submission.id));
+    const error = () => {};
+
+    const detail: ISubmission | null = await this.retry(fun, error);
+    if (detail === null) {
+      throw new Error(`作品详情获取失败：${sub.id},${type}, ${page}, ${index}`);
+    }
+    return detail;
+  }
+
+  async saveTask(task: Task, { sub, type, page, index = 0 }: Params) {
     this.addTaskList.push(task);
-    await this.addTasksToAria();
+    this.addTaskThrottle();
     logger.log("作品详情", sub.id, type, page, index + 1);
   }
 }

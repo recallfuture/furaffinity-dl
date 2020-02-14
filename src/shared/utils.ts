@@ -61,9 +61,7 @@ export function transformTasks(tasks: Task[]) {
  * 异步休眠一段时间
  * @param millisecond 休眠的毫秒数
  */
-export async function sleep(millisecond: number): Promise<void> {
-  return new Bluebird(resolve => setTimeout(resolve, millisecond));
-}
+export const sleep = Bluebird.delay;
 
 /**
  * 去除数组中的未定义值
