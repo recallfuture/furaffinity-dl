@@ -28,6 +28,7 @@
               el-progress( text-inside :percentage="scrapsActiveTasksPercent" :format="()=>''" )
 
       //- 日志
+      //- TODO: i18n
       el-col( :span="10" style="height: 100%; display: flex; flex-direction: column;" )
         div( class="sub-detail-card" )
           h3 日志

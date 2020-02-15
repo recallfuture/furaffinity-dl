@@ -14,6 +14,7 @@
 
     el-footer
       UserInfo( v-if="detail.sub" :sub="detail.sub" )
+      //- TODO: i18n
       span( v-else ) 未选择订阅
       el-button( v-if="detail.sub && detail.show" type="text" icon="el-icon-arrow-down" @click="handleDetailHide" )
       el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
@@ -45,6 +46,7 @@ import bus from "@/renderer/utils/EventBus";
 import { AriaConfig } from "../main/database";
 import ipc from "electron-promise-ipc";
 import _ from "lodash";
+import Mousetrap from "mousetrap";
 
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";
@@ -152,6 +154,10 @@ export default class App extends Vue {
     }, 200);
   }
 
+  initShortcuts() {
+    // Mousetrap.bind("down", this.)
+  }
+
   /**
    * 用户登录回调
    */
@@ -183,6 +189,7 @@ export default class App extends Vue {
    * 开始下载订阅回调
    */
   async handleSubStart(subs: Subscription[]) {
+    // TODO: i18n
     if (subs.length === 0) {
       this.$message.warning("请先选择要开始下载的订阅");
       return;
@@ -243,6 +250,7 @@ export default class App extends Vue {
     }
 
     this.fetching = true;
+    const begin = Date.now();
     try {
       await faFetchStart(subs);
     } catch (e) {
@@ -250,6 +258,8 @@ export default class App extends Vue {
       logger.error(e);
     }
     this.fetching = false;
+    const end = Date.now();
+    this.showNotification(end - begin);
   }
 
   /**
@@ -257,6 +267,26 @@ export default class App extends Vue {
    */
   fetchStop() {
     faFetchStop();
+  }
+
+  showNotification(time: number) {
+    var days = time / 1000 / 60 / 60 / 24;
+    var daysRound = Math.floor(days);
+    var hours = time / 1000 / 60 / 60 - 24 * daysRound;
+    var hoursRound = Math.floor(hours);
+    var minutes = time / 1000 / 60 - 24 * 60 * daysRound - 60 * hoursRound;
+    var minutesRound = Math.floor(minutes);
+    var seconds =
+      time / 1000 -
+      24 * 60 * 60 * daysRound -
+      60 * 60 * hoursRound -
+      60 * minutesRound;
+    var secondsRound = Math.floor(seconds);
+    // TODO: i18n
+    new Notification("下载结束", {
+      requireInteraction: true,
+      body: `总用时${hoursRound}小时${minutesRound}分${secondsRound}秒`
+    });
   }
 
   /**
@@ -312,7 +342,10 @@ export default class App extends Vue {
   async doLogAdd(logs: Log[]) {
     for (const log of logs) {
       if (this.detail.sub && this.detail.sub.id === log.sub?.id) {
-        this.detail.logs.push(log);
+        this.detail.logs = [...this.detail.logs, ...logs].sort(
+          (a, b) => a.createAt - b.createAt
+        );
+        break;
       }
     }
   }

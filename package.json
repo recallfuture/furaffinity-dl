@@ -1,6 +1,6 @@
 {
   "name": "furaffinity-dl",
-  "version": "0.2.3",
+  "version": "0.2.4-beta-1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -23,6 +23,7 @@
     "element-ui": "^2.4.5",
     "furaffinity-api": "^3.4.7",
     "lodash": "^4.17.15",
+    "mousetrap": "^1.6.5",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
     "reflect-metadata": "^0.1.13",
@@ -42,6 +43,7 @@
     "@types/forever-monitor": "^1.7.5",
     "@types/jest": "^24.0.19",
     "@types/lodash": "^4.14.149",
+    "@types/mousetrap": "^1.6.3",
     "@types/webpack": "^4.4.0",
     "@vue/cli-plugin-babel": "^4.1.0",
     "@vue/cli-plugin-eslint": "^4.1.0",

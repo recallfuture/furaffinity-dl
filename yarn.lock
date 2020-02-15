@@ -1141,6 +1141,11 @@
   resolved "https://registry.npm.taobao.org/@types/minimatch/download/@types/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
   integrity sha1-PcoOPzOyAPx9ETnAzZbBJoyt/Z0=
 
+"@types/mousetrap@^1.6.3":
+  version "1.6.3"
+  resolved "http://r.cnpmjs.org/@types/mousetrap/download/@types/mousetrap-1.6.3.tgz#3159a01a2b21c9155a3d8f85588885d725dc987d"
+  integrity sha1-MVmgGishyRVaPY+FWIiF1yXcmH0=
+
 "@types/node@*":
   version "13.1.5"
   resolved "https://registry.npm.taobao.org/@types/node/download/@types/node-13.1.5.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fnode%2Fdownload%2F%40types%2Fnode-13.1.5.tgz#4d5efc52a1d3e45d13e5ec9f911cbc5b089ccaec"
@@ -7792,6 +7797,11 @@ mount-point@^3.0.0:
     "@sindresorhus/df" "^1.0.1"
     pify "^2.3.0"
     pinkie-promise "^2.0.1"
+
+mousetrap@^1.6.5:
+  version "1.6.5"
+  resolved "http://r.cnpmjs.org/mousetrap/download/mousetrap-1.6.5.tgz#8a766d8c272b08393d5f56074e0b5ec183485bf9"
+  integrity sha1-inZtjCcrCDk9X1YHTgtewYNIW/k=
 
 move-concurrently@^1.0.1:
   version "1.0.1"

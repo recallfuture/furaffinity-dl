@@ -52,6 +52,7 @@
     el-dialog( :visible.sync="addDialog" width="600px" )
       AddSubForm( v-if="addDialog" )
 
+    //- TODO: i18n
     el-dialog(
       :visible.sync="deleteDialog"
       :before-close="() => {}"
@@ -130,6 +131,7 @@ export default class Toolbar extends Vue {
   }
 
   handleSubDelete(subs: Subscription[]) {
+    // TODO: i18n
     if (subs.length === 0) {
       this.$message.warning("请先选择要删除的订阅");
       return;
