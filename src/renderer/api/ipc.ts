@@ -1,6 +1,7 @@
 import ipc from "electron-promise-ipc";
 import { Author, Result, Submission } from "furaffinity-api/dist/interfaces";
 import { Subscription } from "@/main/database/entity";
+import { dialog, app, remote } from "electron";
 
 /**
  * 清除 furaffinity.net 的所有cookie
@@ -109,6 +110,25 @@ export async function getGlobalStat() {
  * 打开对话框选择文件夹
  */
 export async function openFolderDialog(): Promise<string[] | undefined> {
-  // @ts-ignore
-  return await ipc.send("app.openFolderDialog");
+  const currentWin = remote.getCurrentWindow();
+  const result = await remote.dialog.showOpenDialog(currentWin, {
+    properties: ["openDirectory", "multiSelections"]
+  });
+  return result.filePaths;
+}
+
+/**
+ * 打开外部链接
+ * @param url 链接
+ */
+export function openUrl(url: string) {
+  return remote.shell.openExternal(url);
+}
+
+/**
+ * 使用文件管理器打开路径
+ * @param path 文件/文件夹位置
+ */
+export function openFolder(path: string) {
+  return remote.shell.showItemInFolder(path);
 }

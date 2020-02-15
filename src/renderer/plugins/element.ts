@@ -31,7 +31,8 @@ import {
   Card,
   Progress,
   Tooltip,
-  Checkbox
+  Checkbox,
+  Link
 } from "element-ui";
 // @ts-ignore
 import Scrollbar from "element-ui/lib/scrollbar";
@@ -73,4 +74,5 @@ Vue.use(Card);
 Vue.use(Progress);
 Vue.use(Tooltip);
 Vue.use(Checkbox);
+Vue.use(Link);
 Vue.use(Scrollbar);

@@ -40,14 +40,20 @@
         i( v-else class="el-icon-close" )
     //- 主页地址
     el-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )
+      template( slot-scope="{ row }")
+        el-link( type="primary" @click="openUrl(row.url)" ) {{ row.url }}
     //- 保存目录
     el-table-column( prop="dir" :label="$t('main.table.dir')" align="center" )
+      template( slot-scope="{ row }")
+        el-link( type="primary" @click="openFolder(row.dir)" ) {{ row.dir }}
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, InjectReactive } from "vue-property-decorator";
 import { Subscription } from "@/main/database/entity";
 import bus from "@/renderer/utils/EventBus";
+import { openUrl } from "@/renderer/api";
+import { openFolder } from "../../api/ipc";
 
 @Component
 export default class SubTable extends Vue {
@@ -55,6 +61,9 @@ export default class SubTable extends Vue {
 
   currentRow: Subscription | null = null;
   multipleSelection: Subscription[] = [];
+
+  openUrl = openUrl;
+  openFolder = openFolder;
 
   get statusFilters() {
     return [{ text: this.$tc("sub.status.active"), value: "active" }];
