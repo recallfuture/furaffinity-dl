@@ -44,12 +44,12 @@
     el-dialog(
       :title="$t('header.login')"
       :visible.sync="loginDialog"
-      width="50%"
+      width="600px"
     )
       LoginForm( v-if="loginDialog" @success="onSuccess" )
     
     //- 添加订阅对话框
-    el-dialog( :visible.sync="addDialog" width="50%" )
+    el-dialog( :visible.sync="addDialog" width="600px" )
       AddSubForm( v-if="addDialog" )
 
     el-dialog(
