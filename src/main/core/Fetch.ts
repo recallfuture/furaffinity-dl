@@ -38,6 +38,7 @@ interface Params {
 export class Fetch {
   private fetching: boolean = false;
   private maxRetry: number = 5;
+  private concurrency: number = 12;
 
   private updateSubList: Subscription[] = [];
   private addTaskList: Task[] = [];
@@ -217,6 +218,7 @@ export class Fetch {
    * @param param1 参数
    */
   private async addLog(sub: Subscription, { type = "info", message = "" }) {
+    // TODO: i18n
     const log = new Log();
     log.type = type;
     log.message = message;
@@ -415,6 +417,7 @@ export class Fetch {
       try {
         await this.mapSubmissions(result, { sub, type, page });
       } catch (e) {
+        this.addLog(sub, { type: "error", message: e.message });
         logger.error(e);
       }
     }
@@ -429,29 +432,32 @@ export class Fetch {
     submissions: Result[],
     { sub, type = TaskType.Gallery, page }: Params
   ) {
-    let delay = 0;
-    await Bluebird.map(submissions, async (item, index) => {
-      // 先判断数据库中有没有
-      const task = await db.getTask(item.id);
-      if (
-        task &&
-        task.status === "complete" &&
-        task.path &&
-        (await existsAsync(task.path))
-      ) {
-        logger.log("跳过作品", sub.id, type, page, index + 1);
-        return;
-      }
+    for (let begin = 0; begin < submissions.length; begin += this.concurrency) {
+      let delay = 0;
+      const items = submissions.slice(begin, begin + this.concurrency);
+      await Bluebird.map(items, async (item, index) => {
+        // 先判断数据库中有没有
+        const task = await db.getTask(item.id);
+        if (
+          task &&
+          task.status === "complete" &&
+          task.path &&
+          (await existsAsync(task.path))
+        ) {
+          logger.log("跳过作品", sub.id, type, page, index + 1);
+          return;
+        }
 
-      // 间隔100毫秒发动
-      await sleep(100 * delay++);
-      await this.createTaskFromSubmission(item, task, {
-        sub,
-        type,
-        page,
-        index
-      });
-    }).all();
+        // 间隔100毫秒发动
+        await sleep(100 * delay++);
+        await this.createTaskFromSubmission(item, task, {
+          sub,
+          type,
+          page,
+          index
+        });
+      }).all();
+    }
   }
 
   async createTaskFromSubmission(
