@@ -36,7 +36,7 @@
       el-switch( v-model="form.scraps" class="mr-4" )
 
     el-form-item
-      el-button( type="primary" @click="submit" ) {{ $t("generic.confirm") }}
+      el-button( type="primary" @click="submit" :loading="loading" ) {{ $t("generic.confirm") }}
 
 </template>
 
@@ -154,6 +154,7 @@ export default class AddWatchingSubsForm extends Vue {
 
         const users: Author[] = await faWatchingList();
         if (users.length === 0) {
+          this.loading = false;
           return false;
         }
 
@@ -182,6 +183,7 @@ export default class AddWatchingSubsForm extends Vue {
         bus.$emit("sub.add", subs);
         this.loading = false;
       } else {
+        this.loading = false;
         return false;
       }
     });
