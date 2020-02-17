@@ -1,26 +1,12 @@
 import { session } from "electron";
 import ipc from "electron-promise-ipc";
-import {
-  Author,
-  Gallery,
-  Login,
-  MyWatchingList,
-  Scraps,
-  Submission,
-  User
-} from "furaffinity-api";
+import { Author, Gallery, Login, MyWatchingList, Scraps, Submission, User } from "furaffinity-api";
 import { transformSubs } from "../../shared/utils";
 import { fetch } from "../core";
 
 async function onFaClearCookies() {
-  await session.defaultSession?.cookies.remove(
-    "http://www.furaffinity.net",
-    "a"
-  );
-  await session.defaultSession?.cookies.remove(
-    "http://www.furaffinity.net",
-    "b"
-  );
+  await session.defaultSession?.cookies.remove("http://www.furaffinity.net", "a");
+  await session.defaultSession?.cookies.remove("http://www.furaffinity.net", "b");
 }
 
 async function onFaGetCookies() {
@@ -45,5 +31,5 @@ export function registerFaIpc() {
 
   ipc.on("fa.fetchStart", (subs: any) => fetch.start(transformSubs(subs)));
   ipc.on("fa.fetchStop", () => fetch.stop());
-  ipc.on("fa.getGlobalStat", () => fetch.getGlobalStat());
+  ipc.on("fa.getGlobalStat", () => fetch.globalStat);
 }

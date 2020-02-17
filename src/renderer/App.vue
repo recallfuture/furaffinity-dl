@@ -231,10 +231,7 @@ export default class App extends Vue {
   }
 
   async handleSubDeleted(subs: Subscription[]) {
-    if (
-      this.detail.sub &&
-      subs.filter(sub => sub.id === this.detail.sub?.id).length > 0
-    ) {
+    if (this.detail.sub && subs.filter(sub => sub.id === this.detail.sub?.id).length > 0) {
       this.detail.show = false;
       this.detail.sub = null;
     }
@@ -276,11 +273,7 @@ export default class App extends Vue {
     var hoursRound = Math.floor(hours);
     var minutes = time / 1000 / 60 - 24 * 60 * daysRound - 60 * hoursRound;
     var minutesRound = Math.floor(minutes);
-    var seconds =
-      time / 1000 -
-      24 * 60 * 60 * daysRound -
-      60 * 60 * hoursRound -
-      60 * minutesRound;
+    var seconds = time / 1000 - 24 * 60 * 60 * daysRound - 60 * 60 * hoursRound - 60 * minutesRound;
     var secondsRound = Math.floor(seconds);
     // TODO: i18n
     new Notification("下载结束", {
@@ -292,8 +285,8 @@ export default class App extends Vue {
   /**
    * 更新订阅回调
    */
-  async handleIpcSubUpdate(subs: Subscription[]) {
-    this.doSubUpdate(subs);
+  async handleIpcSubUpdate(sub: Subscription) {
+    this.doSubUpdate(sub);
   }
 
   /**
@@ -322,16 +315,14 @@ export default class App extends Vue {
   /**
    * 执行订阅更新
    */
-  async doSubUpdate(subs: Subscription[]) {
-    for (const sub of subs) {
-      // 遍历订阅并更新
-      // TODO: 可以使用hash来提升效率
-      for (let index = 0; index < this.subs.length; index++) {
-        const s = this.subs[index];
-        if (s.id === sub.id) {
-          this.$set(this.subs, index, sub);
-          break;
-        }
+  async doSubUpdate(sub: Subscription) {
+    // 遍历订阅并更新
+    // TODO: 可以使用hash来提升效率
+    for (let index = 0; index < this.subs.length; index++) {
+      const s = this.subs[index];
+      if (s.id === sub.id) {
+        this.$set(this.subs, index, sub);
+        break;
       }
     }
   }
@@ -342,9 +333,7 @@ export default class App extends Vue {
   async doLogAdd(logs: Log[]) {
     for (const log of logs) {
       if (this.detail.sub && this.detail.sub.id === log.sub?.id) {
-        this.detail.logs = [...this.detail.logs, ...logs].sort(
-          (a, b) => a.createAt - b.createAt
-        );
+        this.detail.logs = [...this.detail.logs, ...logs].sort((a, b) => a.createAt - b.createAt);
         break;
       }
     }
