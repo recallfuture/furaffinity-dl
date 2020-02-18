@@ -19,7 +19,6 @@ export interface Detail {
   show: boolean;
   sub: Subscription | null;
   tasksStatus: TasksStatus;
-  logs: Log[];
 }
 
 export interface AriaStatus {

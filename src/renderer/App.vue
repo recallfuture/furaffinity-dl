@@ -9,7 +9,6 @@
         v-show="detail.show"
         :sub="detail.sub"
         :tasks="detail.tasksStatus"
-        :logs="detail.logs"
       )
 
     el-footer
@@ -84,8 +83,7 @@ export default class App extends Vue {
       scraps: 0,
       scrapsComplete: 0,
       scrapsActive: 0
-    },
-    logs: []
+    }
   };
 
   async mounted() {
@@ -210,7 +208,6 @@ export default class App extends Vue {
 
     this.detail.sub = sub;
     this.detail.tasksStatus = await getTasksStatus(sub.id);
-    this.detail.logs = await getLogs(sub.id);
     this.detail.show = true;
   }
 
@@ -330,23 +327,12 @@ export default class App extends Vue {
   /**
    * 执行日志添加
    */
-  async doLogAdd(logs: Log[]) {
-    for (const log of logs) {
-      if (this.detail.sub && this.detail.sub.id === log.sub?.id) {
-        this.detail.logs = [...this.detail.logs, ...logs].sort((a, b) => a.createAt - b.createAt);
-        break;
-      }
-    }
-  }
+  async doLogAdd(logs: Log[]) {}
 
   /**
    * 执行日志清空
    */
-  async doLogClear(id: string) {
-    if (this.detail.sub && this.detail.sub.id === id) {
-      this.detail.logs = [];
-    }
-  }
+  async doLogClear(id: string) {}
 }
 </script>
 
