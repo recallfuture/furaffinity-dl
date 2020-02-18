@@ -5,7 +5,7 @@ import { AriaStatus } from "@/shared/interface";
 import logger from "@/shared/logger";
 import Bluebird from "bluebird";
 import { EventEmitter } from "events";
-import { ariaController } from "./index";
+import { ariaController, mainWindow } from "./index";
 
 export class Download extends EventEmitter {
   private gidTask: { [propName: string]: Task } = {};
@@ -54,9 +54,11 @@ export class Download extends EventEmitter {
         this.ariaStatus = await aria.getGlobalStat();
       } catch (e) {
         clearInterval(updater);
-        await ariaController.start();
-        await this.init(config);
-        this.addErrorTasks();
+        if (mainWindow.win) {
+          await ariaController.start();
+          await this.init(config);
+          this.addErrorTasks();
+        }
       }
     }, 200);
   }
