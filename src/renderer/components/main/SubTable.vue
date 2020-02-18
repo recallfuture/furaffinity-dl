@@ -29,12 +29,30 @@
       template( slot-scope="{ row }")
         span {{ row.name }}
     //- Gallery
-    el-table-column( label="Gallery" width="100" align="center" )
+    el-table-column(
+      label="Gallery"
+      width="120"
+      align="center"
+      prop="galleryTaskNum"
+      sortable
+      :filters="galleryFilters"
+      :filter-method="filterGallery"
+      filter-placement="bottom"
+    )
       template( slot-scope="{ row }")
         span( v-if="row.gallery" class="gallery-task-num" ) {{ row.galleryTaskNum }}
         i( v-else class="el-icon-close" )
     //- Scraps
-    el-table-column( label="Scraps" width="100" align="center" )
+    el-table-column(
+      label="Scraps"
+      width="120"
+      align="center"
+      prop="scrapsTaskNum"
+      sortable
+      :filters="scrapsFilters"
+      :filter-method="filterScraps"
+      filter-placement="bottom"
+    )
       template( slot-scope="{ row }")
         span( v-if="row.scraps" class="scraps-task-num" ) {{ row.scrapsTaskNum }}
         i( v-else class="el-icon-close" )
@@ -71,6 +89,28 @@ export default class SubTable extends Vue {
 
   filterStatus(value: any, row: any, column: any) {
     return row.status === value;
+  }
+
+  get galleryFilters() {
+    return [
+      { text: "未开启", value: "close" },
+      { text: "已开启", value: "open" }
+    ];
+  }
+
+  filterGallery(value: any, row: any, column: any) {
+    return value === "close" ? !row.gallery : row.gallery;
+  }
+
+  get scrapsFilters() {
+    return [
+      { text: "未开启", value: "close" },
+      { text: "已开启", value: "open" }
+    ];
+  }
+
+  filterScraps(value: any, row: any, column: any) {
+    return value === "close" ? !row.scraps : row.scraps;
   }
 
   mounted() {
