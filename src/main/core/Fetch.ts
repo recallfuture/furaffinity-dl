@@ -164,6 +164,11 @@ export class Fetch {
 
       try {
         await this.mapSubmissions(results, sub, type, page);
+
+        // 更新订阅
+        sub.galleryTaskNum = this.tasksStatus.gallery;
+        sub.scrapsTaskNum = this.tasksStatus.scraps;
+        send("sub.update", sub);
       } catch (e) {
         if (e instanceof FetchStopError) {
           throw e;
@@ -220,11 +225,6 @@ export class Fetch {
         await this.download.add(newTask);
         this.addTaskHash(newTask);
       });
-
-      // 更新订阅
-      sub.galleryTaskNum = this.tasksStatus.gallery;
-      sub.scrapsTaskNum = this.tasksStatus.scraps;
-      send("sub.update", sub);
     }
   }
 
