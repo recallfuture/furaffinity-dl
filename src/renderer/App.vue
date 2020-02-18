@@ -19,6 +19,8 @@
       el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
       
       div( class="spacer" )
+      Timer()
+      div( class="spacer" )
 
       SpeedBar( :ariaStatus="ariaStatus" )
 </template>
@@ -53,9 +55,10 @@ import SubTable from "./components/main/SubTable.vue";
 import SubDetail from "./components/main/SubDetail.vue";
 import UserInfo from "./components/generic/User.vue";
 import SpeedBar from "./components/footer/SpeedBar.vue";
+import Timer from "./components/footer/Timer.vue";
 
 @Component({
-  components: { Toolbar, SubTable, SubDetail, UserInfo, SpeedBar }
+  components: { Toolbar, SubTable, SubDetail, UserInfo, SpeedBar, Timer }
 })
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
@@ -244,7 +247,7 @@ export default class App extends Vue {
     }
 
     this.fetching = true;
-    const begin = Date.now();
+    bus.$emit("fetch.start");
     try {
       await faFetchStart(subs);
     } catch (e) {
@@ -252,8 +255,8 @@ export default class App extends Vue {
       logger.error(e);
     }
     this.fetching = false;
-    const end = Date.now();
-    this.showNotification(end - begin);
+    bus.$emit("fetch.stop");
+    this.showNotification();
   }
 
   /**
@@ -263,19 +266,10 @@ export default class App extends Vue {
     faFetchStop();
   }
 
-  showNotification(time: number) {
-    var days = time / 1000 / 60 / 60 / 24;
-    var daysRound = Math.floor(days);
-    var hours = time / 1000 / 60 / 60 - 24 * daysRound;
-    var hoursRound = Math.floor(hours);
-    var minutes = time / 1000 / 60 - 24 * 60 * daysRound - 60 * hoursRound;
-    var minutesRound = Math.floor(minutes);
-    var seconds = time / 1000 - 24 * 60 * 60 * daysRound - 60 * 60 * hoursRound - 60 * minutesRound;
-    var secondsRound = Math.floor(seconds);
+  showNotification() {
     // TODO: i18n
     new Notification("下载结束", {
-      requireInteraction: true,
-      body: `总用时${hoursRound}小时${minutesRound}分${secondsRound}秒`
+      requireInteraction: true
     });
   }
 
