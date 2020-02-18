@@ -67,7 +67,7 @@ export default class AddWatchingSubsForm extends Vue {
   form: any = {
     path: this.ariaConfig?.dir ?? "",
     prefix: "",
-    dir: "Id",
+    dir: "id",
     suffix: "",
     gallery: true,
     scraps: false
