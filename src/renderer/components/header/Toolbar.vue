@@ -28,6 +28,7 @@
     
     //- 设置
     el-button( type="info" icon="el-icon-setting" ) {{ $t("header.setting") }}
+    el-button( type="info" @click="openDevTools" ) 调试
 
     //- 退出登录确认对话框
     el-dialog(
@@ -78,6 +79,7 @@ import { Subscription } from "@/main/database/entity";
 import { removeSub } from "../../api";
 import trash from "trash";
 import logger from "@/shared/logger";
+import { remote } from "electron";
 
 @Component({
   components: { LoginForm, AddSubForm, UserInfo }
@@ -158,6 +160,10 @@ export default class Toolbar extends Vue {
     this.deleteStatus = null;
     this.deleteDialog = false;
     bus.$emit("sub.deleted", this.willDeleteSubs);
+  }
+
+  openDevTools() {
+    remote.getCurrentWebContents().openDevTools();
   }
 }
 </script>

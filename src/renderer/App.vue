@@ -46,8 +46,6 @@ import {
 import bus from "@/renderer/utils/EventBus";
 import { AriaConfig } from "../main/database";
 import ipc from "electron-promise-ipc";
-import _ from "lodash";
-import Mousetrap from "mousetrap";
 
 // 组件
 import Toolbar from "./components/header/Toolbar.vue";

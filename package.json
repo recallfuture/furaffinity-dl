@@ -1,6 +1,6 @@
 {
   "name": "furaffinity-dl",
-  "version": "0.2.4-beta-1",
+  "version": "0.2.4-beta-2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -23,7 +23,6 @@
     "element-ui": "^2.4.5",
     "furaffinity-api": "^3.4.7",
     "lodash": "^4.17.15",
-    "mousetrap": "^1.6.5",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
     "reflect-metadata": "^0.1.13",

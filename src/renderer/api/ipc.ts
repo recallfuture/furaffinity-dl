@@ -1,7 +1,7 @@
 import ipc from "electron-promise-ipc";
 import { Author, Result, Submission } from "furaffinity-api/dist/interfaces";
 import { Subscription } from "@/main/database/entity";
-import { dialog, app, remote } from "electron";
+import { remote } from "electron";
 
 /**
  * 清除 furaffinity.net 的所有cookie
