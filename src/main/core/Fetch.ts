@@ -39,8 +39,8 @@ export class Fetch {
 
   private sub: Subscription | null = null;
 
-  private idTask: { [propName: string]: Task } = {};
-  private statusTask: { [propName: string]: number } = {};
+  private idTask: Map<string, Task> = new Map();
+  private statusTask: Map<string, number> = new Map();
 
   get currentSub() {
     return this.sub;
@@ -48,12 +48,12 @@ export class Fetch {
 
   get tasksStatus(): TasksStatus {
     return {
-      gallery: this.statusTask[TaskType.Gallery] ?? 0,
-      galleryComplete: this.statusTask[`${TaskType.Gallery}-complete`] ?? 0,
-      galleryActive: this.statusTask[`${TaskType.Gallery}-active`] ?? 0,
-      scraps: this.statusTask[TaskType.Scraps] ?? 0,
-      scrapsComplete: this.statusTask[`${TaskType.Scraps}-complete`] ?? 0,
-      scrapsActive: this.statusTask[`${TaskType.Scraps}-active`] ?? 0
+      gallery: this.statusTask.get(TaskType.Gallery) ?? 0,
+      galleryComplete: this.statusTask.get(`${TaskType.Gallery}-complete`) ?? 0,
+      galleryActive: this.statusTask.get(`${TaskType.Gallery}-active`) ?? 0,
+      scraps: this.statusTask.get(TaskType.Scraps) ?? 0,
+      scrapsComplete: this.statusTask.get(`${TaskType.Scraps}-complete`) ?? 0,
+      scrapsActive: this.statusTask.get(`${TaskType.Scraps}-active`) ?? 0
     };
   }
 
@@ -200,7 +200,7 @@ export class Fetch {
       const items = submissions.slice(begin, begin + this.concurrency);
       await Bluebird.map(items, async (item, index) => {
         // 先判断缓存中有没有
-        const task = this.idTask[item.id];
+        const task = this.idTask.get(item.id);
         if (task && task.status === "complete" && task.path && (await existsAsync(task.path))) {
           logger.log("跳过作品", sub.id, type, page, begin + index + 1);
           return;
@@ -401,8 +401,8 @@ export class Fetch {
    * 清空任务缓存
    */
   private clearTaskHash() {
-    this.idTask = {};
-    this.statusTask = {};
+    this.idTask.clear();
+    this.statusTask.clear();
   }
 
   /**
@@ -412,7 +412,7 @@ export class Fetch {
    */
   private addTaskHash(task: Task) {
     if (task.id) {
-      this.idTask[task.id] = task;
+      this.idTask.set(task.id, task);
     }
   }
 
@@ -420,14 +420,14 @@ export class Fetch {
    * 刷新状态
    */
   private refreshStatusTak() {
-    this.statusTask = {};
-    for (const task of Object.values(this.idTask)) {
-      this.statusTask[task.type] = this.statusTask[task.type] ?? 0;
-      this.statusTask[task.type]++;
+    this.statusTask.clear();
+    for (const task of this.idTask.values()) {
+      let num = this.statusTask.get(task.type) ?? 0 + 1;
+      this.statusTask.set(task.type, num);
 
       const status = `${task.type}-${task.status}`;
-      this.statusTask[status] = this.statusTask[status] ?? 0;
-      this.statusTask[status]++;
+      num = this.statusTask.get(status) ?? 0 + 1;
+      this.statusTask.set(status, num);
     }
   }
 }

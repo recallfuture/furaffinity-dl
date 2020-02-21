@@ -7,8 +7,11 @@ import Bluebird from "bluebird";
 import { EventEmitter } from "events";
 import { ariaController, mainWindow } from "./index";
 
+/**
+ * 控制aria进行下载的类
+ */
 export class Download extends EventEmitter {
-  private gidTask: { [propName: string]: Task } = {};
+  private gidTask: Map<string, Task> = new Map();
   private errorTasks: Task[] = [];
 
   private ariaStatus: AriaStatus = {
@@ -78,7 +81,7 @@ export class Download extends EventEmitter {
       });
       // 添加缓存
       task.gid = gid;
-      this.gidTask[gid] = task;
+      this.gidTask.set(gid, task);
       this.emit("task.add", task);
     } catch (e) {
       this.errorTasks.push(task);
@@ -164,9 +167,13 @@ export class Download extends EventEmitter {
    * @param status 任务状态
    */
   private async refreshTask(gid: string, status: string) {
-    // 获取任务信息
-    const task = this.gidTask[gid];
-    if (task) {
+    if (this.gidTask.has(gid)) {
+      // 获取任务信息
+      const task = this.gidTask.get(gid);
+      if (!task) {
+        return;
+      }
+
       // 覆盖任务状态
       task.status = status;
       // 覆盖文件位置
@@ -180,7 +187,7 @@ export class Download extends EventEmitter {
         logger.error("download error", gid, task.id);
       }
       if (status !== "active") {
-        delete this.gidTask[gid];
+        this.gidTask.delete(gid);
       }
       this.emit("task.update", task);
     }
