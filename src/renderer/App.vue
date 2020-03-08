@@ -229,7 +229,10 @@ export default class App extends Vue {
   }
 
   async handleSubDeleted(subs: Subscription[]) {
-    if (this.detail.sub && subs.filter(sub => sub.id === this.detail.sub?.id).length > 0) {
+    if (
+      this.detail.sub &&
+      subs.filter(sub => sub.id === this.detail.sub?.id).length > 0
+    ) {
       this.detail.show = false;
       this.detail.sub = null;
     }

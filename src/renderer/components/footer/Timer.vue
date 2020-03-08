@@ -52,7 +52,10 @@ export default class Timer extends Vue {
     this.clear();
     this.isActive = true;
     this.startTime = new Date().getTime();
-    this.updater = setInterval(() => (this.time = new Date().getTime() - this.startTime), 10);
+    this.updater = setInterval(
+      () => (this.time = new Date().getTime() - this.startTime),
+      10
+    );
   }
 
   stop() {
