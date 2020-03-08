@@ -1,9 +1,5 @@
 <template lang="pug">
   div( v-if="sub" class="sub-detail" )
-    div( class="sub-detail-header" )
-      User( :sub="sub" )
-      el-button( type="text" icon="el-icon-arrow-down" @click="hideDetail" )
-
     el-row( type="flex" class="sub-detail-body" )
       //- Gallery
       el-col( :span="12" style="height: 100%; display: flex; flex-direction: column;" )

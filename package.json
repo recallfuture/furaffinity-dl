@@ -25,6 +25,7 @@
     "lodash": "^4.17.15",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
+    "pl-table": "^2.5.8",
     "reflect-metadata": "^0.1.13",
     "sqlite3": "^4.1.1",
     "trash": "^6.1.1",

@@ -1,16 +1,19 @@
 <template lang="pug">
-  el-table(
-    :data="subs"
+div( class="sub-table" )
+  pl-table(
+    :datas="subs"
     :default-sort="{ prop: 'id', order: 'ascending' }"
-    height="100%"
-    class="sub-table"
+    ref="subTable"
+    :pagination-show="false"
+    auto-resize
+    big-data-checkbox
     @row-click="handleRowClick"
     @selection-change="handleSelectionChange"
   )
     //- 复选框
-    el-table-column( type="selection" width="40" )
+    pl-table-column( type="selection" width="40" )
     //- 状态
-    el-table-column(
+    pl-table-column(
       :label="$t('sub.status.label')"
       width="80"
       align="center"
@@ -21,15 +24,15 @@
       template( slot-scope="{ row }")
         el-tag( v-if="row.status === 'active'" type="success" effect="dark" ) {{ $t("sub.status.active") }}
     //- 用户头像
-    el-table-column( :label="$t('main.table.avatar')" align="center" width="80" )
+    pl-table-column( :label="$t('main.table.avatar')" align="center" width="80" )
       template( slot-scope="{ row }")
         el-avatar( :size="36" :src="row.avatar" )
     //- 用户名
-    el-table-column( prop="id" :label="$t('main.table.username')" sortable )
+    pl-table-column( prop="id" :label="$t('main.table.username')" sortable )
       template( slot-scope="{ row }")
         span {{ row.name }}
     //- Gallery
-    el-table-column(
+    pl-table-column(
       label="Gallery"
       width="120"
       align="center"
@@ -43,7 +46,7 @@
         span( v-if="row.gallery" class="gallery-task-num" ) {{ row.galleryTaskNum }}
         i( v-else class="el-icon-close" )
     //- Scraps
-    el-table-column(
+    pl-table-column(
       label="Scraps"
       width="120"
       align="center"
@@ -57,11 +60,11 @@
         span( v-if="row.scraps" class="scraps-task-num" ) {{ row.scrapsTaskNum }}
         i( v-else class="el-icon-close" )
     //- 主页地址
-    el-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )
+    pl-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )
       template( slot-scope="{ row }")
         el-link( type="primary" @click="openUrl(row.url)" ) {{ row.url }}
     //- 保存目录
-    el-table-column( prop="dir" :label="$t('main.table.dir')" align="center" )
+    pl-table-column( prop="dir" :label="$t('main.table.dir')" align="center" )
       template( slot-scope="{ row }")
         el-link( type="primary" @click="openFolder(row.dir)" ) {{ row.dir }}
 </template>
@@ -138,28 +141,32 @@ export default class SubTable extends Vue {
 </script>
 
 <style>
-.sub-table.el-table {
+.sub-table {
+  height: 100%;
+}
+.sub-table .el-table {
+  border: 0;
   background-color: #444;
 }
-.sub-table.el-table th {
+.sub-table .plTableBox .el-table .el-table__header th {
   color: rgba(256, 256, 256, 0.87);
   background-color: #333;
 }
-.sub-table.el-table th.is-leaf {
-  border-bottom: 1px solid #555;
+.sub-table .plTableBox .el-table .el-table__header th.is-leaf {
+  border: 0;
 }
-.sub-table.el-table tr {
+.plTableBox .el-table tr {
   color: rgba(256, 256, 256, 0.87);
   background-color: #444;
 }
-.sub-table.el-table td {
-  border-bottom: 1px solid #555;
+.plTableBox .el-table td {
+  border: 0;
 }
-.sub-table.el-table--enable-row-hover .el-table__body tr:hover > td,
-.sub-table .el-table__body tr.current-row > td {
+.plTableBox .el-table--enable-row-hover .el-table__body tr:hover > td,
+.plTableBox .el-table__body tr.current-row > td {
   background-color: #666;
 }
-.sub-table.el-table::before {
+.plTableBox .el-table::before {
   background-color: transparent;
 }
 

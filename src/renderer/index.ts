@@ -1,6 +1,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import "./plugins/element";
+import "./plugins/pl-table";
 import i18n from "./plugins/i18n";
 
 import logger from "@/shared/logger";

@@ -9,8 +9,6 @@ import {
   Header,
   Main,
   Footer,
-  Table,
-  TableColumn,
   Avatar,
   Tag,
   ButtonGroup,
@@ -51,8 +49,6 @@ Vue.use(Container);
 Vue.use(Header);
 Vue.use(Main);
 Vue.use(Footer);
-Vue.use(Table);
-Vue.use(TableColumn);
 Vue.use(Avatar);
 Vue.use(Tag);
 Vue.use(ButtonGroup);
