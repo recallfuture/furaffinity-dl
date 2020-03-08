@@ -152,8 +152,8 @@ export default class AddWatchingSubsForm extends Vue {
       if (valid && !this.loading) {
         this.loading = true;
 
-        const users: Author[] = await faWatchingList();
-        if (users.length === 0) {
+        const users: Author[] | null = await faWatchingList();
+        if (users === null || users.length === 0) {
           this.loading = false;
           return false;
         }
