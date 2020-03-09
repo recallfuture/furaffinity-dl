@@ -21,7 +21,7 @@
     "electron-log": "^4.0.3",
     "electron-promise-ipc": "^2.0.1",
     "element-ui": "^2.4.5",
-    "furaffinity-api": "^3.4.7",
+    "furaffinity-api": "^3.4.8",
     "lodash": "^4.17.15",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.1",
