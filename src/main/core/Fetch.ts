@@ -272,7 +272,7 @@ export class Fetch {
 
     // 保存订阅信息
     await db.saveSub(sub);
-    await db.saveTasks(Object.values(this.idTask));
+    await db.saveTasks([...this.idTask.values()]);
 
     send("sub.update", sub);
     send("task.update");
@@ -422,11 +422,11 @@ export class Fetch {
   private refreshStatusTak() {
     this.statusTask.clear();
     for (const task of this.idTask.values()) {
-      let num = this.statusTask.get(task.type) ?? 0 + 1;
+      let num = (this.statusTask.get(task.type) ?? 0) + 1;
       this.statusTask.set(task.type, num);
 
       const status = `${task.type}-${task.status}`;
-      num = this.statusTask.get(status) ?? 0 + 1;
+      num = (this.statusTask.get(status) ?? 0) + 1;
       this.statusTask.set(status, num);
     }
   }
