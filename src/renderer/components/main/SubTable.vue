@@ -86,6 +86,9 @@ export default class SubTable extends Vue {
   openUrl = openUrl;
   openFolder = openFolder;
 
+  ctrlDown = false;
+  shiftDown = false;
+
   get statusFilters() {
     return [{ text: this.$tc("sub.status.active"), value: "active" }];
   }
@@ -119,9 +122,28 @@ export default class SubTable extends Vue {
   mounted() {
     bus.$on("header.start", this.handleHeaderStart);
     bus.$on("header.delete", this.handleHeaderDelete);
+
+    addEventListener("keydown", this.keyDown, false);
+    addEventListener("keyup", this.keyUp, false);
+  }
+
+  beforeDestroy() {
+    bus.$off("header.start", this.handleHeaderStart);
+    bus.$off("header.delete", this.handleHeaderDelete);
+
+    removeEventListener("keydown", this.keyDown);
+    removeEventListener("keyup", this.keyUp);
   }
 
   handleRowClick(row: any, event: any, column: any) {
+    const subTable: any = this.$refs.subTable;
+
+    if (this.ctrlDown) {
+      // ctrl多选，如果点击两次同样会取消选中
+      subTable.toggleRowSelection([{row}]);
+      return;
+    }
+
     this.currentRow = row;
     bus.$emit("sub.select", row);
   }
@@ -136,6 +158,18 @@ export default class SubTable extends Vue {
 
   handleHeaderDelete() {
     bus.$emit("sub.delete", this.multipleSelection);
+  }
+
+  keyDown(event: any) {
+    const key = event.keyCode;
+    if (key === 17) this.ctrlDown = true;
+    if (key === 16) this.shiftDown = true;
+  }
+
+  keyUp(event: any) {
+    const key = event.keyCode;
+    if (key === 17) this.ctrlDown = false;
+    if (key === 16) this.shiftDown = false;
   }
 }
 </script>
