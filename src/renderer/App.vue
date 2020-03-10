@@ -19,10 +19,10 @@
       el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
       
       div( class="spacer" )
-      Timer()
-      div( class="spacer" )
-
-      SpeedBar( :ariaStatus="ariaStatus" )
+      
+      div( style="display: flex; flex-direction: column; align-items: center;" )
+        SpeedBar( :ariaStatus="ariaStatus" )
+        Timer()
 </template>
 
 <script lang="ts">
