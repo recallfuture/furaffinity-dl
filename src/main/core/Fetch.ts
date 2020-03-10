@@ -35,7 +35,7 @@ export class Fetch {
 
   private fetching: boolean = false;
   private maxRetry: number = 5;
-  private concurrency: number = 12;
+  private concurrency: number = 1;
 
   private sub: Subscription | null = null;
 
