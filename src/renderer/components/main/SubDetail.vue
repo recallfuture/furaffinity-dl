@@ -74,7 +74,6 @@ export default class SubDetail extends Vue {
 
 <style>
 .sub-detail {
-  height: 30vh;
   margin-top: 15px;
   display: flex;
   flex-direction: column;
@@ -89,20 +88,13 @@ export default class SubDetail extends Vue {
 
 .sub-detail .sub-detail-body {
   background-color: #444;
-  height: 100%;
 }
 
 .sub-detail .sub-detail-card {
-  height: 100%;
   margin: 10px;
   background-color: #333;
   padding: 1px 15px;
   display: flex;
   flex-direction: column;
-}
-
-.sub-detail .sub-detail-card-body {
-  height: 100%;
-  overflow-y: auto;
 }
 </style>
