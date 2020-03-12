@@ -119,18 +119,18 @@ export class Fetch {
 
         try {
           // 下载此图集的所有图片
-          this.addLog(`[${type}] 开始获取`);
+          this.addLog(`[${sub.id}/${type}] 开始获取`);
           await this.mapPages(type as TaskType, sub);
         } catch (e) {
           if (e instanceof UpdateOnlyError) {
             // 仅更新模式跳出循环
-            this.addLog(`[${type}] ${e.message}`);
+            this.addLog(`[${sub.id}/${type}] ${e.message}`);
           } else if (e instanceof FetchStopError) {
             // 用户手动停止
-            this.addLog(`[${type}] 终止获取`);
+            this.addLog(`[${sub.id}/${type}] 终止获取`);
             break;
           } else {
-            this.addLog(`[${type}] 出现错误，停止获取：${e.message}`, LogType.Error);
+            this.addLog(`[${sub.id}/${type}] 出现错误，停止获取：${e.message}`, LogType.Error);
             logger.error(e);
           }
         }
@@ -157,7 +157,7 @@ export class Fetch {
       }
 
       if (results.length === 0) {
-        this.addLog(`[${type}] 获取结束`);
+        this.addLog(`[${sub.id}/${type}] 获取结束`);
         logger.log("页数到头了", sub.id, type, page);
         break;
       }
@@ -173,7 +173,7 @@ export class Fetch {
         if (e instanceof FetchStopError) {
           throw e;
         } else {
-          this.addLog(e.message, LogType.Error);
+          this.addLog(`[${sub.id}] ${e.message}`, LogType.Error);
           logger.error(e);
         }
       }
@@ -233,6 +233,7 @@ export class Fetch {
    */
   beforeFetchAll() {
     this.fetching = true;
+    this.clearLogs();
   }
 
   /**
@@ -371,16 +372,16 @@ export class Fetch {
 
     // @ts-ignore
     logger[type](message);
-    // TODO: 存数据库
+    db.addLog(log);
+    send("log.add", log);
   }
 
   /**
-   * 清空某订阅的日志
-   * @param id 订阅id
+   * 清空所有订阅的日志
    */
-  private clearLogs(id: string) {
-    db.clearLogs(id);
-    send("log.clear", id);
+  private clearLogs() {
+    db.clearLogs();
+    send("log.clear");
   }
 
   /**

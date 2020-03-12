@@ -28,9 +28,9 @@ export async function getTasksStatus(id: string): Promise<TasksStatus> {
   return await ipc.send("db.getTasksStatus", id);
 }
 
-export async function getLogs(id: string): Promise<Log[]> {
+export async function getLogs(): Promise<Log[]> {
   // @ts-ignore
-  return await ipc.send("db.getLogs", id);
+  return await ipc.send("db.getLogs");
 }
 
 export async function addSub(sub: Subscription) {

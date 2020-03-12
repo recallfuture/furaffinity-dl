@@ -19,6 +19,8 @@
       el-button( v-if="detail.sub && !detail.show" type="text" icon="el-icon-arrow-up" @click="handleDetailShow" )
       
       div( class="spacer" )
+      LogViewer( :logs="logs" )
+      div( class="spacer" )
       
       div( style="display: flex; flex-direction: column; align-items: center;" )
         SpeedBar( :ariaStatus="ariaStatus" )
@@ -54,9 +56,10 @@ import SubDetail from "./components/main/SubDetail.vue";
 import UserInfo from "./components/generic/User.vue";
 import SpeedBar from "./components/footer/SpeedBar.vue";
 import Timer from "./components/footer/Timer.vue";
+import LogViewer from './components/footer/LogViewer.vue';
 
 @Component({
-  components: { Toolbar, SubTable, SubDetail, UserInfo, SpeedBar, Timer }
+  components: { Toolbar, SubTable, SubDetail, UserInfo, SpeedBar, Timer, LogViewer }
 })
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
@@ -64,6 +67,7 @@ export default class App extends Vue {
 
   user: User | null = null;
   fetching: boolean = false;
+  logs: Log[] = [];
 
   ariaStatus: AriaStatus = {
     downloadSpeed: "0",
@@ -92,6 +96,7 @@ export default class App extends Vue {
       await this.initConfig();
       await this.initUser();
       await this.initSubs();
+      await this.initLogs();
       this.initAria();
       this.initHandle();
     } catch (e) {
@@ -122,6 +127,14 @@ export default class App extends Vue {
   async initSubs() {
     this.subs = await getSubs();
     logger.log("订阅初始化完成");
+  }
+
+  /**
+   * 初始化日志
+   */
+  async initLogs() {
+    this.logs = await getLogs();
+    logger.log("日志初始化完成");
   }
 
   /**
@@ -293,15 +306,18 @@ export default class App extends Vue {
   /**
    * 日志更新回调
    */
-  async handleIpcLogAdd(logs: Log[]) {
-    this.doLogAdd(logs);
+  async handleIpcLogAdd(log: Log) {
+    this.logs.push(log);
+    this.logs.sort((a, b) => {
+      return a.createAt - b.createAt
+    })
   }
 
   /**
    * 日志更新回调
    */
   async handleIpcLogClear(id: string) {
-    this.doLogClear(id);
+    this.logs = [];
   }
 
   /**
@@ -318,16 +334,6 @@ export default class App extends Vue {
       }
     }
   }
-
-  /**
-   * 执行日志添加
-   */
-  async doLogAdd(logs: Log[]) {}
-
-  /**
-   * 执行日志清空
-   */
-  async doLogClear(id: string) {}
 }
 </script>
 
@@ -357,5 +363,14 @@ body {
   display: flex;
   align-items: center;
   color: rgba(256, 256, 256, 0.6);
+}
+
+.app .el-dialog {
+  background-color: #333;
+}
+
+.app .el-dialog__title,
+.app .el-dialog__body {
+  color: rgba(256, 256, 256, 0.87);
 }
 </style>

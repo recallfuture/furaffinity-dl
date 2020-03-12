@@ -45,7 +45,6 @@ export class Database {
    */
   async removeSub(id: string) {
     await this.clearTasks(id);
-    await this.clearLogs(id);
     return await getManager().delete(Subscription, id);
   }
 
@@ -155,15 +154,11 @@ export class Database {
   }
 
   /**
-   * 获取某个订阅最新的100条日志
-   * @param id 订阅id
+   * 获取所有日志
    */
-  async getLogs(id: string): Promise<Log[]> {
-    const count = await getManager().count(Log, { where: { sub: id } });
+  async getLogs(): Promise<Log[]> {
     return await getManager().find(Log, {
-      where: { sub: id },
-      order: { createAt: "ASC" },
-      skip: count > 100 ? count - 100 : 0
+      order: { createAt: "ASC" }
     });
   }
 
@@ -179,12 +174,11 @@ export class Database {
    * 删除某一订阅的所有日志
    * @param id 订阅id
    */
-  async clearLogs(id: string) {
+  async clearLogs() {
     return await getConnection()
       .createQueryBuilder()
       .delete()
       .from(Log)
-      .where("subId = :id", { id })
       .execute();
   }
   // ---------------- Log end ------------------------

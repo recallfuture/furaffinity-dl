@@ -191,13 +191,4 @@ export default class Toolbar extends Vue {
 .user .avatar {
   margin-right: 5px;
 }
-
-.toolbar .el-dialog {
-  background-color: #333;
-}
-
-.toolbar .el-dialog__title,
-.toolbar .el-dialog__body {
-  color: rgba(256, 256, 256, 0.87);
-}
 </style>
