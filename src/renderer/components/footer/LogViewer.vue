@@ -7,13 +7,17 @@
       :visible.sync="dialog"
       width="600px"
     )
+      div 日志等级：
+        el-checkbox( v-model="levelLog" ) log
+        el-checkbox( v-model="levelError" ) error
+
       div( style="max-height: 60vh; overflow: auto;" )
         p( v-for="(log, index) in reverseLogs" :key="index" :class="typeToColor(log.type)") {{ formatLog(log) }}
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { Log } from '@/main/database/entity';
+import { Log, LogType } from "@/main/database/entity";
 
 @Component
 export default class LogViewer extends Vue {
@@ -21,13 +25,26 @@ export default class LogViewer extends Vue {
 
   dialog: Boolean = false;
 
+  levelLog: Boolean = true;
+  levelError: Boolean = true;
+
   get lastLog() {
     // TODO: i18n
     return this.logs.length > 0 ? this.logs[0].message : "暂无日志";
   }
 
   get reverseLogs() {
-    return this.logs.reverse();
+    return this.logs.reverse().filter(log => {
+      if (log.type === LogType.Log) {
+        return this.levelLog;
+      }
+
+      if (log.type === LogType.Error) {
+        return this.levelError;
+      }
+
+      return true;
+    });
   }
 
   typeToColor(type: string) {
@@ -50,7 +67,7 @@ export default class LogViewer extends Vue {
     }
   }
 
-  addPrefix (number: Number) {
+  addPrefix(number: Number) {
     if (number < 10) {
       return "0" + number;
     } else {
@@ -68,7 +85,9 @@ export default class LogViewer extends Vue {
     const min = date.getMinutes();
     const sec = date.getSeconds();
 
-    const time = `${this.addPrefix(hour)}:${this.addPrefix(min)}:${this.addPrefix(sec)}`;
+    const time = `${this.addPrefix(hour)}:${this.addPrefix(
+      min
+    )}:${this.addPrefix(sec)}`;
     return `[${time}] ${message}`;
   }
 }
