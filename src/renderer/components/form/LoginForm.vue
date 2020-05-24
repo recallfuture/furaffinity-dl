@@ -26,9 +26,7 @@ export default class LoginForm extends Vue {
   }
 
   getLoginUrl() {
-    return (
-      "https://www.furaffinity.net/login/?mode=imagecaptcha&r=" + Math.random()
-    );
+    return "https://www.furaffinity.net/login/?r=" + Math.random();
   }
 
   reload() {
