@@ -56,10 +56,18 @@ import SubDetail from "./components/main/SubDetail.vue";
 import UserInfo from "./components/generic/User.vue";
 import SpeedBar from "./components/footer/SpeedBar.vue";
 import Timer from "./components/footer/Timer.vue";
-import LogViewer from './components/footer/LogViewer.vue';
+import LogViewer from "./components/footer/LogViewer.vue";
 
 @Component({
-  components: { Toolbar, SubTable, SubDetail, UserInfo, SpeedBar, Timer, LogViewer }
+  components: {
+    Toolbar,
+    SubTable,
+    SubDetail,
+    UserInfo,
+    SpeedBar,
+    Timer,
+    LogViewer
+  }
 })
 export default class App extends Vue {
   @ProvideReactive() subs: Subscription[] = [];
@@ -309,8 +317,8 @@ export default class App extends Vue {
   async handleIpcLogAdd(log: Log) {
     this.logs.push(log);
     this.logs.sort((a, b) => {
-      return a.createAt - b.createAt
-    })
+      return a.createAt - b.createAt;
+    });
   }
 
   /**
