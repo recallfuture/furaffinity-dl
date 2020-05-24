@@ -1,7 +1,7 @@
 <template lang="pug">
 div( class="sub-table" )
   pl-table(
-    :datas="subs"
+    :datas="calcSubs"
     :default-sort="{ prop: 'id', order: 'ascending' }"
     ref="subTable"
     :pagination-show="false"
@@ -80,6 +80,7 @@ import { openFolder } from "../../api/ipc";
 export default class SubTable extends Vue {
   @InjectReactive() subs!: Subscription[];
 
+  search: String = "";
   currentRow: Subscription | null = null;
   multipleSelection: Subscription[] = [];
 
@@ -91,6 +92,13 @@ export default class SubTable extends Vue {
 
   get statusFilters() {
     return [{ text: this.$tc("sub.status.active"), value: "active" }];
+  }
+
+  get calcSubs() {
+    return this.subs.filter(sub => {
+      const s = this.search.toLowerCase();
+      return sub.name.toLowerCase().includes(s);
+    });
   }
 
   filterStatus(value: any, row: any, column: any) {
@@ -122,6 +130,9 @@ export default class SubTable extends Vue {
   mounted() {
     bus.$on("header.start", this.handleHeaderStart);
     bus.$on("header.delete", this.handleHeaderDelete);
+    bus.$on("header.searchChange", (search: any) => {
+      this.search = search;
+    });
 
     addEventListener("keydown", this.keyDown, false);
     addEventListener("keyup", this.keyUp, false);
@@ -140,7 +151,7 @@ export default class SubTable extends Vue {
 
     if (this.ctrlDown) {
       // ctrl多选，如果点击两次同样会取消选中
-      subTable.toggleRowSelection([{row}]);
+      subTable.toggleRowSelection([{ row }]);
       return;
     }
 

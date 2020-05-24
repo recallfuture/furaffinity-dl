@@ -1,14 +1,16 @@
 <template lang="pug">
   div( class="toolbar" )
     //- 添加订阅
-    el-button( type="primary" icon="el-icon-plus" @click="addDialog = true" ) {{ $t("header.add") }}
+    el-button( type="primary" :title="$t('header.add')" icon="el-icon-plus" @click="addDialog = true" )
 
     //- 订阅下载控制
     el-button-group( style="margin-left: 10px; margin-right: 10px;" )
-      el-button( type="info" icon="el-icon-video-play" @click="onStart" :disabled="downloading" ) {{ $t("header.start") }}
-      el-button( type="info" icon="el-icon-video-pause" @click="onStop" :disabled="!downloading" ) {{ $t("header.stop") }}
-      el-button( type="info" icon="el-icon-delete" @click="onDelete" :disabled="downloading" ) {{ $t("header.delete") }}
+      el-button( type="info" :title="$t('header.start')" icon="el-icon-video-play" @click="onStart" :disabled="downloading" )
+      el-button( type="info" :title="$t('header.stop')" icon="el-icon-video-pause" @click="onStop" :disabled="!downloading" )
+      el-button( type="info" :title="$t('header.delete')" icon="el-icon-delete" @click="onDelete" :disabled="downloading" )
     
+    el-input( v-model="search" placeholder="搜索" suffix-icon="el-icon-search" style="width: 150px;" @input="onInput" )
+
     div( class="spacer" )
 
     //- 用户登录后
@@ -22,12 +24,13 @@
     el-button(
       v-else
       type="primary"
+      :title="$t('header.login')"
       icon="el-icon-user"
       @click="loginDialog= true"
-    ) {{ $t("header.login") }}
+    )
     
     //- 设置
-    el-button( type="info" icon="el-icon-setting" ) {{ $t("header.setting") }}
+    el-button( type="info" :title="$t('header.setting')" icon="el-icon-setting" )
     el-button( type="info" @click="openDevTools" ) 调试
 
     //- 退出登录确认对话框
@@ -94,6 +97,7 @@ export default class Toolbar extends Vue {
   deleteDialog: boolean = false;
   deleteWithTrash: boolean = false;
 
+  search: String = "";
   deleteStatus: any = null;
   willDeleteSubs: Subscription[] = [];
 
@@ -107,6 +111,10 @@ export default class Toolbar extends Vue {
 
   onDelete() {
     bus.$emit("header.delete");
+  }
+
+  onInput() {
+    bus.$emit("header.searchChange", this.search);
   }
 
   onSuccess(user: User) {
