@@ -24,7 +24,7 @@ function send(route: string, ...args: any) {
   }
 }
 
-class UpdateOnlyError extends Error {}
+class FastModeError extends Error {}
 class FetchStopError extends Error {}
 
 /**
@@ -36,6 +36,7 @@ export class Fetch {
   private fetching: boolean = false;
   private maxRetry: number = 5;
   private concurrency: number = 1;
+  private fastMode: Boolean = false;
 
   private sub: Subscription | null = null;
 
@@ -75,12 +76,13 @@ export class Fetch {
   /**
    * 开始
    */
-  async start(subs: Subscription[]) {
+  async start(subs: Subscription[], fastMode: Boolean) {
     if (this.fetching || subs.length === 0) {
       return;
     }
 
     // 开始获取
+    this.fastMode = fastMode;
     this.beforeFetchAll();
 
     try {
@@ -111,7 +113,10 @@ export class Fetch {
       await this.beforeFetchOne(sub);
 
       // 下载的图集
-      const types: any = { [TaskType.Gallery]: sub.gallery, [TaskType.Scraps]: sub.scraps };
+      const types: any = {
+        [TaskType.Gallery]: sub.gallery,
+        [TaskType.Scraps]: sub.scraps
+      };
       for (const type in types) {
         if (!types[type]) {
           continue;
@@ -122,15 +127,18 @@ export class Fetch {
           this.addLog(`[${sub.id}/${type}] 开始获取`);
           await this.mapPages(type as TaskType, sub);
         } catch (e) {
-          if (e instanceof UpdateOnlyError) {
-            // 仅更新模式跳出循环
+          if (e instanceof FastModeError) {
+            // 快速模式跳出循环
             this.addLog(`[${sub.id}/${type}] ${e.message}`);
           } else if (e instanceof FetchStopError) {
             // 用户手动停止
             this.addLog(`[${sub.id}/${type}] 终止获取`);
             break;
           } else {
-            this.addLog(`[${sub.id}/${type}] 出现错误，停止获取：${e.message}`, LogType.Error);
+            this.addLog(
+              `[${sub.id}/${type}] 出现错误，停止获取：${e.message}`,
+              LogType.Error
+            );
             logger.error(e);
           }
         }
@@ -149,6 +157,10 @@ export class Fetch {
     for (let page = 1; ; page++) {
       if (!this.fetching) {
         throw new FetchStopError();
+      }
+
+      if (this.fastMode && page === 2) {
+        throw new FastModeError();
       }
 
       const results: Result[] | null = await this.getResults(sub, page, type);
@@ -201,7 +213,12 @@ export class Fetch {
       await Bluebird.map(items, async (item, index) => {
         // 先判断缓存中有没有
         const task = this.idTask.get(item.id);
-        if (task && task.status === "complete" && task.path && (await existsAsync(task.path))) {
+        if (
+          task &&
+          task.status === "complete" &&
+          task.path &&
+          (await existsAsync(task.path))
+        ) {
           logger.log("跳过作品", sub.id, type, page, begin + index + 1);
           return;
         }
@@ -218,7 +235,9 @@ export class Fetch {
           // 从网络获取并创建
           const submission = await this.getSubmission(item);
           if (submission === null) {
-            throw new Error(`作品详情获取失败：${sub.id},${type}, ${page}, ${index}`);
+            throw new Error(
+              `作品详情获取失败：${sub.id},${type}, ${page}, ${index}`
+            );
           }
           newTask = this.createTaskFromSubmission(submission, sub, type);
         }
@@ -303,7 +322,11 @@ export class Fetch {
    * @param sub 任务所属订阅
    * @param type 类型
    */
-  createTaskFromSubmission(submission: ISubmission, sub: Subscription, type: TaskType) {
+  createTaskFromSubmission(
+    submission: ISubmission,
+    sub: Subscription,
+    type: TaskType
+  ) {
     // 创建新任务
     const task = new Task();
     task.gid = "";
@@ -321,7 +344,11 @@ export class Fetch {
    * @param page 页数
    * @param type 类型
    */
-  async getResults(sub: Subscription, page: number, type: TaskType): Promise<Result[] | null> {
+  async getResults(
+    sub: Subscription,
+    page: number,
+    type: TaskType
+  ): Promise<Result[] | null> {
     const fun = () =>
       type === TaskType.Gallery
         ? Bluebird.resolve(Gallery(sub.id, page))
@@ -346,7 +373,10 @@ export class Fetch {
    * @param error 错误时执行的函数
    * @param count 重试次数
    */
-  private async retry(fun: Function, count: number = this.maxRetry): Promise<any> {
+  private async retry(
+    fun: Function,
+    count: number = this.maxRetry
+  ): Promise<any> {
     if (count-- <= 0) {
       return null;
     }

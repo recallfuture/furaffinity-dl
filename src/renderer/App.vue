@@ -77,6 +77,8 @@ export default class App extends Vue {
   fetching: boolean = false;
   logs: Log[] = [];
 
+  fastMode: Boolean = false;
+
   ariaStatus: AriaStatus = {
     downloadSpeed: "0",
     numActive: "0",
@@ -154,6 +156,9 @@ export default class App extends Vue {
     bus.$on("sub.add", this.handleSubAdd);
     bus.$on("sub.start", this.handleSubStart);
     bus.$on("header.stop", this.handleHeaderStop);
+    bus.$on("header.modeChange", (fastMode: any) => {
+      this.fastMode = fastMode;
+    });
     bus.$on("sub.deleted", this.handleSubDeleted);
     bus.$on("sub.select", this.handleSubSelect);
     bus.$on("detail.show", this.handleDetailShow);
@@ -271,7 +276,7 @@ export default class App extends Vue {
     this.fetching = true;
     bus.$emit("fetch.start");
     try {
-      await faFetchStart(subs);
+      await faFetchStart(subs, this.fastMode);
     } catch (e) {
       this.$message.error(e.message);
       logger.error(e);

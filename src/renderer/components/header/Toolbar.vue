@@ -13,6 +13,12 @@
 
     div( class="spacer" )
 
+    div( title="开启后，每个订阅只获取最新的一页，以便快速更新" )
+      span 极速模式：
+      el-switch( v-model="fastMode" @change="onModeChange" )
+
+    div( class="spacer" )
+
     //- 用户登录后
     el-dropdown( v-if="user" @command="onCommand" )
       UserInfo( :sub="user" )
@@ -97,6 +103,7 @@ export default class Toolbar extends Vue {
   deleteDialog: boolean = false;
   deleteWithTrash: boolean = false;
 
+  fastMode: Boolean = false;
   search: String = "";
   deleteStatus: any = null;
   willDeleteSubs: Subscription[] = [];
@@ -115,6 +122,10 @@ export default class Toolbar extends Vue {
 
   onInput() {
     bus.$emit("header.searchChange", this.search);
+  }
+
+  onModeChange() {
+    bus.$emit("header.modeChange", this.fastMode);
   }
 
   onSuccess(user: User) {

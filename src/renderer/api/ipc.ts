@@ -85,9 +85,12 @@ export async function faSubmission(id: string): Promise<Submission> {
  * 开始获取订阅作品信息
  * @param subs 订阅列表
  */
-export async function faFetchStart(subs: Subscription[]) {
+export async function faFetchStart(
+  subs: Subscription[],
+  fastMode: Boolean = false
+) {
   // @ts-ignore
-  return await ipc.send("fa.fetchStart", subs);
+  return await ipc.send("fa.fetchStart", subs, fastMode);
 }
 
 /**
