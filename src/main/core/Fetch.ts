@@ -211,6 +211,8 @@ export class Fetch {
       let delay = 0;
       const items = submissions.slice(begin, begin + this.concurrency);
       await Bluebird.map(items, async (item, index) => {
+        const currentIndex = begin + index + 1;
+
         // 先判断缓存中有没有
         const task = this.idTask.get(item.id);
         if (
@@ -219,7 +221,7 @@ export class Fetch {
           task.path &&
           (await existsAsync(task.path))
         ) {
-          logger.log("跳过作品", sub.id, type, page, begin + index + 1);
+          logger.log("跳过作品", sub.id, type, page, currentIndex);
           return;
         }
 
@@ -235,9 +237,7 @@ export class Fetch {
           // 从网络获取并创建
           const submission = await this.getSubmission(item);
           if (submission === null) {
-            throw new Error(
-              `作品详情获取失败：${sub.id},${type}, ${page}, ${index}`
-            );
+            throw new Error(`作品详情获取失败：${sub.id},${type},${item.url}`);
           }
           newTask = this.createTaskFromSubmission(submission, sub, type);
         }
