@@ -1,11 +1,11 @@
 <template>
-  <v-app></v-app>
+  <div class="home"></div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "@vue/composition-api";
 
 export default defineComponent({
-  name: "App"
+  name: "Home"
 });
 </script>

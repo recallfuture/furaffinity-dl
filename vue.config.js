@@ -1,4 +1,8 @@
+/* eslint-disable @typescript-eslint/camelcase */
+
 module.exports = {
+  transpileDependencies: ["vuetify"],
+
   configureWebpack: config => {
     config.entry.app = "./src/renderer/index.ts";
   },
@@ -22,7 +26,6 @@ module.exports = {
       },
       builderOptions: {
         productName: "Furaffinity-dl",
-        appId: "space.recallsufuture.furaffinity-dl",
         asar: true,
         win: {
           target: [

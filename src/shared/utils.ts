@@ -1,4 +1,3 @@
-import Bluebird from "bluebird";
 import { Subscription, Task } from "@/main/database/entity";
 
 /**
@@ -61,7 +60,11 @@ export function transformTasks(tasks: Task[]) {
  * 异步休眠一段时间
  * @param millisecond 休眠的毫秒数
  */
-export const sleep = Bluebird.delay;
+export const sleep = (millisecond: number) =>new Promise((resole) => {
+  setTimeout(() => {
+    resole(millisecond);
+  }, millisecond);
+});
 
 /**
  * 去除数组中的未定义值

@@ -1,17 +1,19 @@
 import Vue from "vue";
 import App from "./App.vue";
-import "./plugins/element";
-import "./plugins/pl-table";
-import i18n from "./plugins/i18n";
-
-import logger from "@/shared/logger";
+import router from "./router";
+import store from "./store";
+import VueCompositionAPI from "@vue/composition-api";
+import vuetify from "./plugins/vuetify";
+import "roboto-fontface/css/roboto/roboto-fontface.css";
+import "@mdi/font/css/materialdesignicons.css";
 
 Vue.config.productionTip = false;
-Vue.config.errorHandler = error => {
-  logger.error("Vue error", error);
-};
+
+Vue.use(VueCompositionAPI);
 
 new Vue({
-  i18n,
+  router,
+  store,
+  vuetify,
   render: h => h(App)
 }).$mount("#app");

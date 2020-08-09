@@ -1,8 +1,8 @@
 import { getManager } from "typeorm";
 import { app } from "electron";
-import { Config, ConfigType } from "../entity";
+import { Config, ConfigType } from "../entities/Config";
 
-export interface AriaConfig {
+interface AriaConfig {
   "all-proxy": string;
   "allow-overwrite": boolean;
   "auto-file-renaming": boolean;
@@ -20,7 +20,7 @@ export interface AriaConfig {
   "user-agent": string;
 }
 
-export const defaultAriaConfig = {
+const defaultAriaConfig = {
   "all-proxy": "",
   "allow-overwrite": false,
   "auto-file-renaming": false,
@@ -61,7 +61,7 @@ async function set(type: any, data: any, options?: any) {
 /**
  * 获取配置
  */
-export async function getAriaConfig(): Promise<AriaConfig> {
+async function getAriaConfig(): Promise<AriaConfig> {
   return await get(Config, defaultAriaConfig, {
     where: {
       id: 1,
@@ -74,9 +74,14 @@ export async function getAriaConfig(): Promise<AriaConfig> {
  * 保存配置
  * @param data 配置
  */
-export async function saveAriaConfig(data: AriaConfig) {
+async function saveAriaConfig(data: AriaConfig) {
   return await set(Config, data, {
     id: 1,
     type: ConfigType.Aria
   });
 }
+
+export const configService = {
+  getAriaConfig,
+  saveAriaConfig
+};
