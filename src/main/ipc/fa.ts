@@ -7,12 +7,15 @@ import {
   MyWatchingList,
   Scraps,
   Submission,
-  User
+  User,
 } from "furaffinity-api";
-import { transformSubs } from "../../shared/utils";
-import { fetch } from "../core";
 
-async function onFaClearCookies() {
+export const getCookies = (): Promise<Electron.Cookie[]> =>
+  session.defaultSession?.cookies.get({
+    domain: ".furaffinity.net",
+  });
+
+export const clearCookies = async (): Promise<void> => {
   await session.defaultSession?.cookies.remove(
     "http://www.furaffinity.net",
     "a"
@@ -21,31 +24,17 @@ async function onFaClearCookies() {
     "http://www.furaffinity.net",
     "b"
   );
-}
+};
 
-async function onFaGetCookies() {
-  return session.defaultSession?.cookies.get({
-    domain: ".furaffinity.net"
-  });
-}
-
-export function registerFaIpc() {
-  // cookies
-  ipc.on("fa.clearCookies", onFaClearCookies as any);
-  ipc.on("fa.getCookies", onFaGetCookies as any);
-
+export const registerFaIpc = (): void => {
   // fa api
-  ipc.on("fa.login", Login as any);
-  ipc.on("fa.user", User as any);
-  ipc.on("fa.watchingList", MyWatchingList as any);
-  ipc.on("fa.author", Author as any);
-  ipc.on("fa.gallery", Gallery as any);
-  ipc.on("fa.scraps", Scraps as any);
-  ipc.on("fa.submission", Submission as any);
-
-  ipc.on("fa.fetchStart", (subs: any, fastMode: any) =>
-    fetch.start(transformSubs(subs), fastMode)
-  );
-  ipc.on("fa.fetchStop", () => fetch.stop());
-  ipc.on("fa.getGlobalStat", () => fetch.globalStat);
-}
+  ipc.on("fa.getCookies", getCookies);
+  ipc.on("fa.clearCookies", clearCookies);
+  ipc.on("fa.login", Login as never);
+  ipc.on("fa.user", User as never);
+  ipc.on("fa.watchingList", MyWatchingList as never);
+  ipc.on("fa.author", Author as never);
+  ipc.on("fa.gallery", Gallery as never);
+  ipc.on("fa.scraps", Scraps as never);
+  ipc.on("fa.submission", Submission as never);
+};

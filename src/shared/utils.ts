@@ -1,12 +1,35 @@
-import Bluebird from "bluebird";
-import { Subscription, Task } from "@/main/database/entity";
+import { app, remote } from "electron";
+import is from "electron-is";
+import path from "path";
+
+/**
+ * 获取数据存储路径
+ */
+export const getDataPath = () => {
+  const currentApp = is.main() ? app : remote.app;
+  return process.env.NODE_ENV === "production"
+    ? path.join(currentApp.getPath("documents"), "Furaffinity-dl")
+    : path.join(".", ".data");
+};
+
+/**
+ * 获取上下文中的所有导出模块
+ * @param context 上下文
+ */
+export const requireAll = (
+  context: __WebpackModuleApi.RequireContext
+): unknown[] => {
+  return context
+    .keys()
+    .reduce((prev, curr) => prev.concat(Object.values(context(curr))), []);
+};
 
 /**
  * 将配置对象转换为命令行参数数组
  * @param config 配置对象
  */
 export function transformConfig(config: {}): string[] {
-  let result = [];
+  const result = [];
   for (const [k, v] of Object.entries(config)) {
     if (v !== "") {
       result.push(`--${k}=${v}`);
@@ -16,72 +39,15 @@ export function transformConfig(config: {}): string[] {
 }
 
 /**
- * 转换从渲染进程到主进程的订阅数据
- * @param sub 订阅
- */
-export function transformSub(sub: Subscription) {
-  const s = new Subscription();
-  for (const key in sub) {
-    // @ts-ignore
-    s[key] = sub[key];
-  }
-  return s;
-}
-
-/**
- * 转换从渲染进程到主进程的订阅数据
- * @param subs 订阅列表
- */
-export function transformSubs(subs: Subscription[]) {
-  return subs.map(sub => transformSub(sub));
-}
-
-/**
- * 转换从渲染进程到主进程的任务数据
- * @param task 任务
- */
-export function transformTask(task: Task) {
-  const t = new Task();
-  for (const key in task) {
-    // @ts-ignore
-    t[key] = task[key];
-  }
-  return t;
-}
-
-/**
- * 转换从渲染进程到主进程的任务数据
- * @param tasks 任务列表
- */
-export function transformTasks(tasks: Task[]) {
-  return tasks.map(task => transformTask(task));
-}
-
-/**
  * 异步休眠一段时间
  * @param millisecond 休眠的毫秒数
  */
-export const sleep = Bluebird.delay;
-
-/**
- * 去除数组中的未定义值
- * @param arr 数组
- */
-export function compactUndefined(arr: any[] = []): any[] {
-  return arr.filter(value => value !== undefined);
-}
-
-/**
- * 合并任务结果
- * @param response 响应数据
- */
-export function mergeTaskResult(response: any[] = []): any[] {
-  let result: any[] = [];
-  for (const res of response) {
-    result = result.concat(...res);
-  }
-  return result;
-}
+export const sleep = (millisecond: number) =>
+  new Promise(resole => {
+    setTimeout(() => {
+      resole(millisecond);
+    }, millisecond);
+  });
 
 /**
  * 用户名转用户id

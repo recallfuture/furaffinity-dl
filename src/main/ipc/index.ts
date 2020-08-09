@@ -1,9 +1,7 @@
-import { registerAppIpc } from "@/main/ipc/app";
-import { registerDatabaseIpc } from "@/main/ipc/database";
-import { registerFaIpc } from "@/main/ipc/fa";
+import { registerAppIpc } from "./app";
+import { registerFaIpc } from "./fa";
 
-export function registerIpc() {
+export const registerIpc = (): void => {
   registerAppIpc();
-  registerDatabaseIpc();
   registerFaIpc();
-}
+};
