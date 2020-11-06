@@ -27,6 +27,21 @@ export class MainWindow {
     this.win = new BrowserWindow(options);
     this.win.on("close", () => this.close());
     this.win.once("ready-to-show", () => this.readyToShow());
+    this.win.webContents.session.webRequest.onBeforeRequest(
+      async ({ url }, callback) => {
+        const recaptchaUrl = "https://www.google.com/recaptcha";
+        callback(
+          url.startsWith(recaptchaUrl)
+            ? {
+              redirectURL: url.replace(
+                recaptchaUrl,
+                "https://recaptcha.net/recaptcha"
+              )
+            }
+            : {}
+        );
+      }
+    );
     this.load();
   }
 

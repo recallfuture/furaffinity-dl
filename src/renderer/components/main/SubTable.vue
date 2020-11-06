@@ -60,11 +60,11 @@ div( class="sub-table" )
         span( v-if="row.scraps" class="scraps-task-num" ) {{ row.scrapsTaskNum }}
         i( v-else class="el-icon-close" )
     //- 主页地址
-    pl-table-column( prop="url" :label="$t('main.table.home_url')" align="center" )
+    pl-table-column( prop="url" :label="$t('main.table.home_url')" align="center" sortable )
       template( slot-scope="{ row }")
         el-link( type="primary" @click="openUrl(row.url)" ) {{ row.url }}
     //- 保存目录
-    pl-table-column( prop="dir" :label="$t('main.table.dir')" align="center" )
+    pl-table-column( prop="dir" :label="$t('main.table.dir')" align="center" sortable )
       template( slot-scope="{ row }")
         el-link( type="primary" @click="openFolder(row.dir)" ) {{ row.dir }}
 </template>
