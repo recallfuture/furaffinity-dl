@@ -15,18 +15,23 @@ import { fetch } from "../core";
 async function onFaClearCookies() {
   await session.defaultSession?.cookies.remove(
     "http://www.furaffinity.net",
-    "a"
+    "a",
+    () => {}
   );
   await session.defaultSession?.cookies.remove(
     "http://www.furaffinity.net",
-    "b"
+    "b",
+    () => {}
   );
 }
 
 async function onFaGetCookies() {
-  return session.defaultSession?.cookies.get({
-    domain: ".furaffinity.net"
-  });
+  return session.defaultSession?.cookies.get(
+    {
+      domain: ".furaffinity.net"
+    },
+    () => {}
+  );
 }
 
 export function registerFaIpc() {

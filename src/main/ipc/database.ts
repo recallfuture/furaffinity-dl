@@ -4,7 +4,7 @@ import { Subscription, Task } from "@/main/database/entity";
 import { TaskType, TaskStatus } from "../database/entity/Task";
 import { TasksStatus } from "../../shared/interface";
 import { fetch } from "../core/index";
-import { transformSub, transformSubs, transformTask, transformTasks } from "@/shared/utils";
+import { transformSub, transformSubs } from "@/shared/utils";
 
 async function saveSub(sub: Subscription) {
   return await db.saveSub(transformSub(sub));
@@ -21,10 +21,18 @@ async function getTasksStatus(id: string) {
 
   return {
     gallery: await db.getTaskNum(id, TaskType.Gallery),
-    galleryComplete: await db.getTaskNum(id, TaskType.Gallery, TaskStatus.Complete),
+    galleryComplete: await db.getTaskNum(
+      id,
+      TaskType.Gallery,
+      TaskStatus.Complete
+    ),
     galleryActive: await db.getTaskNum(id, TaskType.Gallery, TaskStatus.Active),
     scraps: await db.getTaskNum(id, TaskType.Scraps),
-    scrapsComplete: await db.getTaskNum(id, TaskType.Scraps, TaskStatus.Complete),
+    scrapsComplete: await db.getTaskNum(
+      id,
+      TaskType.Scraps,
+      TaskStatus.Complete
+    ),
     scrapsActive: await db.getTaskNum(id, TaskType.Scraps, TaskStatus.Active)
   } as TasksStatus;
 }

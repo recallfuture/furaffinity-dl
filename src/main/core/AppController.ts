@@ -18,7 +18,6 @@ export class AppController extends EventEmitter {
   init() {
     this.registerProcessQuit();
     this.requestSingleInstanceLock();
-    this.registerScheme();
 
     app.on("second-instance", this.onSecondInstance);
     app.on("window-all-closed", this.onWindowAllClosed);
@@ -34,16 +33,6 @@ export class AppController extends EventEmitter {
     if (!app.requestSingleInstanceLock()) {
       app.quit();
     }
-  }
-
-  /**
-   * 注册协议
-   */
-  registerScheme() {
-    // Scheme must be registered before the app is ready
-    protocol.registerSchemesAsPrivileged([
-      { scheme: "app", privileges: { secure: true, standard: true } }
-    ]);
   }
 
   registerProcessQuit() {
@@ -97,7 +86,7 @@ export class AppController extends EventEmitter {
   async onReady() {
     await db.create();
     await ariaController.start();
-    await fetch.init(await db.getAriaConfig());
+    fetch.init(await db.getAriaConfig());
     registerIpc();
     // require("vue-devtools").install();
     mainWindow.create();

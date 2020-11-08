@@ -8,10 +8,10 @@ import { mainWindow } from "../core";
  */
 async function openFolderDialog(): Promise<string[] | undefined> {
   if (mainWindow.win) {
-    const result = await dialog.showOpenDialog(mainWindow.win, {
+    const result = dialog.showOpenDialog(mainWindow.win, {
       properties: ["openDirectory", "multiSelections"]
     });
-    return result.filePaths;
+    return result;
   }
 }
 

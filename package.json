@@ -57,7 +57,7 @@
     "@vue/test-utils": "1.0.0-beta.29",
     "aws-sdk": "^2.786.0",
     "babel-plugin-component": "^1.1.1",
-    "electron": "^6.0.0",
+    "electron": "^3.0.0",
     "eslint": "^6.8.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-vue": "^6.1.2",
