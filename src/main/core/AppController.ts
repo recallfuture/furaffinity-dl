@@ -1,10 +1,11 @@
 "use strict";
 
-import { app, protocol, Event } from "electron";
+import { app, protocol } from "electron";
 import is from "electron-is";
 import { EventEmitter } from "events";
-import { db, mainWindow, ariaController, fetch } from ".";
+import { mainWindow } from ".";
 import { registerIpc } from "@/main/ipc";
+import { initDatabase } from "../database";
 
 /**
  * Electron 应用类
@@ -69,7 +70,7 @@ export class AppController extends EventEmitter {
    * @param commandLine 命令行
    * @param workingDir 工作目录
    */
-  onSecondInstance(event: Event, commandLine: string[], workingDir: string) {
+  onSecondInstance() {
     if (mainWindow.win) {
       if (mainWindow.win.isMinimized()) mainWindow.win.restore();
       mainWindow.win.focus();
@@ -95,16 +96,13 @@ export class AppController extends EventEmitter {
   }
 
   async onReady() {
-    await db.create();
-    await ariaController.start();
-    await fetch.init(await db.getAriaConfig());
+    await initDatabase();
     registerIpc();
     // require("vue-devtools").install();
     mainWindow.create();
   }
 
   async onBeforeQuit() {
-    await ariaController.stop();
-    await fetch.stop();
+    // TODO:
   }
 }

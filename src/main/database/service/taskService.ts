@@ -5,7 +5,7 @@ import { Task, TaskType } from "../entities/Task";
  * 获取某个任务
  * @param id 任务id
  */
-async function getTask(id: string): Promise<Task | undefined> {
+export async function getTask(id: string): Promise<Task | undefined> {
   return await getManager().findOne(Task, {
     where: { id }
   });
@@ -15,7 +15,7 @@ async function getTask(id: string): Promise<Task | undefined> {
  * 获取某个任务
  * @param gid 任务gid
  */
-function getTaskByGid(gid: string): Promise<Task | undefined> {
+export function getTaskByGid(gid: string): Promise<Task | undefined> {
   return getManager().findOne(Task, {
     where: { gid },
     relations: ["sub"]
@@ -26,7 +26,7 @@ function getTaskByGid(gid: string): Promise<Task | undefined> {
  * 添加一个任务
  * @param task 任务
  */
-async function saveTask(task: Task): Promise<Task> {
+export async function saveTask(task: Task): Promise<Task> {
   return await getManager().save(task);
 }
 
@@ -34,7 +34,7 @@ async function saveTask(task: Task): Promise<Task> {
  * 获取一个订阅的作品数量
  * @param id 订阅id
  */
-async function getTaskNum(id: string, type: TaskType, status?: string) {
+export async function getTaskNum(id: string, type: TaskType, status?: string) {
   if (typeof status === "undefined") {
     return await getManager().count(Task, {
       where: { sub: id, type }
@@ -50,7 +50,7 @@ async function getTaskNum(id: string, type: TaskType, status?: string) {
  * 获取某个订阅所有的作品
  * @param id 订阅id
  */
-function getTasks(id: string): Promise<Task[]> {
+export function getTasks(id: string): Promise<Task[]> {
   return getManager().find(Task, {
     where: { sub: id }
   });
@@ -60,7 +60,7 @@ function getTasks(id: string): Promise<Task[]> {
  * 批量添加任务
  * @param tasks 任务列表
  */
-async function saveTasks(tasks: Task[]) {
+export async function saveTasks(tasks: Task[]) {
   return await getManager().save(tasks, { chunk: 500 });
 }
 
@@ -68,7 +68,7 @@ async function saveTasks(tasks: Task[]) {
  * 删除某一订阅的所有日志
  * @param id 订阅id
  */
-async function clearTasks(id: string) {
+export async function clearTasks(id: string) {
   return await getConnection()
     .createQueryBuilder()
     .delete()
@@ -77,7 +77,7 @@ async function clearTasks(id: string) {
     .execute();
 }
 
-export const taskService = {
+export default {
   getTask,
   getTaskByGid,
   getTasks,

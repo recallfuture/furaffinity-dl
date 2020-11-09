@@ -11,7 +11,7 @@ const options: Electron.BrowserWindowConstructorOptions = {
   minWidth: 800,
   minHeight: 600,
   show: false,
-  backgroundColor: "#222",
+  backgroundColor: "#121212",
   webPreferences: {
     nodeIntegration: true
   }

@@ -1,4 +1,4 @@
-import { dialog, app } from "electron";
+import { dialog } from "electron";
 import ipc from "electron-promise-ipc";
 import { mainWindow } from "../core";
 
@@ -7,12 +7,14 @@ import { mainWindow } from "../core";
  * 返回文件夹路径
  */
 async function openFolderDialog(): Promise<string[] | undefined> {
-  if (mainWindow.win) {
-    const result = await dialog.showOpenDialog(mainWindow.win, {
-      properties: ["openDirectory", "multiSelections"]
-    });
-    return result.filePaths;
+  if (!mainWindow.win) {
+    throw new Error("there is no window");
   }
+
+  const result = await dialog.showOpenDialog(mainWindow.win, {
+    properties: ["openDirectory", "multiSelections"]
+  });
+  return result.filePaths;
 }
 
 export function registerAppIpc() {

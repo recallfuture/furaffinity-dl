@@ -18,28 +18,28 @@ export enum TaskStatus {
 @Entity()
 export class Task {
   @PrimaryColumn("varchar")
-  id: string = "";
+  id = "";
 
   @Column("varchar")
-  url: string = "";
+  url = "";
 
   @Column("varchar")
-  downloadUrl: string = "";
+  downloadUrl = "";
 
   @Column("varchar")
-  gid: string = "";
+  gid = "";
 
   @Column("varchar", { nullable: true })
   path: string | undefined;
 
   @Column("varchar")
-  status: string = "";
+  status = "";
 
   @Column("varchar")
   type: string = TaskType.Gallery;
 
   @ManyToOne(
-    type => Subscription,
+    () => Subscription,
     sub => sub.tasks
   )
   @JoinColumn()

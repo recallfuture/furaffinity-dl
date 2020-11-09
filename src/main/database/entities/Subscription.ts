@@ -1,52 +1,52 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from "typeorm";
+import { Entity, BaseEntity, PrimaryColumn, Column, OneToMany } from "typeorm";
 import { Task } from "./Task";
 import { Log } from "./Log";
 
 @Entity()
-export class Subscription {
+export class Subscription extends BaseEntity {
   @PrimaryColumn("varchar")
-  id: string = "";
+  id = "";
   @Column("varchar")
-  name: string = "";
+  name = "";
   @Column("varchar")
-  url: string = "";
+  url = "";
   @Column("varchar", { nullable: true })
   avatar: string | undefined;
 
   @Column("boolean")
-  gallery: boolean = true;
+  gallery = true;
   @Column("varchar")
-  galleryDir: string = "";
+  galleryDir = "";
   @Column("int")
-  galleryTaskNum: number = 0;
+  galleryTaskNum = 0;
   @Column("boolean")
-  galleryUpdateOnly: boolean = false;
+  galleryUpdateOnly = false;
 
   @Column("boolean")
-  scraps: boolean = false;
+  scraps = false;
   @Column("varchar")
-  scrapsDir: string = "";
+  scrapsDir = "";
   @Column("int")
-  scrapsTaskNum: number = 0;
+  scrapsTaskNum = 0;
   @Column("boolean")
-  scrapsUpdateOnly: boolean = false;
+  scrapsUpdateOnly = false;
 
   @OneToMany(
-    type => Task,
+    () => Task,
     task => task.sub
   )
   tasks: Task[] | undefined;
 
   @OneToMany(
-    type => Log,
+    () => Log,
     log => log.sub
   )
   logs: Log[] | undefined;
 
   @Column("varchar")
-  dir: string = "";
+  dir = "";
   @Column("varchar")
-  status: string = "";
+  status = "";
   @Column("int")
-  createAt: number = new Date().getTime();
+  createAt = new Date().getTime();
 }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 module.exports = {
+  productionSourceMap: false,
   transpileDependencies: ["vuetify"],
 
   configureWebpack: config => {
@@ -9,6 +10,7 @@ module.exports = {
 
   pluginOptions: {
     electronBuilder: {
+      externals: ["typeorm", "better-sqlite3"],
       mainProcessFile: "src/main/index.ts",
       chainWebpackMainProcess: config => {
         config.resolve.extensions.add(".json");
@@ -21,7 +23,6 @@ module.exports = {
             return option;
           });
           config.optimization.minimize(false);
-          console.log(config);
         }
       },
       builderOptions: {
@@ -43,10 +44,6 @@ module.exports = {
             to: "./",
             filter: ["**/*"]
           }
-        },
-        nsis: {
-          oneClick: false,
-          allowToChangeInstallationDirectory: true
         }
       }
     }

@@ -17,13 +17,13 @@ export class Log {
   type: string = LogType.Info;
 
   @Column("varchar")
-  message: string = "";
+  message = "";
 
   @Column("int")
   createAt: number = new Date().getTime();
 
   @ManyToOne(
-    type => Subscription,
+    () => Subscription,
     sub => sub.logs,
     {
       eager: true
