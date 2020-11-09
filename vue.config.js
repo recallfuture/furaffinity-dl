@@ -11,6 +11,7 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       externals: ["typeorm", "better-sqlite3"],
+      nodeModulesPath: ["../../node_modules", "./node_modules"],
       mainProcessFile: "src/main/index.ts",
       chainWebpackMainProcess: config => {
         config.resolve.extensions.add(".json");
@@ -28,6 +29,11 @@ module.exports = {
       builderOptions: {
         productName: "Furaffinity-dl",
         asar: true,
+        files: [
+          "**/*",
+          "!**/node_modules/better-sqlite3/**/*",
+          "**/node_modules/better-sqlite3/**/*.{node,lib,json,js}"
+        ],
         win: {
           target: [
             // {
