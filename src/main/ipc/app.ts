@@ -1,4 +1,4 @@
-import { dialog } from "electron";
+import { dialog, session } from "electron";
 import ipc from "electron-promise-ipc";
 import { mainWindow } from "../core";
 
@@ -17,6 +17,24 @@ async function openFolderDialog(): Promise<string[] | undefined> {
   return result.filePaths;
 }
 
+export const getCookies = () =>
+  session.defaultSession?.cookies.get({
+    domain: ".furaffinity.net"
+  });
+
+export const clearCookies = async () => {
+  await session.defaultSession?.cookies.remove(
+    "http://www.furaffinity.net",
+    "a"
+  );
+  await session.defaultSession?.cookies.remove(
+    "http://www.furaffinity.net",
+    "b"
+  );
+};
+
 export function registerAppIpc() {
   ipc.on("app.openFolderDialog", openFolderDialog);
+  ipc.on("app.getCookies", getCookies);
+  ipc.on("app.clearCookies", clearCookies);
 }

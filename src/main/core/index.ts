@@ -1,6 +1,6 @@
 import { MainWindow } from "./MainWindow";
 import { AppController } from "./AppController";
-import logger from "@/shared/logger";
+import logger from "@/main/utils/logger";
 
 process.on("uncaughtException", function(e) {
   logger.error("Process Error", e);

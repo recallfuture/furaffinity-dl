@@ -11,7 +11,6 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       externals: ["typeorm", "better-sqlite3"],
-      nodeModulesPath: ["../../node_modules", "./node_modules"],
       mainProcessFile: "src/main/index.ts",
       chainWebpackMainProcess: config => {
         config.resolve.extensions.add(".json");

@@ -1,12 +1,14 @@
-import { app } from "electron";
+import { app, remote } from "electron";
+import is from "electron-is";
 import path from "path";
 
 /**
  * 获取数据存储路径
  */
 export const getDataPath = () => {
+  const currentApp = is.main() ? app : remote.app;
   return process.env.NODE_ENV === "production"
-    ? path.join(app.getPath("documents"), "Furaffinity-dl")
+    ? path.join(currentApp.getPath("documents"), "Furaffinity-dl")
     : path.join(".", ".data");
 };
 
