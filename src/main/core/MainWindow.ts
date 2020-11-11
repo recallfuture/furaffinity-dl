@@ -1,4 +1,5 @@
 import { BrowserWindow, Menu } from "electron";
+import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 
 // 去掉顶部的窗口菜单
 Menu.setApplicationMenu(null);
@@ -32,11 +33,11 @@ export class MainWindow {
         callback(
           url.startsWith(recaptchaUrl)
             ? {
-                redirectURL: url.replace(
-                  recaptchaUrl,
-                  "https://recaptcha.net/recaptcha"
-                )
-              }
+              redirectURL: url.replace(
+                recaptchaUrl,
+                "https://recaptcha.net/recaptcha"
+              )
+            }
             : {}
         );
       }
@@ -59,8 +60,9 @@ export class MainWindow {
       this.win?.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
       if (!process.env.IS_TEST) this.win?.webContents.openDevTools();
     } else {
+      createProtocol("app");
       // Load the index.html when not in development
-      this.win?.loadURL("file://./index.html");
+      this.win?.loadURL("app://./index.html");
     }
   }
 }

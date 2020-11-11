@@ -114,10 +114,10 @@ export async function getGlobalStat() {
  */
 export async function openFolderDialog(): Promise<string[] | undefined> {
   const currentWin = remote.getCurrentWindow();
-  const result = remote.dialog.showOpenDialog(currentWin, {
+  const result = await remote.dialog.showOpenDialog(currentWin, {
     properties: ["openDirectory", "multiSelections"]
   });
-  return result;
+  return result.filePaths;
 }
 
 /**

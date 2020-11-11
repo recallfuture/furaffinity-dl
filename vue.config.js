@@ -1,4 +1,6 @@
 module.exports = {
+  productionSourceMap: false,
+
   configureWebpack: config => {
     config.entry.app = "./src/renderer/index.ts";
   },
@@ -17,19 +19,13 @@ module.exports = {
             return option;
           });
           config.optimization.minimize(false);
-          console.log(config);
         }
       },
       builderOptions: {
         productName: "Furaffinity-dl",
-        appId: "space.recallsufuture.furaffinity-dl",
         asar: true,
         win: {
           target: [
-            // {
-            //   target: "nsis",
-            //   arch: ["x64"]
-            // },
             {
               target: "zip",
               arch: ["x64"]
@@ -40,10 +36,6 @@ module.exports = {
             to: "./",
             filter: ["**/*"]
           }
-        },
-        nsis: {
-          oneClick: false,
-          allowToChangeInstallationDirectory: true
         }
       }
     }
