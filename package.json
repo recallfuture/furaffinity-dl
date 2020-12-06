@@ -6,17 +6,16 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "rebuild": "electron-rebuild",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "better-sqlite3": "^7.1.1",
-    "trash": "^6.1.1"
+    "better-sqlite3": "^7.1.1"
   },
   "devDependencies": {
     "@mdi/font": "^3.6.95",
@@ -35,6 +34,7 @@
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "^1.0.3",
     "aria2ts": "^1.1.9",
+    "aws-sdk": "^2.804.0",
     "core-js": "^3.6.5",
     "electron": "^6.0.0",
     "electron-is": "^3.0.0",
@@ -52,6 +52,8 @@
     "roboto-fontface": "*",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.2",
+    "sqlite3": "^5.0.0",
+    "trash": "^6.1.1",
     "typeorm": "^0.2.29",
     "typescript": "~3.9.3",
     "vue": "^2.6.12",

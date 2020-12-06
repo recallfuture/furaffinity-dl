@@ -10,6 +10,7 @@ module.exports = {
 
   pluginOptions: {
     electronBuilder: {
+      nodeIntegration: true,
       externals: ["typeorm", "better-sqlite3"],
       mainProcessFile: "src/main/index.ts",
       chainWebpackMainProcess: config => {

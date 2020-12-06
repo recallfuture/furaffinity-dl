@@ -1,6 +1,5 @@
 import { BrowserWindow, Menu } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
-import path from "path";
 
 // 去掉顶部的窗口菜单
 Menu.setApplicationMenu(null);
@@ -14,10 +13,7 @@ const options: Electron.BrowserWindowConstructorOptions = {
   show: false,
   backgroundColor: "#121212",
   webPreferences: {
-    nodeIntegration: true,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    preload: path.join(__static, "preload.js")
+    nodeIntegration: true
   }
 };
 
