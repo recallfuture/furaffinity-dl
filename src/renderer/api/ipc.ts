@@ -87,10 +87,11 @@ export async function faSubmission(id: string): Promise<Submission> {
  */
 export async function faFetchStart(
   subs: Subscription[],
-  fastMode: Boolean = false
+  fastMode: Boolean = false,
+  thread: number = 1
 ) {
   // @ts-ignore
-  return await ipc.send("fa.fetchStart", subs, fastMode);
+  return await ipc.send("fa.fetchStart", subs, fastMode, thread);
 }
 
 /**

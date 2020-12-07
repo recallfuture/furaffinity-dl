@@ -11,11 +11,14 @@
     
     el-input( v-model="search" placeholder="搜索" suffix-icon="el-icon-search" style="width: 150px;" @input="onInput" )
 
-    div( class="spacer" )
-
-    div( title="开启后，每个订阅只获取最新的一页，以便快速更新" )
+    div( title="开启后，每个订阅只获取最新的一页，以便快速更新" style="margin: 0 10px;" )
       span 极速模式：
       el-switch( v-model="fastMode" @change="onModeChange" )
+
+    div( style="margin: 0 10px;" )
+      span 并行获取：
+      el-select( v-model="thread" @change="onThreadChange" style="width: 80px;" )
+        el-option( v-for="item in threadOptions" :key="item.value" :label="item.label" :value="item.value" )
 
     div( class="spacer" )
 
@@ -36,8 +39,8 @@
     )
     
     //- 设置
-    el-button( type="info" :title="$t('header.setting')" icon="el-icon-setting" )
-    el-button( type="info" @click="openDevTools" ) 调试
+    //- el-button( type="info" :title="$t('header.setting')" icon="el-icon-setting" )
+    //- el-button( type="info" @click="openDevTools" ) 调试
 
     //- 退出登录确认对话框
     el-dialog(
@@ -103,10 +106,34 @@ export default class Toolbar extends Vue {
   deleteDialog: boolean = false;
   deleteWithTrash: boolean = false;
 
-  fastMode: Boolean = false;
+  fastMode: Boolean = JSON.parse(localStorage.getItem("fastMode") || "false");
   search: String = "";
   deleteStatus: any = null;
   willDeleteSubs: Subscription[] = [];
+
+  thread: number = JSON.parse(localStorage.getItem("thread") || "1");
+  threadOptions = [
+    {
+      value: 1,
+      label: "1"
+    },
+    {
+      value: 2,
+      label: "2"
+    },
+    {
+      value: 4,
+      label: "4"
+    },
+    {
+      value: 8,
+      label: "8"
+    },
+    {
+      value: 16,
+      label: "16"
+    }
+  ];
 
   onStart() {
     bus.$emit("header.start");
@@ -126,6 +153,10 @@ export default class Toolbar extends Vue {
 
   onModeChange() {
     bus.$emit("header.modeChange", this.fastMode);
+  }
+
+  onThreadChange() {
+    bus.$emit("header.threadChange", this.thread);
   }
 
   onSuccess(user: User) {

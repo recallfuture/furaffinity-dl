@@ -43,8 +43,8 @@ export function registerFaIpc() {
   ipc.on("fa.scraps", Scraps as any);
   ipc.on("fa.submission", Submission as any);
 
-  ipc.on("fa.fetchStart", (subs: any, fastMode: any) =>
-    fetch.start(transformSubs(subs), fastMode)
+  ipc.on("fa.fetchStart", (subs: any, fastMode: any, thread: any) =>
+    fetch.start(transformSubs(subs), fastMode, thread)
   );
   ipc.on("fa.fetchStop", () => fetch.stop());
   ipc.on("fa.getGlobalStat", () => fetch.globalStat);

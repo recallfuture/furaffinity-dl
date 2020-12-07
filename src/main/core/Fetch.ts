@@ -35,8 +35,8 @@ export class Fetch {
 
   private fetching: boolean = false;
   private maxRetry: number = 5;
-  private concurrency: number = 1;
   private fastMode: Boolean = false;
+  private thread: number = 1;
 
   private sub: Subscription | null = null;
 
@@ -76,14 +76,18 @@ export class Fetch {
   /**
    * 开始
    */
-  async start(subs: Subscription[], fastMode: Boolean) {
+  async start(subs: Subscription[], fastMode: Boolean, thread: number = 1) {
     if (this.fetching || subs.length === 0) {
       return;
     }
 
     // 开始获取
     this.fastMode = fastMode;
+    this.thread = thread;
     this.beforeFetchAll();
+
+    logger.log(fastMode);
+    logger.log(thread);
 
     try {
       await this.mapSubs(subs);
@@ -203,13 +207,13 @@ export class Fetch {
     type: TaskType,
     page: number
   ) {
-    for (let begin = 0; begin < submissions.length; begin += this.concurrency) {
+    for (let begin = 0; begin < submissions.length; begin += this.thread) {
       if (!this.fetching) {
         throw new FetchStopError();
       }
 
       let delay = 0;
-      const items = submissions.slice(begin, begin + this.concurrency);
+      const items = submissions.slice(begin, begin + this.thread);
       await Bluebird.map(items, async (item, index) => {
         const currentIndex = begin + index + 1;
 

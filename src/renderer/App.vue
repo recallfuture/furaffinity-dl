@@ -77,7 +77,8 @@ export default class App extends Vue {
   fetching: boolean = false;
   logs: Log[] = [];
 
-  fastMode: Boolean = false;
+  fastMode: Boolean = JSON.parse(localStorage.getItem("fastMode") || "false");
+  thread: number = JSON.parse(localStorage.getItem("thread") || "1");
 
   ariaStatus: AriaStatus = {
     downloadSpeed: "0",
@@ -158,6 +159,11 @@ export default class App extends Vue {
     bus.$on("header.stop", this.handleHeaderStop);
     bus.$on("header.modeChange", (fastMode: any) => {
       this.fastMode = fastMode;
+      localStorage.setItem("fastMode", JSON.stringify(fastMode));
+    });
+    bus.$on("header.threadChange", (thread: number) => {
+      this.thread = thread;
+      localStorage.setItem("thread", JSON.stringify(thread));
     });
     bus.$on("sub.deleted", this.handleSubDeleted);
     bus.$on("sub.select", this.handleSubSelect);
@@ -276,7 +282,7 @@ export default class App extends Vue {
     this.fetching = true;
     bus.$emit("fetch.start");
     try {
-      await faFetchStart(subs, this.fastMode);
+      await faFetchStart(subs, this.fastMode, this.thread);
     } catch (e) {
       this.$message.error(e.message);
       logger.error(e);

@@ -33,11 +33,11 @@ export class MainWindow {
         callback(
           url.startsWith(recaptchaUrl)
             ? {
-              redirectURL: url.replace(
-                recaptchaUrl,
-                "https://recaptcha.net/recaptcha"
-              )
-            }
+                redirectURL: url.replace(
+                  recaptchaUrl,
+                  "https://recaptcha.net/recaptcha"
+                )
+              }
             : {}
         );
       }
