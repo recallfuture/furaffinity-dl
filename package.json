@@ -36,7 +36,7 @@
     "aria2ts": "^1.1.9",
     "aws-sdk": "^2.804.0",
     "core-js": "^3.6.5",
-    "electron": "^6.0.0",
+    "electron": "^9.4.0",
     "electron-is": "^3.0.0",
     "electron-log": "4.0.3",
     "electron-promise-ipc": "^2.2.1",
