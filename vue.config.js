@@ -15,6 +15,11 @@ module.exports = {
       mainProcessFile: "src/main/index.ts",
       chainWebpackMainProcess: config => {
         config.resolve.extensions.add(".json");
+        // 防止因 typeorm 动态 require 导致大量无关文件打包进来
+        config
+          .plugin("webpack-ignore-dynamic-require")
+          .use("webpack-ignore-dynamic-require");
+
         if (process.env.NODE_ENV === "production") {
           config.plugin("uglify").tap(option => {
             option[0].terserOptions = {

@@ -1,7 +1,7 @@
 import { createConnection, getConnection } from "typeorm";
 import path from "path";
 import fs from "fs";
-import { getDataPath } from "@/shared/utils";
+import { getDataPath, requireAll } from "@/shared/utils";
 
 // 数据库初始化方法
 export const initDatabase = () => {
@@ -19,8 +19,14 @@ export const initDatabase = () => {
     type: "better-sqlite3",
     database: databasePath,
 
-    entities: [path.resolve(__dirname, "entities/*.{.ts,.js}")],
-    migrations: [path.resolve(__dirname, "migrations/*.{.ts,.js}")],
+    // 动态获取全部实体类
+    entities: requireAll(
+      require.context("./entities", true, /.*\.ts/)
+    ) as Function[],
+    // 动态获取全部迁移类
+    migrations: requireAll(
+      require.context("./migrations", true, /.*\.ts/)
+    ) as Function[],
     migrationsRun: true
   });
 };

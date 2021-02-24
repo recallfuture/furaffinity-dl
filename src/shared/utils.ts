@@ -13,6 +13,18 @@ export const getDataPath = () => {
 };
 
 /**
+ * 获取上下文中的所有导出模块
+ * @param context 上下文
+ */
+export const requireAll = (
+  context: __WebpackModuleApi.RequireContext
+): unknown[] => {
+  return context
+    .keys()
+    .reduce((prev, curr) => prev.concat(Object.values(context(curr))), []);
+};
+
+/**
  * 将配置对象转换为命令行参数数组
  * @param config 配置对象
  */
