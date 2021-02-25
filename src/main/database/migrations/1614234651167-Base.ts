@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Base1614165964691 implements MigrationInterface {
-  name = "Base1614165964691";
+export class Base1614234651167 implements MigrationInterface {
+  name = "Base1614234651167";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -20,7 +20,6 @@ export class Base1614165964691 implements MigrationInterface {
                 "author_id" varchar NOT NULL,
                 "downloadUrl" varchar NOT NULL,
                 "category" varchar NOT NULL,
-                "gid" varchar NOT NULL,
                 "file_path" varchar
             )
         `);
@@ -34,9 +33,14 @@ export class Base1614165964691 implements MigrationInterface {
         `);
     await queryRunner.query(`
             CREATE TABLE "watchs" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "user_id" varchar NOT NULL,
-                "author_id" varchar NOT NULL
+                "id" varchar PRIMARY KEY NOT NULL,
+                "author_id" varchar NOT NULL,
+                "dir" varchar NOT NULL,
+                "gallery" integer NOT NULL,
+                "galleryEnabled" boolean NOT NULL,
+                "scraps" integer NOT NULL,
+                "scrapsEnabled" boolean NOT NULL,
+                "enabled" boolean NOT NULL
             )
         `);
   }
