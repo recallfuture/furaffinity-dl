@@ -27,14 +27,10 @@ export const initDatabase = () => {
     migrations: requireAll(
       require.context("./migrations", true, /.*\.ts/)
     ) as Function[],
-    migrationsRun: true
+    migrationsRun: true,
+    synchronize: true
   });
 };
 
 // 数据库关闭方法
 export const closeDatabase = () => getConnection().close();
-
-export default {
-  initDatabase,
-  closeDatabase
-};
