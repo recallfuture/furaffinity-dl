@@ -27,8 +27,7 @@ export const initDatabase = () => {
     migrations: requireAll(
       require.context("./migrations", true, /.*\.ts/)
     ) as Function[],
-    migrationsRun: true,
-    synchronize: true
+    migrationsRun: true
   });
 };
 
