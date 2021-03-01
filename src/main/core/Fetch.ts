@@ -8,8 +8,8 @@ import {
   createSubmissionFromFaSubmission
 } from "../service/SubmissionService";
 import {
-  GalleryItem,
-  getGalleryItemList,
+  PagingResults,
+  getPagingResults,
   getSubmission
 } from "../service/FaService";
 import { Author } from "../database/entities/Author";
@@ -53,15 +53,15 @@ async function fetchSubmission(
 
 /**
  * 获取列表
- * @param galleryItemList 从 FA 获取到的列表信息
+ * @param pagingResults 从 FA 获取到的列表信息
  * @param category 所在图集分类
  */
 async function fetchSubmissionList(
-  galleryItemList: GalleryItem[],
+  pagingResults: PagingResults,
   category: SubmissionCategory
 ) {
-  for (let begin = 0; begin < galleryItemList.length; begin += concurrency) {
-    const items = galleryItemList.slice(begin, begin + concurrency);
+  for (let begin = 0; begin < pagingResults.length; begin += concurrency) {
+    const items = pagingResults.slice(begin, begin + concurrency);
     // TODO: 获取成功后进行下载
     await Promise.all(items.map(item => fetchSubmission(item.id, category)));
   }
@@ -76,19 +76,16 @@ async function fetchCategory(author: Author, category: SubmissionCategory) {
   // TODO: 可配置最大下载数量
   for (let page = 1; ; page++) {
     // TODO: 每页固定 72 张
-    const galleryItemList = await getGalleryItemList(category, author.id, page);
-    if (galleryItemList === null) {
-      throw new Error("获取作品列表失败");
-    }
+    const pagingResults = await getPagingResults(category, author.id, page);
 
-    if (galleryItemList.length === 0) {
+    if (pagingResults.length === 0) {
       logger.log(`[${author.id}/${category}/${page}] 获取结束`);
       break;
     }
 
-    await fetchSubmissionList(galleryItemList, category);
+    await fetchSubmissionList(pagingResults, category);
 
-    if (galleryItemList.length < 72) {
+    if (pagingResults.length < 72) {
       logger.log(`[${author.id}/${category}/${page}] 获取结束`);
       break;
     }
@@ -102,10 +99,6 @@ async function fetchCategory(author: Author, category: SubmissionCategory) {
 async function fetchAuthor(watch: Watch) {
   // 获取作者信息
   const author = await findAuthorById(watch.authorId);
-
-  if (!author) {
-    throw new Error(`作者不存在：${watch.authorId}`);
-  }
 
   // 将要下载的图集
   const categoryEnabledMap = {
