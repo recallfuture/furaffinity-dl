@@ -29,14 +29,15 @@ const apiMap = {
 export const getPagingResults = (
   category: SubmissionCategory,
   id: string,
-  page: number
+  page: number,
+  perpage: number
 ) => {
   const api = apiMap[category];
   if (!api) {
     throw new Error(`图集类型错误：${category}`);
   }
 
-  return api(id, page);
+  return api(id, page, perpage);
 };
 
 /**

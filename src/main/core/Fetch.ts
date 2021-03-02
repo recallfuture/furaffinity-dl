@@ -2,9 +2,9 @@ import {
   Submission,
   SubmissionCategory
 } from "@/main/database/entities/Submission";
-import { Watch } from "@/main/database/entities/Watch";
 import { Author } from "@/main/database/entities/Author";
 import { findAuthorById } from "@/main/service/AuthorService";
+import { findWatchByIdAndAuthorId } from "@/main/service/WatchService";
 import logger from "@/shared/logger";
 import {
   findSubmissionById,
@@ -77,8 +77,8 @@ async function fetchSubmissionList(
 async function fetchCategory(author: Author, category: SubmissionCategory) {
   // TODO: 可配置最大下载数量
   for (let page = 1; ; page++) {
-    // TODO: 每页固定 72 张
-    const pagingResults = await getPagingResults(category, author.id, page);
+    // 每页固定 72 张
+    const pagingResults = await getPagingResults(category, author.id, page, 72);
 
     if (pagingResults.length === 0) {
       logger.log(`[${author.id}/${category}/${page}] 获取结束`);
@@ -98,8 +98,9 @@ async function fetchCategory(author: Author, category: SubmissionCategory) {
  * 获取作者下的所有作品
  * @param watch 用户关注的作者信息
  */
-async function fetchAuthor(watch: Watch) {
+async function fetchAuthor(userId: string, authorId: string) {
   // 获取作者信息
+  const watch = await findWatchByIdAndAuthorId(userId, authorId);
   const author = await findAuthorById(watch.authorId);
 
   // 将要下载的图集
@@ -130,8 +131,13 @@ async function fetchAuthor(watch: Watch) {
   }
 }
 
+export function fetchAuthors(authors: string[], skipWhenExists = false) {
+  return Promise.all(authors.map(authorId => fetchAuthor("", authorId)));
+}
+
 /**
  * 查找有新作品的作者
+ * 根据作品发布时间线上的数据来统计的
  * @param totalPage 查找的最大页数
  */
 export async function fetchNeedUpdateAuthors(
