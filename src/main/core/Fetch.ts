@@ -2,19 +2,21 @@ import {
   Submission,
   SubmissionCategory
 } from "@/main/database/entities/Submission";
+import { Watch } from "@/main/database/entities/Watch";
+import { Author } from "@/main/database/entities/Author";
+import { findAuthorById } from "@/main/service/AuthorService";
 import logger from "@/shared/logger";
 import {
   findSubmissionById,
-  createSubmissionFromFaSubmission
-} from "../service/SubmissionService";
+  createSubmissionFromFaSubmission,
+  findSubmissionsIn
+} from "@/main/service/SubmissionService";
 import {
   PagingResults,
   getPagingResults,
-  getSubmission
-} from "../service/FaService";
-import { Author } from "../database/entities/Author";
-import { findAuthorById } from "../service/AuthorService";
-import { Watch } from "../database/entities/Watch";
+  getSubmission,
+  getSubmissions
+} from "@/main/service/FaService";
 
 class FetchStopError extends Error {}
 
@@ -126,4 +128,39 @@ async function fetchAuthor(watch: Watch) {
       }
     }
   }
+}
+
+/**
+ * 查找有新作品的作者
+ * @param totalPage 查找的最大页数
+ */
+export async function fetchNeedUpdateAuthors(
+  maxPage: number
+): Promise<string[]> {
+  const needUpdateAuthors = new Set<string>();
+
+  let pagingResults = await getSubmissions();
+  for (let page = 1; page <= maxPage; page++) {
+    const authorSubmissionMap: { [key: string]: string[] } = {};
+    pagingResults.forEach(result => {
+      const authorId = result.author.id;
+      authorSubmissionMap[authorId] = authorSubmissionMap[authorId] || [];
+      authorSubmissionMap[authorId].push(result.id);
+    });
+
+    await Promise.all(
+      Object.entries(authorSubmissionMap).map(async ([authorId, idList]) => {
+        const entities = await findSubmissionsIn(idList);
+        // 查找是否有没获取的
+        if (entities.length < idList.length) {
+          needUpdateAuthors.add(authorId);
+        }
+      })
+    );
+
+    if (!pagingResults.next) break;
+    pagingResults = await pagingResults.next();
+  }
+
+  return Array.from(needUpdateAuthors);
 }

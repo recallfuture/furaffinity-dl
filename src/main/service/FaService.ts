@@ -8,11 +8,12 @@ import {
   Result,
   Scraps as getScrapsPagingResults,
   Submission as getSubmission,
-  PagingResults
+  Submissions as getSubmissions,
+  PagingResults,
+  Login as faLogin
 } from "furaffinity-api";
 import { Submission as FaSubmission } from "furaffinity-api/dist/interfaces";
 import { SubmissionCategory } from "../database/entities/Submission";
-import { findAuthorById } from "./AuthorService";
 
 const apiMap = {
   [SubmissionCategory.Gallery]: getGalleryPagingResults,
@@ -92,5 +93,7 @@ export {
   getGalleryPagingResults as getGalleryItemListFormGallery,
   getScrapsPagingResults as getGalleryItemListFormScraps,
   getSubmission,
-  FaSubmission
+  getSubmissions,
+  FaSubmission,
+  faLogin
 };

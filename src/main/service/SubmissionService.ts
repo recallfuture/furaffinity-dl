@@ -1,4 +1,4 @@
-import { getManager } from "typeorm";
+import { getManager, In } from "typeorm";
 import {
   Submission,
   SubmissionCategory
@@ -7,6 +7,12 @@ import { Submission as FaSubmission } from "furaffinity-api/dist/interfaces";
 
 export const findSubmissionById = (id: string) => {
   return getManager().findOne(Submission, { id });
+};
+
+export const findSubmissionsIn = (idList: string[]) => {
+  return getManager().find(Submission, {
+    id: In(idList)
+  });
 };
 
 export const createSubmissionFromFaSubmission = (
