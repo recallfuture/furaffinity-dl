@@ -1,7 +1,7 @@
 import { Connection, createConnection, getConnection } from "typeorm";
 import path from "path";
 import fs from "fs";
-import { getDataPath, requireAll } from "@/shared/utils";
+import { getDataPath, requireAll } from "@/main/utils";
 
 // 数据库初始化方法
 export const initDatabase = (): Promise<Connection> => {
@@ -18,6 +18,7 @@ export const initDatabase = (): Promise<Connection> => {
   return createConnection({
     type: "sqljs",
     location: databasePath,
+    autoSave: true,
 
     // 动态获取全部实体类
     entities: requireAll(

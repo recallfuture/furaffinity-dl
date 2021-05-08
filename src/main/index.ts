@@ -1,10 +1,8 @@
-"use strict";
-
+import is from "electron-is";
 import { app, protocol, BrowserWindow } from "electron";
-import { createWindow } from "./core/window";
+import { createWindow } from "@/main/core/window";
 import { registerIpc } from "@/main/ipc";
 import { initDatabase } from "@/main/database";
-const isDevelopment = process.env.NODE_ENV !== "production";
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -19,7 +17,7 @@ protocol.registerSchemesAsPrivileged([
 app.on("window-all-closed", () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== "darwin") {
+  if (!is.macOS()) {
     app.quit();
   }
 });
@@ -40,8 +38,8 @@ app.on("ready", async () => {
 });
 
 // Exit cleanly on request from parent process in development mode.
-if (isDevelopment) {
-  if (process.platform === "win32") {
+if (is.dev()) {
+  if (is.windows()) {
     process.on("message", (data) => {
       if (data === "graceful-exit") {
         app.quit();

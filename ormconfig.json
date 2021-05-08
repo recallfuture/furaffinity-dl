@@ -1,0 +1,13 @@
+{
+  "type": "sqljs",
+  "location": "./.data/database.db",
+  "autoSave": true,
+
+  "entities": ["src/main/database/entities/*.ts"],
+  "migrations": ["src/main/database/migrations/*.ts"],
+
+  "cli": {
+    "entitiesDir": "src/main/database/entities",
+    "migrationsDir": "src/main/database/migrations"
+  }
+}

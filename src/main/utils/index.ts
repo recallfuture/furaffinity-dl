@@ -5,7 +5,7 @@ import path from "path";
 /**
  * 获取数据存储路径
  */
-export const getDataPath = () => {
+export const getDataPath = (): string => {
   const currentApp = is.main() ? app : remote.app;
   return process.env.NODE_ENV === "production"
     ? path.join(currentApp.getPath("documents"), "Furaffinity-dl")
@@ -28,7 +28,7 @@ export const requireAll = (
  * 将配置对象转换为命令行参数数组
  * @param config 配置对象
  */
-export function transformConfig(config: {}): string[] {
+export function transformConfig(config: Record<string, string>): string[] {
   const result = [];
   for (const [k, v] of Object.entries(config)) {
     if (v !== "") {
@@ -42,8 +42,8 @@ export function transformConfig(config: {}): string[] {
  * 异步休眠一段时间
  * @param millisecond 休眠的毫秒数
  */
-export const sleep = (millisecond: number) =>
-  new Promise(resole => {
+export const sleep = (millisecond: number): Promise<unknown> =>
+  new Promise((resole) => {
     setTimeout(() => {
       resole(millisecond);
     }, millisecond);
