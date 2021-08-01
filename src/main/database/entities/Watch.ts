@@ -17,7 +17,7 @@ export class Watch {
 
   /** 关注的作者 ID */
   @Column("varchar", {
-    name: "author_id"
+    name: "author_id",
   })
   authorId: string;
 

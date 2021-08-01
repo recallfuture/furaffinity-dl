@@ -5,7 +5,7 @@ import { Column, Entity, PrimaryColumn } from "typeorm";
  */
 export enum SubmissionCategory {
   Gallery = "gallery",
-  Scraps = "scraps"
+  Scraps = "scraps",
 }
 
 /**
@@ -31,7 +31,7 @@ export class Submission {
 
   /** 作者 ID */
   @Column("varchar", {
-    name: "author_id"
+    name: "author_id",
   })
   authorId: string;
 

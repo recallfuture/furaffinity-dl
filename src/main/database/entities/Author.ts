@@ -22,17 +22,23 @@ export class Author {
 
   /** 作品总数 */
   @Column("int", {
-    default: 0
+    default: 0,
   })
   submissions = 0;
   /** gallery 内作品总数 */
   @Column("int", {
-    default: 0
+    default: 0,
   })
   gallery = 0;
   /** scraps 内作品总数 */
   @Column("int", {
-    default: 0
+    default: 0,
   })
   scraps = 0;
+
+  /** 特别关注 */
+  @Column("boolean", {
+    default: false,
+  })
+  favorite = false;
 }

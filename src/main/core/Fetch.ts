@@ -3,9 +3,9 @@ import {
   SubmissionCategory,
 } from "@/main/database/entities/Submission";
 import { Author } from "@/main/database/entities/Author";
+
 import { findAuthorById } from "@/main/service/AuthorService";
 import { findWatchByIdAndAuthorId } from "@/main/service/WatchService";
-import logger from "@/shared/logger";
 import {
   findSubmissionById,
   createSubmissionFromFaSubmission,
@@ -17,6 +17,8 @@ import {
   getSubmission,
   getSubmissions,
 } from "@/main/service/FaService";
+
+import logger from "@/main/utils/logger";
 
 class FetchStopError extends Error {}
 
@@ -131,8 +133,13 @@ async function fetchAuthor(userId: string, authorId: string) {
   }
 }
 
-export function fetchAuthors(authors: string[], skipWhenExists = false) {
-  return Promise.all(authors.map((authorId) => fetchAuthor("", authorId)));
+export async function fetchAuthors(
+  authors: string[],
+  skipWhenExists = false
+): Promise<void> {
+  for (const authorId of authors) {
+    await fetchAuthor("", authorId);
+  }
 }
 
 /**

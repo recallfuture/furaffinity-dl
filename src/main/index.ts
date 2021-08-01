@@ -3,6 +3,7 @@ import { app, protocol, BrowserWindow } from "electron";
 import { createWindow } from "@/main/core/window";
 import { registerIpc } from "@/main/ipc";
 import { initDatabase } from "@/main/database";
+import { initDownloadManager } from "./core/download";
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -33,6 +34,7 @@ app.on("activate", () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
   await initDatabase();
+  initDownloadManager();
   registerIpc();
   createWindow();
 });
