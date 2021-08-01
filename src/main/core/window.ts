@@ -11,7 +11,7 @@ const options: BrowserWindowConstructorOptions = {
   show: false,
   backgroundColor: "#121212",
   webPreferences: {
-    nodeIntegration: true,
+    webviewTag: true,
   },
 };
 

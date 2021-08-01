@@ -1,17 +1,37 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { resolve } = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const AntdDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin");
+const { resolve } = require("path");
+const { getThemeVariables } = require("ant-design-vue/dist/theme");
 
 module.exports = {
   productionSourceMap: false,
 
   configureWebpack: (config) => {
     config.entry.app = "./src/renderer/index.ts";
+    config.plugins.push(
+      new AntdDayjsWebpackPlugin({
+        preset: "antdv3",
+      })
+    );
+  },
+
+  // 开启暗色主题
+  css: {
+    loaderOptions: {
+      less: {
+        lessOptions: {
+          modifyVars: getThemeVariables({
+            dark: true,
+          }),
+          javascriptEnabled: true,
+        },
+      },
+    },
   },
 
   pluginOptions: {
     electronBuilder: {
-      nodeIntegration: true,
       externals: ["typeorm"],
       mainProcessFile: "src/main/index.ts",
       chainWebpackMainProcess: (config) => {
