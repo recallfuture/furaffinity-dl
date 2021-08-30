@@ -1,5 +1,4 @@
-import { dialog } from "electron";
-import ipc from "electron-promise-ipc";
+import { dialog, ipcMain } from "electron";
 
 /**
  * 打开选择文件夹的对话框
@@ -12,6 +11,8 @@ const openFolderDialog = async (): Promise<string[] | undefined> => {
   return result.filePaths;
 };
 
+const warp = (fn: Function) => (_: any, ...args: any[]) => fn(...args);
+
 export const registerAppIpc = (): void => {
-  ipc.on("app.openFolderDialog", openFolderDialog);
+  ipcMain.on("app.openFolderDialog", warp(openFolderDialog));
 };

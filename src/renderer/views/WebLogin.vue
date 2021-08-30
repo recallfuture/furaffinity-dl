@@ -1,49 +1,28 @@
 <template>
   <div class="flex flex-col h-screen">
-    <a-page-header title="网页登录" @back="back">
+    <NPageHeader title="网页登录" @back="back">
       <template #extra>
-        <a-button @click="refresh"><ReloadOutlined />刷新</a-button>
+        <NButton @click="refresh">刷新</NButton>
       </template>
-    </a-page-header>
+    </NPageHeader>
     <webview :src="url" class="w-full flex-1"></webview>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
+<script lang="ts" setup>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { ReloadOutlined } from "@ant-design/icons-vue";
+import { NPageHeader, NButton } from "naive-ui";
 
-export default defineComponent({
-  components: {
-    ReloadOutlined,
-  },
-  setup() {
-    const router = useRouter();
-    const back = router.back;
+const router = useRouter();
+const back = router.back;
 
-    const { url, refresh } = useLogin();
-    refresh();
+const url = ref("");
+const refresh = () => {
+  url.value = "https://www.furaffinity.net/login/?r=" + Math.random();
+};
 
-    return {
-      back,
-      url,
-      refresh,
-    };
-  },
-});
-
-function useLogin() {
-  const url = ref("");
-  const refresh = () => {
-    url.value = "https://www.furaffinity.net/login/?r=" + Math.random();
-  };
-
-  return {
-    url,
-    refresh,
-  };
-}
+refresh();
 </script>
 
 <style scoped></style>

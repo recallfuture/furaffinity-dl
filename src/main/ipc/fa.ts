@@ -1,5 +1,4 @@
-import { session } from "electron";
-import ipc from "electron-promise-ipc";
+import { session, ipcMain } from "electron";
 import {
   Author,
   Gallery,
@@ -26,15 +25,17 @@ export const clearCookies = async (): Promise<void> => {
   );
 };
 
+const warp = (fn: Function) => (_: any, ...args: any[]) => fn(...args);
+
 export const registerFaIpc = (): void => {
   // fa api
-  ipc.on("fa.getCookies", getCookies);
-  ipc.on("fa.clearCookies", clearCookies);
-  ipc.on("fa.login", Login as never);
-  ipc.on("fa.user", User as never);
-  ipc.on("fa.watchingList", MyWatchingList as never);
-  ipc.on("fa.author", Author as never);
-  ipc.on("fa.gallery", Gallery as never);
-  ipc.on("fa.scraps", Scraps as never);
-  ipc.on("fa.submission", Submission as never);
+  ipcMain.on("fa.getCookies", warp(getCookies));
+  ipcMain.on("fa.clearCookies", warp(clearCookies));
+  ipcMain.on("fa.login", warp(Login));
+  ipcMain.on("fa.user", warp(User));
+  ipcMain.on("fa.watchingList", warp(MyWatchingList));
+  ipcMain.on("fa.author", warp(Author));
+  ipcMain.on("fa.gallery", warp(Gallery));
+  ipcMain.on("fa.scraps", warp(Scraps));
+  ipcMain.on("fa.submission", warp(Submission));
 };
