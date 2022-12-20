@@ -1,7 +1,7 @@
 <template lang="pug">
   div
     el-button( @click="reload" class="refresh-button" icon="el-icon-refresh" ) {{ $t("generic.refresh") }}
-    iframe( :src="src" width="100%" height="500" )
+    webview( :src="src" style="display:inline-flex; width: 100%; height: 500px" )
 </template>
 
 <script lang="ts">
